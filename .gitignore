@@ -2,3 +2,5 @@ node_modules/
 
 # IntelliJ files
 .idea/
+
+documentation/
