@@ -3,4 +3,5 @@ node_modules/
 # IntelliJ files
 .idea/
 
+#keep documentation on main
 documentation/
