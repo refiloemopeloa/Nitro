@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { element } from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 if (WebGL.isWebGL2Available()) {
@@ -24,7 +23,7 @@ if (WebGL.isWebGL2Available()) {
         defaultMaterial,
         defaultMaterial,
         {
-            friction: 0.1,
+            friction: 0.25,
             restitution: 0.3
         }
     );
@@ -46,21 +45,36 @@ if (WebGL.isWebGL2Available()) {
     floor.position.copy(groundBody.position);
     scene.add(floor);
 
-    // Create sphere
+    // Create four spheres
     const radius = 0.5;
-    const sphereShape = new CANNON.Sphere(radius);
-    const sphereBody = new CANNON.Body({
-        mass: 1,
-        shape: sphereShape,
-        material: defaultMaterial
-    });
-    sphereBody.position.set(0, 5, 0);
-    world.addBody(sphereBody);
-
     const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
     const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    scene.add(sphere);
+
+    const spheres = [];
+    const sphereBodies = [];
+
+    const positions = [
+        { x: -1, z: -1 },
+        { x: 1, z: -1 },
+        { x: -1, z: 1 },
+        { x: 1, z: 1 }
+    ];
+
+    positions.forEach(pos => {
+        const sphereShape = new CANNON.Sphere(radius);
+        const sphereBody = new CANNON.Body({
+            mass: 1,
+            shape: sphereShape,
+            material: defaultMaterial
+        });
+        sphereBody.position.set(pos.x, radius, pos.z);
+        world.addBody(sphereBody);
+        sphereBodies.push(sphereBody);
+
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        scene.add(sphere);
+        spheres.push(sphere);
+    });
 
     // Camera setup
     camera.position.set(0, 5, 5);
@@ -69,7 +83,7 @@ if (WebGL.isWebGL2Available()) {
     // Controls setup
     const controls = ['w', 'a', 's', 'd'];
     let pressed = [false, false, false, false];
-    let zoom = 3;
+    let zoom = 5;
     let camHeight = 3;
 
     document.addEventListener('keydown', function(event) {
@@ -87,9 +101,6 @@ if (WebGL.isWebGL2Available()) {
         const acceleration = 15; // Acceleration
         const deceleration = 5; // Deceleration
 
-        // Get current velocity
-        const velocity = sphereBody.velocity; //(xf-xi/t)
-
         // Calculate desired velocity based on key presses
         let desiredVelocityX = 0;
         let desiredVelocityZ = 0;
@@ -99,35 +110,53 @@ if (WebGL.isWebGL2Available()) {
         if (pressed[controls.indexOf('a')]) desiredVelocityZ = -maxSpeed; // left
         if (pressed[controls.indexOf('d')]) desiredVelocityZ = maxSpeed; // right
 
-        // Calculate force to apply
-        const forceX = (desiredVelocityX - velocity.x) * (desiredVelocityX !== 0 ? acceleration : deceleration); //decides whether to use the acceleration or deceleration value
-        const forceZ = (desiredVelocityZ - velocity.z) * (desiredVelocityZ !== 0 ? acceleration : deceleration);
+        sphereBodies.forEach(sphereBody => {
+            // Get current velocity
+            const velocity = sphereBody.velocity;
 
-        // Apply force
-        sphereBody.applyForce(new CANNON.Vec3(forceX, 0, forceZ));
+            // Calculate force to apply
+            const forceX = (desiredVelocityX - velocity.x) * (desiredVelocityX !== 0 ? acceleration : deceleration);
+            const forceZ = (desiredVelocityZ - velocity.z) * (desiredVelocityZ !== 0 ? acceleration : deceleration);
 
-        // Limit maximum speed
-        const speed = Math.sqrt(velocity.x ** 2 + velocity.z ** 2);
-        if (speed > maxSpeed) {
-            const factor = maxSpeed / speed;
-            sphereBody.velocity.x *= factor;
-            sphereBody.velocity.z *= factor;
-        }
+            // Apply force
+            sphereBody.applyForce(new CANNON.Vec3(forceX, 0, forceZ));
+
+            // Limit maximum speed
+            const speed = Math.sqrt(velocity.x ** 2 + velocity.z ** 2);
+            if (speed > maxSpeed) {
+                const factor = maxSpeed / speed;
+                sphereBody.velocity.x *= factor;
+                sphereBody.velocity.z *= factor;
+            }
+        });
     }
 
     function ThirdPerson() {
-        camera.position.y = sphereBody.position.y + camHeight;
-        camera.position.x = sphereBody.position.x - zoom;
-        camera.position.z = sphereBody.position.z;
-        camera.lookAt(new THREE.Vector3(sphereBody.position.x, sphereBody.position.y, sphereBody.position.z));
+        const centerPosition = sphereBodies.reduce((acc, body) => {
+            acc.x += body.position.x;
+            acc.y += body.position.y;
+            acc.z += body.position.z;
+            return acc;
+        }, { x: 0, y: 0, z: 0 });
+
+        centerPosition.x /= sphereBodies.length;
+        centerPosition.y /= sphereBodies.length;
+        centerPosition.z /= sphereBodies.length;
+
+        camera.position.y = centerPosition.y + camHeight;
+        camera.position.x = centerPosition.x - zoom;
+        camera.position.z = centerPosition.z;
+        camera.lookAt(new THREE.Vector3(centerPosition.x, centerPosition.y, centerPosition.z));
     }
 
     function animate() {
         world.step(1/60);
 
         // Sync Three.js objects with Cannon.js bodies
-        sphere.position.copy(sphereBody.position);
-        sphere.quaternion.copy(sphereBody.quaternion);
+        spheres.forEach((sphere, index) => {
+            sphere.position.copy(sphereBodies[index].position);
+            sphere.quaternion.copy(sphereBodies[index].quaternion);
+        });
         floor.position.copy(groundBody.position);
 
         ThirdPerson();
