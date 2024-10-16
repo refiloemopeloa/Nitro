@@ -98,7 +98,6 @@ if (WebGL.isWebGL2Available()) {
     const controls = ['w', 'a', 's', 'd'];
     let pressed = [false, false, false, false];
     let zoom = 3;
-    let zoom = 3;
     let camHeight = 3;
 
     document.addEventListener('keydown', function(event) {
