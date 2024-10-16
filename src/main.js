@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 
 import WebGL from 'three/addons/capabilities/WebGL.js';
+import { element } from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 if (WebGL.isWebGL2Available()) {
@@ -14,7 +15,7 @@ if (WebGL.isWebGL2Available()) {
 
     // Cannon.js world setup
     const world = new CANNON.World({
-        gravity: new CANNON.Vec3(0, -9.82, 0) // m/s²
+        gravity: new CANNON.Vec3(0, -6.82, 0) // m/s²
     });
 
     // Physics materials
@@ -23,8 +24,8 @@ if (WebGL.isWebGL2Available()) {
         defaultMaterial,
         defaultMaterial,
         {
-            friction: 0.25,
-            restitution: 0.3
+            friction: 0.0,
+            restitution: 0.0
         }
     );
     world.addContactMaterial(defaultContactMaterial);
@@ -45,36 +46,20 @@ if (WebGL.isWebGL2Available()) {
     floor.position.copy(groundBody.position);
     scene.add(floor);
 
-    // Create four spheres
-    const radius = 0.5;
-    const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
-    const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
-
-    const spheres = [];
-    const sphereBodies = [];
-
-    const positions = [
-        { x: -1, z: -1 },
-        { x: 1, z: -1 },
-        { x: -1, z: 1 },
-        { x: 1, z: 1 }
-    ];
-
-    positions.forEach(pos => {
-        const sphereShape = new CANNON.Sphere(radius);
-        const sphereBody = new CANNON.Body({
-            mass: 1,
-            shape: sphereShape,
-            material: defaultMaterial
-        });
-        sphereBody.position.set(pos.x, radius, pos.z);
-        world.addBody(sphereBody);
-        sphereBodies.push(sphereBody);
-
-        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        scene.add(sphere);
-        spheres.push(sphere);
+    // Create cube
+    const cubeShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5));
+    const cubeBody = new CANNON.Body({
+        mass: 1,
+        shape: cubeShape,
+        material: defaultMaterial
     });
+    cubeBody.position.set(0, 5, 0);
+    world.addBody(cubeBody);
+
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
 
     // Camera setup
     camera.position.set(0, 5, 5);
@@ -83,7 +68,7 @@ if (WebGL.isWebGL2Available()) {
     // Controls setup
     const controls = ['w', 'a', 's', 'd'];
     let pressed = [false, false, false, false];
-    let zoom = 5;
+    let zoom = 3;
     let camHeight = 3;
 
     document.addEventListener('keydown', function(event) {
@@ -97,66 +82,57 @@ if (WebGL.isWebGL2Available()) {
     });
 
     function keyAction() {
-        const maxSpeed = 5; // Maximum speed
-        const acceleration = 15; // Acceleration
-        const deceleration = 5; // Deceleration
-
-        // Calculate desired velocity based on key presses
-        let desiredVelocityX = 0;
-        let desiredVelocityZ = 0;
-
-        if (pressed[controls.indexOf('w')]) desiredVelocityX = maxSpeed; //Move forward
-        if (pressed[controls.indexOf('s')]) desiredVelocityX = -maxSpeed; //Move backward
-        if (pressed[controls.indexOf('a')]) desiredVelocityZ = -maxSpeed; // left
-        if (pressed[controls.indexOf('d')]) desiredVelocityZ = maxSpeed; // right
-
-        sphereBodies.forEach(sphereBody => {
-            // Get current velocity
-            const velocity = sphereBody.velocity;
-
-            // Calculate force to apply
-            const forceX = (desiredVelocityX - velocity.x) * (desiredVelocityX !== 0 ? acceleration : deceleration);
-            const forceZ = (desiredVelocityZ - velocity.z) * (desiredVelocityZ !== 0 ? acceleration : deceleration);
-
-            // Apply force
-            sphereBody.applyForce(new CANNON.Vec3(forceX, 0, forceZ));
-
-            // Limit maximum speed
-            const speed = Math.sqrt(velocity.x ** 2 + velocity.z ** 2);
-            if (speed > maxSpeed) {
-                const factor = maxSpeed / speed;
-                sphereBody.velocity.x *= factor;
-                sphereBody.velocity.z *= factor;
-            }
-        });
+        const forwardForce = 10;
+        const backwardForce = 5; // Reduced force for backward movement
+        const sideForce = 0.7; // Force for left/right movement
+        const damping = 0.1; // Damping factor for linear motion
+        const angularDamping = 0.5; // Damping factor for angular motion
+    
+        // Apply forces based on key presses
+        if (pressed[controls.indexOf('w')]) {
+            cubeBody.applyLocalForce(new CANNON.Vec3(forwardForce, 0, 0), cubeBody.position);
+        }
+        if (pressed[controls.indexOf('s')]) {
+            cubeBody.applyLocalForce(new CANNON.Vec3(-backwardForce, 0, 0), cubeBody.position);
+        }
+        if (pressed[controls.indexOf('a')]) {
+            cubeBody.applyLocalForce(new CANNON.Vec3(0, 0, sideForce), cubeBody.position);
+            cubeBody.angularVelocity.set(0, 0, 0); // Reset angular velocity on side movement
+        }
+        if (pressed[controls.indexOf('d')]) {
+            cubeBody.applyLocalForce(new CANNON.Vec3(0, 0, -sideForce), cubeBody.position);
+            cubeBody.angularVelocity.set(0, 0, 0); // Reset angular velocity on side movement
+        }
+    
+        // Apply damping if no keys are pressed
+        if (!pressed[controls.indexOf('w')] && !pressed[controls.indexOf('s')]) {
+            cubeBody.velocity.x *= (1 - damping); // Dampen X velocity
+        }
+        if (!pressed[controls.indexOf('a')] && !pressed[controls.indexOf('d')]) {
+            cubeBody.velocity.z *= (1 - damping); // Dampen Z velocity
+        }
+    
+        // Apply angular damping to prevent unwanted rotation
+        cubeBody.angularVelocity.x *= (1 - angularDamping);
+        cubeBody.angularVelocity.y *= (1 - angularDamping);
+        cubeBody.angularVelocity.z *= (1 - angularDamping);
     }
+    
+    
 
     function ThirdPerson() {
-        const centerPosition = sphereBodies.reduce((acc, body) => {
-            acc.x += body.position.x;
-            acc.y += body.position.y;
-            acc.z += body.position.z;
-            return acc;
-        }, { x: 0, y: 0, z: 0 });
-
-        centerPosition.x /= sphereBodies.length;
-        centerPosition.y /= sphereBodies.length;
-        centerPosition.z /= sphereBodies.length;
-
-        camera.position.y = centerPosition.y + camHeight;
-        camera.position.x = centerPosition.x - zoom;
-        camera.position.z = centerPosition.z;
-        camera.lookAt(new THREE.Vector3(centerPosition.x, centerPosition.y, centerPosition.z));
+        camera.position.y = cubeBody.position.y + camHeight;
+        camera.position.x = cubeBody.position.x - zoom;
+        camera.position.z = cubeBody.position.z;
+        camera.lookAt(new THREE.Vector3(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z));
     }
 
     function animate() {
         world.step(1/60);
 
         // Sync Three.js objects with Cannon.js bodies
-        spheres.forEach((sphere, index) => {
-            sphere.position.copy(sphereBodies[index].position);
-            sphere.quaternion.copy(sphereBodies[index].quaternion);
-        });
+        cube.position.copy(cubeBody.position);
+        cube.quaternion.copy(cubeBody.quaternion);
         floor.position.copy(groundBody.position);
 
         ThirdPerson();
@@ -170,4 +146,3 @@ if (WebGL.isWebGL2Available()) {
     const warning = WebGL.getWebGL2ErrorMessage();
     document.getElementById('container').appendChild(warning);
 }
-
