@@ -97,9 +97,11 @@ if (WebGL.isWebGL2Available()) {
     // Controls setup
     const controls = ['w', 'a', 's', 'd', 'v'];
     let pressed = [false, false, false, false, false];
-    let zoom = 3;
-    let camHeight = 3;
     let isFirstPerson = false;
+
+    // Third-person camera parameters
+    const cameraOffset = new THREE.Vector3(4, 6, 0); // Adjust these values to position the camera
+    const cameraLookAhead = new THREE.Vector3(0, 2, 0); // Adjust to change where the camera looks
 
     document.addEventListener('keydown', function(event) {
         const index = controls.indexOf(event.key);
@@ -163,10 +165,18 @@ if (WebGL.isWebGL2Available()) {
             camera.lookAt(lookAtPoint);
         } else {
             // Third-person view
-            camera.position.y = humveeBody.position.y + camHeight;
-            camera.position.x = humveeBody.position.x + (zoom * Math.cos(humveeBody.quaternion.y));
-            camera.position.z = humveeBody.position.z - (zoom * Math.sin(humveeBody.quaternion.y));
-            camera.lookAt(new THREE.Vector3(humveeBody.position.x, humveeBody.position.y, humveeBody.position.z));
+            const humveePosition = humveeBody.position;
+            const humveeQuaternion = humveeBody.quaternion;
+
+            // Calculate camera position relative to the Humvee
+            const rotatedOffset = cameraOffset.clone().applyQuaternion(humveeQuaternion);
+            camera.position.copy(humveePosition).add(rotatedOffset);
+
+            // Calculate look-at point relative to the Humvee
+            const rotatedLookAhead = cameraLookAhead.clone().applyQuaternion(humveeQuaternion);
+            const lookAtPoint = new THREE.Vector3().copy(humveePosition).add(rotatedLookAhead);
+
+            camera.lookAt(lookAtPoint);
         }
     }
 
