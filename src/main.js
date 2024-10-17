@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-
 import WebGL from 'three/addons/capabilities/WebGL.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import humveeModel from './models/Humvee.glb'; // Import the GLB file
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -12,9 +13,17 @@ if (WebGL.isWebGL2Available()) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(0, 10, 0);
+    scene.add(directionalLight);
+
     // Cannon.js world setup
     const world = new CANNON.World({
-        gravity: new CANNON.Vec3(0, -9.82, 0) // m/s²
+        gravity: new CANNON.Vec3(0, -6.82, 0) // m/s²
     });
 
     // Physics materials
@@ -23,8 +32,8 @@ if (WebGL.isWebGL2Available()) {
         defaultMaterial,
         defaultMaterial,
         {
-            friction: 0.25,
-            restitution: 0.3
+            friction: 0.0,
+            restitution: 0.7
         }
     );
     world.addContactMaterial(defaultContactMaterial);
@@ -45,36 +54,40 @@ if (WebGL.isWebGL2Available()) {
     floor.position.copy(groundBody.position);
     scene.add(floor);
 
-    // Create four spheres
-    const radius = 0.5;
-    const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
-    const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    // Load the Humvee model
+    const loader = new GLTFLoader();
+    let humveeObject;
+    let humveeBody;
+    loader.load(
+        humveeModel,
+        function (gltf) {
+            console.log('Model loaded successfully');
+            humveeObject = gltf.scene;
+            humveeObject.scale.set(0.5, 0.5, 0.5); // Adjust scale as needed
+            scene.add(humveeObject);
 
-    const spheres = [];
-    const sphereBodies = [];
+            // Create a simple box shape for the Humvee
+            const humveeShape = new CANNON.Box(new CANNON.Vec3(1, 0.5, 2));
+            
+            // Create the Humvee body
+            humveeBody = new CANNON.Body({
+                mass: 1500, // Adjust mass as needed
+                shape: humveeShape,
+                material: defaultMaterial,
+                angularDamping: 0.9,  // Added to reduce rotation
+                linearDamping: 0.5    // Added to reduce sliding
+            });
+            humveeBody.position.set(0, 5, 0);
+            world.addBody(humveeBody);
 
-    const positions = [
-        { x: -1, z: -1 },
-        { x: 1, z: -1 },
-        { x: -1, z: 1 },
-        { x: 1, z: 1 }
-    ];
-
-    positions.forEach(pos => {
-        const sphereShape = new CANNON.Sphere(radius);
-        const sphereBody = new CANNON.Body({
-            mass: 1,
-            shape: sphereShape,
-            material: defaultMaterial
-        });
-        sphereBody.position.set(pos.x, radius, pos.z);
-        world.addBody(sphereBody);
-        sphereBodies.push(sphereBody);
-
-        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        scene.add(sphere);
-        spheres.push(sphere);
-    });
+            // Start the animation loop
+            renderer.setAnimationLoop(animate);
+        },
+        undefined,
+        function (error) {
+            console.error('An error happened', error);
+        }
+    );
 
     // Camera setup
     camera.position.set(0, 5, 5);
@@ -83,7 +96,7 @@ if (WebGL.isWebGL2Available()) {
     // Controls setup
     const controls = ['w', 'a', 's', 'd'];
     let pressed = [false, false, false, false];
-    let zoom = 5;
+    let zoom = 3;
     let camHeight = 3;
 
     document.addEventListener('keydown', function(event) {
@@ -97,67 +110,47 @@ if (WebGL.isWebGL2Available()) {
     });
 
     function keyAction() {
-        const maxSpeed = 5; // Maximum speed
-        const acceleration = 15; // Acceleration
-        const deceleration = 5; // Deceleration
+        if (!humveeBody) return; // Exit if humveeBody is not yet defined
 
-        // Calculate desired velocity based on key presses
-        let desiredVelocityX = 0;
-        let desiredVelocityZ = 0;
+        const force = 2000; // Increased force for a heavier vehicle
+        const turnForce = 1350; // Increased turn force
 
-        if (pressed[controls.indexOf('w')]) desiredVelocityX = maxSpeed; //Move forward
-        if (pressed[controls.indexOf('s')]) desiredVelocityX = -maxSpeed; //Move backward
-        if (pressed[controls.indexOf('a')]) desiredVelocityZ = -maxSpeed; // left
-        if (pressed[controls.indexOf('d')]) desiredVelocityZ = maxSpeed; // right
+        if (pressed[controls.indexOf('w')]) {
+            humveeBody.applyLocalForce(new CANNON.Vec3(-force, 0, 0), new CANNON.Vec3(0, 0, 0));
+        }
+        if (pressed[controls.indexOf('s')]) {
+            humveeBody.applyLocalForce(new CANNON.Vec3(force, 0, 0), new CANNON.Vec3(0, 0, 0));
+        }
+        if (pressed[controls.indexOf('a')]) {
+            humveeBody.applyTorque(new CANNON.Vec3(0, turnForce, 0));
+        }
+        if (pressed[controls.indexOf('d')]) {
+            humveeBody.applyTorque(new CANNON.Vec3(0, -turnForce, 0));
+        }
 
-        sphereBodies.forEach(sphereBody => {
-            // Get current velocity
-            const velocity = sphereBody.velocity;
-
-            // Calculate force to apply
-            const forceX = (desiredVelocityX - velocity.x) * (desiredVelocityX !== 0 ? acceleration : deceleration);
-            const forceZ = (desiredVelocityZ - velocity.z) * (desiredVelocityZ !== 0 ? acceleration : deceleration);
-
-            // Apply force
-            sphereBody.applyForce(new CANNON.Vec3(forceX, 0, forceZ));
-
-            // Limit maximum speed
-            const speed = Math.sqrt(velocity.x ** 2 + velocity.z ** 2);
-            if (speed > maxSpeed) {
-                const factor = maxSpeed / speed;
-                sphereBody.velocity.x *= factor;
-                sphereBody.velocity.z *= factor;
-            }
-        });
+        // Apply artificial friction to reduce sliding
+        const velocity = humveeBody.velocity;
+        humveeBody.applyForce(velocity.scale(-0.1), humveeBody.position);
     }
 
     function ThirdPerson() {
-        const centerPosition = sphereBodies.reduce((acc, body) => {
-            acc.x += body.position.x;
-            acc.y += body.position.y;
-            acc.z += body.position.z;
-            return acc;
-        }, { x: 0, y: 0, z: 0 });
-
-        centerPosition.x /= sphereBodies.length;
-        centerPosition.y /= sphereBodies.length;
-        centerPosition.z /= sphereBodies.length;
-
-        camera.position.y = centerPosition.y + camHeight;
-        camera.position.x = centerPosition.x - zoom;
-        camera.position.z = centerPosition.z;
-        camera.lookAt(new THREE.Vector3(centerPosition.x, centerPosition.y, centerPosition.z));
+        if (!humveeBody) return; // Exit if humveeBody is not yet defined
+    
+        camera.position.y = humveeBody.position.y + camHeight;
+        // Reverse the x and z calculations to position the camera behind the Humvee
+        camera.position.x = humveeBody.position.x + (zoom * Math.cos(humveeBody.quaternion.y));
+        camera.position.z = humveeBody.position.z - (zoom * Math.sin(humveeBody.quaternion.y));
+        camera.lookAt(new THREE.Vector3(humveeBody.position.x, humveeBody.position.y, humveeBody.position.z));
     }
 
     function animate() {
         world.step(1/60);
 
-        // Sync Three.js objects with Cannon.js bodies
-        spheres.forEach((sphere, index) => {
-            sphere.position.copy(sphereBodies[index].position);
-            sphere.quaternion.copy(sphereBodies[index].quaternion);
-        });
-        floor.position.copy(groundBody.position);
+        if (humveeObject && humveeBody) {
+            // Sync Humvee model with Cannon.js body
+            humveeObject.position.copy(humveeBody.position);
+            humveeObject.quaternion.copy(humveeBody.quaternion);
+        }
 
         ThirdPerson();
         keyAction();
@@ -167,6 +160,8 @@ if (WebGL.isWebGL2Available()) {
     renderer.setAnimationLoop(animate);
 
 } else {
+    const warning = WebGL.getWebGL2ErrorMessage();
+    document.getElementById('container').appendChild(warning);
     const warning = WebGL.getWebGL2ErrorMessage();
     document.getElementById('container').appendChild(warning);
 }
