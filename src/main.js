@@ -95,14 +95,18 @@ if (WebGL.isWebGL2Available()) {
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     // Controls setup
-    const controls = ['w', 'a', 's', 'd'];
-    let pressed = [false, false, false, false];
+    const controls = ['w', 'a', 's', 'd', 'v'];
+    let pressed = [false, false, false, false, false];
     let zoom = 3;
     let camHeight = 3;
+    let isFirstPerson = false;
 
     document.addEventListener('keydown', function(event) {
         const index = controls.indexOf(event.key);
         if (index !== -1) pressed[index] = true;
+        if (event.key === 'v') {
+            isFirstPerson = !isFirstPerson;
+        }
     });
 
     document.addEventListener('keyup', function(event) {
@@ -134,14 +138,36 @@ if (WebGL.isWebGL2Available()) {
         humveeBody.applyForce(velocity.scale(-0.1), humveeBody.position);
     }
 
-    function ThirdPerson() {
+    function updateCamera() {
         if (!humveeBody) return; // Exit if humveeBody is not yet defined
     
-        camera.position.y = humveeBody.position.y + camHeight;
-        // Reverse the x and z calculations to position the camera behind the Humvee
-        camera.position.x = humveeBody.position.x + (zoom * Math.cos(humveeBody.quaternion.y));
-        camera.position.z = humveeBody.position.z - (zoom * Math.sin(humveeBody.quaternion.y));
-        camera.lookAt(new THREE.Vector3(humveeBody.position.x, humveeBody.position.y, humveeBody.position.z));
+        if (isFirstPerson) {
+            // First-person view
+            const offset = new CANNON.Vec3(0, 1.1, 0); // Adjust these values to position the camera correctly
+            const worldPosition = new CANNON.Vec3();
+            humveeBody.pointToWorldFrame(offset, worldPosition);
+            
+            camera.position.copy(worldPosition);
+            
+            // Calculate the direction vector
+            const direction = new CANNON.Vec3(-1, 0, 0); // Assuming the Humvee's front is along its local -X axis
+            const worldDirection = new CANNON.Vec3();
+            humveeBody.vectorToWorldFrame(direction, worldDirection);
+            
+            // Set the camera's lookAt point
+            const lookAtPoint = new THREE.Vector3(
+                camera.position.x + worldDirection.x,
+                camera.position.y + worldDirection.y,
+                camera.position.z + worldDirection.z
+            );
+            camera.lookAt(lookAtPoint);
+        } else {
+            // Third-person view
+            camera.position.y = humveeBody.position.y + camHeight;
+            camera.position.x = humveeBody.position.x + (zoom * Math.cos(humveeBody.quaternion.y));
+            camera.position.z = humveeBody.position.z - (zoom * Math.sin(humveeBody.quaternion.y));
+            camera.lookAt(new THREE.Vector3(humveeBody.position.x, humveeBody.position.y, humveeBody.position.z));
+        }
     }
 
     function animate() {
@@ -153,7 +179,7 @@ if (WebGL.isWebGL2Available()) {
             humveeObject.quaternion.copy(humveeBody.quaternion);
         }
 
-        ThirdPerson();
+        updateCamera();
         keyAction();
         renderer.render(scene, camera);
     }
