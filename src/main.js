@@ -34,12 +34,12 @@ const addCube = () => {
 const addSkybox = () => {
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        './resources/arid_ft.jpg',   // right
-        './resources/arid_bk.jpg',    // left
-        './resources/arid_up.jpg',     // top
-        './resources/arid_dn.jpg',  // bottom
-        './resources/arid_rt.jpg',   // front
-        './resources/arid_lf.jpg',  // back
+        './resources/meadow/meadow_ft.jpg',   // right
+        './resources/meadow/meadow_bk.jpg',    // left
+        './resources/meadow/meadow_up.jpg',     // top
+        './resources/meadow/meadow_dn.jpg',  // bottom
+        './resources/meadow/meadow_rt.jpg',   // front
+        './resources/meadow/meadow_lf.jpg',  // back
     ]);
     scene.background = texture;
 }
