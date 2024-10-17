@@ -155,8 +155,8 @@ if (WebGL.isWebGL2Available()) {
     let camHeight = 3; // For free camera
 
     // Parameters for camera lateral movement
-    const maxCameraLateralOffset = 1; // Maximum lateral offset in meters
-    const cameraLateralSpeed = 0.1; // Speed of lateral movement
+    const maxCameraLateralOffset = 0.7; // Maximum lateral offset in meters
+    const cameraLateralSpeed = 0.05; // Speed of lateral movement
     const cameraCenteringSpeed = 0.05; // Speed at which camera returns to center
     let currentCameraLateralOffset = 0;
 
