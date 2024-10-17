@@ -118,7 +118,7 @@ if (WebGL.isWebGL2Available()) {
 
             // Create a simple box shape for the car
             const carShape = new CANNON.Box(new CANNON.Vec3(1, 0.5, 2));
-            
+
             // Create the car body
             carBody = new CANNON.Body({
                 mass: 100, // Adjust mass as needed
@@ -160,7 +160,7 @@ if (WebGL.isWebGL2Available()) {
     const cameraCenteringSpeed = 0.05; // Speed at which camera returns to center
     let currentCameraLateralOffset = 0;
 
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
         const index = controls.indexOf(event.key);
         if (index !== -1) pressed[index] = true;
         if (event.key === 'v') {
@@ -168,7 +168,7 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
-    document.addEventListener('keyup', function(event) {
+    document.addEventListener('keyup', function (event) {
         const index = controls.indexOf(event.key);
         if (index !== -1) pressed[index] = false;
     });
@@ -176,13 +176,13 @@ if (WebGL.isWebGL2Available()) {
     function keyAction() {
         if (!carBody) return; // Exit if carBody is not yet defined
 
-        const force = 2000; // Increased force for a heavier vehicle
-        const turnForce = 1550; // Increased turn force
+        const force = 2000; // force
+        const turnForce = 1450; // turn force
 
         // Determine if the car is moving forwards or backwards
         const velocity = carBody.velocity;
         const localVelocity = carBody.quaternion.inverse().vmult(velocity);
-        const isReversing = localVelocity.x > 0; // Assuming positive x is backwards in local space
+        const isReversing = localVelocity.x > 0; //positive x is backwards in local space
 
         if (pressed[controls.indexOf('w')]) {
             carBody.applyLocalForce(new CANNON.Vec3(-force, 0, 0), new CANNON.Vec3(0, 0, 0));
@@ -247,22 +247,22 @@ if (WebGL.isWebGL2Available()) {
 
     function updateCamera() {
         if (!carBody || !carObject) return; // Exit if carBody or carObject is not yet defined
-    
+
         switch (cameraMode) {
             case 0: // Third-person view
                 const carPosition = carBody.position;
                 const carQuaternion = carBody.quaternion;
-                
+
                 // Get the car's velocity
                 const velocity = carBody.velocity;
                 const localVelocity = carBody.quaternion.inverse().vmult(velocity);
-                
+
                 // Calculate desired lateral offset based on car's lateral velocity
                 const desiredLateralOffset = Math.sign(localVelocity.z) * Math.min(Math.abs(localVelocity.z) * 0.5, maxCameraLateralOffset);
-                
+
                 // Determine if the car is moving laterally
                 const isMovingLaterally = Math.abs(localVelocity.z) > 0.1; // You can adjust this threshold
-                
+
                 if (isMovingLaterally) {
                     // Smoothly interpolate the current offset towards the desired offset
                     currentCameraLateralOffset += (desiredLateralOffset - currentCameraLateralOffset) * cameraLateralSpeed;
@@ -270,30 +270,30 @@ if (WebGL.isWebGL2Available()) {
                     // Gradually return to center when not moving laterally
                     currentCameraLateralOffset *= (1 - cameraCenteringSpeed);
                 }
-                
+
                 // Calculate camera position relative to the car
                 const lateralOffsetVector = new THREE.Vector3(0, 0, currentCameraLateralOffset);
                 const rotatedOffset = cameraOffset.clone().add(lateralOffsetVector).applyQuaternion(carQuaternion);
                 camera.position.copy(carPosition).add(rotatedOffset);
-                
+
                 // Calculate look-at point relative to the car
                 const rotatedLookAhead = cameraLookAhead.clone().applyQuaternion(carQuaternion);
                 const lookAtPoint = new THREE.Vector3().copy(carPosition).add(rotatedLookAhead);
                 camera.lookAt(lookAtPoint);
                 break;
-            
+
             case 1: // First-person view
                 const offset = new CANNON.Vec3(0, 1.1, 0); // Adjust these values to position the camera correctly
                 const worldPosition = new CANNON.Vec3();
                 carBody.pointToWorldFrame(offset, worldPosition);
-                
+
                 camera.position.copy(worldPosition);
-                
+
                 // Calculate the direction vector
                 const direction = new CANNON.Vec3(-1, 0, 0); // Assuming the car's front is along its local -X axis
                 const worldDirection = new CANNON.Vec3();
                 carBody.vectorToWorldFrame(direction, worldDirection);
-                
+
                 // Set the camera's lookAt point
                 const fpLookAtPoint = new THREE.Vector3(
                     camera.position.x + worldDirection.x,
@@ -302,7 +302,7 @@ if (WebGL.isWebGL2Available()) {
                 );
                 camera.lookAt(fpLookAtPoint);
                 break;
-            
+
             case 2: // Free Camera
                 camera.position.y = carBody.position.y + camHeight;
                 // Reverse the x and z calculations to position the camera behind the car
@@ -314,18 +314,37 @@ if (WebGL.isWebGL2Available()) {
     }
 
     function animate() {
-        world.step(1/60);
+        world.step(1 / 60);
 
         if (carObject && carBody) {
             // Sync car model with Cannon.js body
             carObject.position.copy(carBody.position);
             carObject.quaternion.copy(carBody.quaternion);
+
+            // Calculate speed in km/h
+            const velocity = carBody.velocity;
+            const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
+
+            // Update speedometer
+            updateSpeedometer(speed);
         }
 
         updateCamera();
         updateCamera();
         keyAction();
         renderer.render(scene, camera);
+    }
+
+    function updateSpeedometer(speed) {
+        const speedDisplay = document.getElementById('speed-display');
+        const needle = document.getElementById('needle');
+    
+        // Update speed display
+        speedDisplay.textContent = `${Math.round(speed)} km/h`;
+    
+        // Rotate needle (assuming max speed of 200 km/h)
+        const rotation = Math.min(speed / 200 * 270 - 135, 135); // -135 to 135 degrees
+        needle.style.transform = `rotate(${rotation}deg)`;
     }
 
 } else {
