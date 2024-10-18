@@ -1,54 +1,68 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-let scene, camera, renderer, controls;
-let cube;
-let divThreeJs = document.getElementById("threeJs");
+const vertexShader = `
+varying vec3 vWorldPosition;
 
-const init = () => {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 5;
-
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    divThreeJs.appendChild(renderer.domElement);
-
-    controls = new OrbitControls(camera, renderer.domElement);
-
-    addCube();
-    addSkybox();
-
-    renderer.setAnimationLoop(animate);
+void main() {
+    vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+    vWorldPosition = worldPosition.xyz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 }
+`;
 
-const addCube = () => {
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({
-        color: 0x777777
-    });
-    cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+const fragmentShader = `
+uniform samplerCube tCube;
+uniform float time;
+varying vec3 vWorldPosition;
+
+void main() {
+    vec3 direction = normalize(vWorldPosition);
+    
+    // Apply rotation to create movement illusion
+    float theta = time * 0.02;
+    mat3 rotation = mat3(
+        cos(theta), 0, sin(theta),
+        0, 1, 0,
+        -sin(theta), 0, cos(theta)
+    );
+    vec3 rotatedDirection = rotation * direction;
+    
+    vec4 texColor = textureCube(tCube, rotatedDirection);
+    
+    gl_FragColor = texColor;
 }
+`;
 
-const addSkybox = () => {
+export function createDynamicSkybox(scene) {
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        './resources/arid_ft.jpg',   // right
-        './resources/arid_bk.jpg',    // left
-        './resources/arid_up.jpg',     // top
-        './resources/arid_dn.jpg',  // bottom
-        './resources/arid_rt.jpg',   // front
-        './resources/arid_lf.jpg',  // back
+        './resources/mystic/mystic_ft.jpg',
+        './resources/mystic/mystic_bk.jpg',
+        './resources/mystic/mystic_up.jpg',
+        './resources/mystic/mystic_dn.jpg',
+        './resources/mystic/mystic_rt.jpg',
+        './resources/mystic/mystic_lf.jpg',
     ]);
-    scene.background = texture;
+
+    const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
+    const material = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: {
+            tCube: { value: texture },
+            time: { value: 0 }
+        },
+        side: THREE.BackSide
+    });
+
+    const skybox = new THREE.Mesh(geometry, material);
+    scene.add(skybox);
+
+    return skybox;
 }
 
-function animate() {
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    controls.update();
-    renderer.render(scene, camera);
+export function updateSkybox(skybox, time) {
+    if (skybox && skybox.material.uniforms) {
+        skybox.material.uniforms.time.value = time;
+    }
 }
-
-init();

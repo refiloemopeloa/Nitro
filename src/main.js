@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { createDynamicSkybox, updateSkybox } from './Skybox';
 
 let scene, camera, renderer, controls;
-let cube;
+let cube, skybox;
 let divThreeJs = document.getElementById("threeJs");
 
 const init = () => {
@@ -17,7 +18,7 @@ const init = () => {
     controls = new OrbitControls(camera, renderer.domElement);
 
     addCube();
-    addSkybox();
+    skybox = createDynamicSkybox(scene);
 
     renderer.setAnimationLoop(animate);
 }
@@ -31,23 +32,15 @@ const addCube = () => {
     scene.add(cube);
 }
 
-const addSkybox = () => {
-    const loader = new THREE.CubeTextureLoader();
-    const texture = loader.load([
-        './resources/meadow/meadow_ft.jpg',   // right
-        './resources/meadow/meadow_bk.jpg',    // left
-        './resources/meadow/meadow_up.jpg',     // top
-        './resources/meadow/meadow_dn.jpg',  // bottom
-        './resources/meadow/meadow_rt.jpg',   // front
-        './resources/meadow/meadow_lf.jpg',  // back
-    ]);
-    scene.background = texture;
-}
+function animate(time) {
+    time *= 0.001; // Convert time to seconds
 
-function animate() {
     cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
     controls.update();
+
+    updateSkybox(skybox, time);
+
     renderer.render(scene, camera);
 }
 
