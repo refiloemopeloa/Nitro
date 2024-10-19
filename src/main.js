@@ -24,7 +24,7 @@ if (WebGL.isWebGL2Available()) {
 
     // Cannon.js world setup
     const world = new CANNON.World({
-        gravity: new CANNON.Vec3(0, -6.82, 0)
+        gravity: new CANNON.Vec3(0, -9.82, 0)
     });
 
     // Physics materials
@@ -36,8 +36,8 @@ if (WebGL.isWebGL2Available()) {
         groundMaterial,
         carMaterial,
         {
-            friction: 0.01,
-            restitution: 0.2
+            friction: 0.005,
+            restitution: 0.3
         }
     );
     world.addContactMaterial(carGroundContactMaterial);
@@ -102,24 +102,24 @@ if (WebGL.isWebGL2Available()) {
     addRoadSeg(0, 0.6, 0);
 
     // Create larger ground
-    // const groundSize = { width: 100, length: 100 };
-    // const groundShape = new CANNON.Box(new CANNON.Vec3(groundSize.width / 2, 0.05, groundSize.length / 2));
-    // const groundBody = new CANNON.Body({
-    //     mass: 0,
-    //     shape: groundShape,
-    //     material: groundMaterial
-    // });
-    // groundBody.position.set(0, -0.5, 0);
-    // world.addBody(groundBody);
+    const groundSize = { width: 100, length: 100 };
+    const groundShape = new CANNON.Box(new CANNON.Vec3(groundSize.width / 2, 0.05, groundSize.length / 2));
+    const groundBody = new CANNON.Body({
+        mass: 0,
+        shape: groundShape,
+        material: groundMaterial
+    });
+    groundBody.position.set(0, -0.5, 0);
+    world.addBody(groundBody);
 
-    // // Create grid texture and floor
-    // const gridTexture = createGridTexture(groundSize);
-    // const floor = createFloor(groundSize, gridTexture, groundBody);
-    // scene.add(floor);
+    // Create grid texture and floor
+    const gridTexture = createGridTexture(groundSize);
+    const floor = createFloor(groundSize, gridTexture, groundBody);
+    scene.add(floor);
 
-    // // Add grid lines
-    // const gridHelper = createGridHelper(groundSize);
-    // scene.add(gridHelper);
+    // Add grid lines
+    const gridHelper = createGridHelper(groundSize);
+    scene.add(gridHelper);
 
     // Initialize camera manager
     const cameraManager = new CameraManager(camera, scene);

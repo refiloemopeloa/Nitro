@@ -12,6 +12,9 @@ export class Controls {
         this.frontWheelSteerRotationSpeed = 0.05;
         this.wheelRollRotation = 0;
         this.wheelRollRotationSpeed = 0.05;
+        this.maxTurnForce = 1450;
+        this.turnForceIncreaseRate = 100;
+        this.currentTurnForce = 0;
 
         this.setupEventListeners();
     }

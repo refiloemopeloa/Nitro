@@ -35,7 +35,7 @@ export class CarLoader {
                         angularDamping: 0.9,
                         linearDamping: 0.5
                     });
-                    carBody.position.set(0, 2, 0);
+                    carBody.position.set(0, 2, -10);
                     this.world.addBody(carBody);
 
                     resolve({
