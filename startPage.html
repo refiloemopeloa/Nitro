@@ -6,13 +6,17 @@
     <link rel="stylesheet" href="startPage.css">
     <title>Document</title>
 </head>
-<body>
-    <div id="canvas-container"></div>
+<div id="canvas-container"></div>
     <div id="content">
-        <img alt='Nitro' src="./NITRO-19-10-2024-2.png">
+        <img src="./NitroLogo.png" alt="Nitro">
         <h1></h1>
         <button id="start-btn">Start</button>
         <button id="leaderboard-btn">Leaderboard</button>
+        <form id="nameForm">
+            <input type="text" id="playerName" placeholder="Enter your name" required>
+            <input type="submit" value="Submit Name">
+        </form>
+        <div id="message"></div>
     </div>
 
     <script type="module">
@@ -54,13 +58,14 @@
         // Add button functionality
         document.getElementById('start-btn').addEventListener('click', () => {
             console.log('Start button clicked');
-            window.location.href = 'index.html';
+            // Add your start game logic here
         });
 
         document.getElementById('leaderboard-btn').addEventListener('click', () => {
-            console.log('Leaderboard button clicked');
             window.location.href = 'leaderBoard.html';
         });
+
+        
     </script>
 </body>
 </html>

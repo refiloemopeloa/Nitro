@@ -2,6 +2,8 @@
   "dependencies": {
     "cannon": "^0.6.2",
     "cannon-es": "^0.20.0",
+    "expess": "^0.0.1-security",
+    "express": "^4.21.1",
     "three": "^0.169.0"
   },
   "devDependencies": {
@@ -10,6 +12,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
-  }
+    "preview": "vite preview",
+    "start": "node server.js"
+  },
+  "name": "nitro",
+  "description": "Three.js game",
+  "version": "1.0.0",
+  "main": "server.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
