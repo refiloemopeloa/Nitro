@@ -5,6 +5,7 @@ import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
 import carModel from './models/armor_truck.glb';
+import { createDynamicSkybox, updateSkybox } from './skybox';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -21,6 +22,9 @@ if (WebGL.isWebGL2Available()) {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(0, 10, 0);
     scene.add(directionalLight);
+
+    // Add dynamic skybox
+    const skybox = createDynamicSkybox(scene);
 
     // Cannon.js world setup
     const world = new CANNON.World({
@@ -159,7 +163,8 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
-    function animate() {
+    function animate(time) {
+        time *= 0.001; // Convert time to seconds
         world.step(1 / 60);
 
         if (carObject && carBody) {
@@ -183,6 +188,9 @@ if (WebGL.isWebGL2Available()) {
             // Apply wheel transformations
             controls.applyWheelTransformations(FrontWheel_L, FrontWheel_R, BackWheels);
         }
+
+        // Update skybox
+        updateSkybox(skybox, time);
 
         renderer.render(scene, camera);
     }
