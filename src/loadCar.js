@@ -17,7 +17,7 @@ export class CarLoader {
                 (gltf) => {
                     console.log('Model loaded successfully');
                     const carObject = gltf.scene;
-                    carObject.scale.set(0.5, 0.5, 0.5);
+                    carObject.scale.set(1, 1, 1);
                     this.scene.add(carObject);
 
                     const FrontWheel_L = gltf.scene.getObjectByName('FrontWheel_L');
@@ -27,20 +27,50 @@ export class CarLoader {
                     FrontWheel_L.userData.originalMatrix = FrontWheel_L.matrix.clone();
                     FrontWheel_R.userData.originalMatrix = FrontWheel_R.matrix.clone();
 
-                    const carShape = new CANNON.Box(new CANNON.Vec3(1, 0.5, 2));
+                    // Create the vehicle
                     const carBody = new CANNON.Body({
-                        mass: 100,
-                        shape: carShape,
-                        material: this.carMaterial,
-                        angularDamping: 0.9,
-                        linearDamping: 0.5
+                        mass: 5,
+                        position: new CANNON.Vec3(0, 2, 0),
+                        shape: new CANNON.Box(new CANNON.Vec3(2.8, 0.5, 1.45)),
+                        material: this.carMaterial
                     });
-                    carBody.position.set(0, 2, -10);
-                    this.world.addBody(carBody);
+
+                    const vehicle = new CANNON.RigidVehicle({
+                        chassisBody: carBody,
+                    });
+
+                    // Wheel setup
+                    const mass = 0.5;
+                    const wheelShape = new CANNON.Sphere(0.5);
+                    const wheelMaterial = new CANNON.Material('wheel');
+                    const down = new CANNON.Vec3(0, -1, 0);
+
+                    // Adjusted wheel positions
+                    const wheelPositions = [
+                        new CANNON.Vec3(-1.9, -0.5, 0.875), // Front left
+                        new CANNON.Vec3(-1.9, -0.5, -0.875), // Front right
+                        new CANNON.Vec3(1.2, -0.5, 0.875),  // Back left (moved forward)
+                        new CANNON.Vec3(1.2, -0.5, -0.875)  // Back right (moved forward)
+                    ];
+
+                    wheelPositions.forEach((position, index) => {
+                        const wheelBody = new CANNON.Body({ mass, material: wheelMaterial });
+                        wheelBody.addShape(wheelShape);
+                        wheelBody.angularDamping = 0.4;
+
+                        vehicle.addWheel({
+                            body: wheelBody,
+                            position: position,
+                            axis: new CANNON.Vec3(0, 0, 1),
+                            direction: down,
+                        });
+                    });
+
+                    vehicle.addToWorld(this.world);
 
                     resolve({
                         carObject,
-                        carBody,
+                        vehicle,
                         FrontWheel_L,
                         FrontWheel_R,
                         BackWheels

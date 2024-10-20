@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import WebGL from 'three/addons/capabilities/WebGL.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
 import carModel from './models/armor_truck.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
+import CannonDebugger from 'cannon-es-debugger';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -14,6 +16,11 @@ if (WebGL.isWebGL2Available()) {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
+    // Orbit controls
+    const orbitControls = new OrbitControls(camera, renderer.domElement);
+    camera.position.set(0, 5, 10);
+    orbitControls.update();
 
     // Add lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -46,83 +53,23 @@ if (WebGL.isWebGL2Available()) {
     );
     world.addContactMaterial(carGroundContactMaterial);
 
-    // Variables for track creation
-    let trackEnd = new THREE.Vector3(0, 0, 0);
-    let trackMergeDir = new THREE.Quaternion(0, 0, 0);
-    let trackPrevDir = [0, 0, 0];
-    let trackSegSize = new CANNON.Vec3(5, 0.05, 10);
-
-    // Function to add road segments
-    function addRoadSeg(angleX, angleY, angleZ) {
-        // Create ground
-        const groundShape = new CANNON.Box(trackSegSize);
-        const groundBody = new CANNON.Body({
-            mass: 0,
-            shape: groundShape,
-            material: groundMaterial
-        });
-        groundBody.quaternion.setFromEuler(trackPrevDir[0] + angleX, trackPrevDir[1] + angleY, trackPrevDir[2] + angleZ);
-        world.addBody(groundBody);
-
-        const floorGeometry = new THREE.BoxGeometry(10, 0.1, 20);
-        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfcfc });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        scene.add(floor);
-
-        const trackDir = new CANNON.Vec3(0, 0, -1);
-        groundBody.quaternion.vmult(trackDir, trackDir);
-
-        let centered = angleY / 1.8;
-
-        groundBody.position.set(
-            trackEnd.x + (trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
-            trackEnd.y + (trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
-            trackEnd.z + (trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
-        );
-
-        trackEnd.set(
-            trackEnd.x + (2 * trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
-            trackEnd.y + (2 * trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
-            trackEnd.z + (2 * trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
-        );
-
-        floor.position.copy(groundBody.position);
-        floor.quaternion.copy(groundBody.quaternion);
-
-        trackPrevDir[0] += angleX;
-        trackPrevDir[1] += angleY;
-        trackPrevDir[2] += angleZ;
-
-        trackMergeDir.copy(trackDir);
-    }
-
-    // Create road segments
-    addRoadSeg(0, 0, 0);
-    addRoadSeg(0, 1.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-
-    // Create larger ground
-    const groundSize = { width: 100, length: 100 };
-    const groundShape = new CANNON.Box(new CANNON.Vec3(groundSize.width / 2, 0.05, groundSize.length / 2));
+    // Create ground
+    const groundShape = new CANNON.Plane();
     const groundBody = new CANNON.Body({
-        mass: 0,
+        type: CANNON.Body.STATIC,
         shape: groundShape,
         material: groundMaterial
     });
-    groundBody.position.set(0, -0.5, 0);
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     world.addBody(groundBody);
 
     // Create grid texture and floor
-    const gridTexture = createGridTexture(groundSize);
-    const floor = createFloor(groundSize, gridTexture, groundBody);
+    const gridTexture = createGridTexture({ width: 100, length: 100 });
+    const floor = createFloor({ width: 100, length: 100 }, gridTexture, groundBody);
     scene.add(floor);
 
     // Add grid lines
-    const gridHelper = createGridHelper(groundSize);
+    const gridHelper = createGridHelper({ width: 100, length: 100 });
     scene.add(gridHelper);
 
     // Initialize camera manager
@@ -133,28 +80,29 @@ if (WebGL.isWebGL2Available()) {
 
     // Load the car
     const carLoader = new CarLoader(scene, world, carMaterial);
-    let carObject, carBody, FrontWheel_L, FrontWheel_R, BackWheels;
+    let carObject, vehicle;
 
     carLoader.loadCar(carModel).then(({
         carObject: loadedCarObject,
-        carBody: loadedCarBody,
-        FrontWheel_L: loadedFrontWheel_L,
-        FrontWheel_R: loadedFrontWheel_R,
-        BackWheels: loadedBackWheels
+        vehicle: loadedVehicle,
+        FrontWheel_L,
+        FrontWheel_R,
+        BackWheels
     }) => {
         carObject = loadedCarObject;
-        carBody = loadedCarBody;
-        FrontWheel_L = loadedFrontWheel_L;
-        FrontWheel_R = loadedFrontWheel_R;
-        BackWheels = loadedBackWheels;
+        vehicle = loadedVehicle;
 
-        controls.setCarBody(carBody);
+        controls.setVehicle(vehicle);
+        controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
 
         // Start the animation loop
         renderer.setAnimationLoop(animate);
     }).catch(error => {
         console.error('Failed to load car model:', error);
     });
+
+    // Cannon debugger
+    const cannonDebugger = new CannonDebugger(scene, world);
 
     // Event listener for camera mode switch
     document.addEventListener('keydown', (event) => {
@@ -167,30 +115,40 @@ if (WebGL.isWebGL2Available()) {
         time *= 0.001; // Convert time to seconds
         world.step(1 / 60);
 
-        if (carObject && carBody) {
+        if (carObject && vehicle) {
+
+            // Define the visual offset for the car model
+            const carVisualOffset = new THREE.Vector3(0, -1, 0); // Adjust the Y value to shift the car down
+
             // Sync car model with Cannon.js body
-            carObject.position.copy(carBody.position);
-            carObject.quaternion.copy(carBody.quaternion);
+            carObject.position.copy(vehicle.chassisBody.position).add(carVisualOffset);
+            carObject.quaternion.copy(vehicle.chassisBody.quaternion);
 
             // Calculate speed in km/h
-            const velocity = carBody.velocity;
+            const velocity = vehicle.chassisBody.velocity;
             const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
 
             // Update speedometer
             updateSpeedometer(speed);
 
             // Update camera
-            cameraManager.updateCamera(carBody, carObject);
+            // cameraManager.updateCamera(vehicle.chassisBody, carObject);
 
             // Apply controls
-            controls.keyAction();
+            controls.update();
 
             // Apply wheel transformations
-            controls.applyWheelTransformations(FrontWheel_L, FrontWheel_R, BackWheels);
+            controls.applyWheelTransformations();
         }
 
         // Update skybox
         updateSkybox(skybox, time);
+
+        // Update Cannon debugger
+        cannonDebugger.update();
+
+        // Update orbit controls
+        orbitControls.update();
 
         renderer.render(scene, camera);
     }
@@ -230,10 +188,10 @@ if (WebGL.isWebGL2Available()) {
     function updateSpeedometer(speed) {
         const speedDisplay = document.getElementById('speed-display');
         const needle = document.getElementById('needle');
-    
+
         // Update speed display
         speedDisplay.textContent = `${Math.round(speed)} km/h`;
-    
+
         // Rotate needle (assuming max speed of 200 km/h)
         const rotation = Math.min(speed / 200 * 270 - 135, 135); // -135 to 135 degrees
         needle.style.transform = `rotate(${rotation}deg)`;
