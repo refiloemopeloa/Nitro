@@ -5,7 +5,8 @@
     "expess": "^0.0.1-security",
     "express": "^4.21.1",
     "three": "^0.169.0",
-    "type": "module"
+    "type": "module",
+     "proxy": "http://localhost:5174"
   },
   "devDependencies": {
     "vite": "^5.4.8"
