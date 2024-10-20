@@ -30,8 +30,8 @@ export class CarLoader {
 
                     // Create the vehicle
                     const carBody = new CANNON.Body({
-                        mass: 5,
-                        position: new CANNON.Vec3(0, 2, 0),
+                        mass: 10,
+                        position: new CANNON.Vec3(0, 2, -10),
                         shape: new CANNON.Box(new CANNON.Vec3(2.8, 0.5, 1.45)),
                         material: this.carMaterial
                     });

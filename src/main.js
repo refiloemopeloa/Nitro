@@ -69,24 +69,85 @@ if (WebGL.isWebGL2Available()) {
     );
     world.addContactMaterial(wheelGroundContactMaterial);
 
+
+    // Variables for track creation
+    let trackEnd = new THREE.Vector3(0, 0, 0);
+    let trackMergeDir = new THREE.Quaternion(0, 0, 0);
+    let trackPrevDir = [0, 0, 0];
+    let trackSegSize = new CANNON.Vec3(5, 0.05, 10);
+
+    // Function to add road segments
+    function addRoadSeg(angleX, angleY, angleZ) {
+        // Create ground
+        const groundShape = new CANNON.Box(trackSegSize);
+        const groundBody = new CANNON.Body({
+            mass: 0,
+            shape: groundShape,
+            material: groundMaterial
+        });
+        groundBody.quaternion.setFromEuler(trackPrevDir[0] + angleX, trackPrevDir[1] + angleY, trackPrevDir[2] + angleZ);
+        world.addBody(groundBody);
+
+        const floorGeometry = new THREE.BoxGeometry(10, 0.1, 20);
+        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfcfc });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        scene.add(floor);
+
+        const trackDir = new CANNON.Vec3(0, 0, -1);
+        groundBody.quaternion.vmult(trackDir, trackDir);
+
+        let centered = angleY / 1.8;
+
+        groundBody.position.set(
+            trackEnd.x + (trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
+            trackEnd.y + (trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
+            trackEnd.z + (trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
+        );
+
+        trackEnd.set(
+            trackEnd.x + (2 * trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
+            trackEnd.y + (2 * trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
+            trackEnd.z + (2 * trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
+        );
+
+        floor.position.copy(groundBody.position);
+        floor.quaternion.copy(groundBody.quaternion);
+
+        trackPrevDir[0] += angleX;
+        trackPrevDir[1] += angleY;
+        trackPrevDir[2] += angleZ;
+
+        trackMergeDir.copy(trackDir);
+    }
+
+    // Create road segments
+    addRoadSeg(0, 0, 0);
+    addRoadSeg(0, 1.6, 0);
+    addRoadSeg(0, 0.6, 0);
+    addRoadSeg(0, 0.6, 0);
+    addRoadSeg(0, 0.6, 0);
+    addRoadSeg(0, 0.6, 0);
+    addRoadSeg(0, 0.6, 0);
+
     // Create ground
-    const groundShape = new CANNON.Plane();
+    const groundSize = { width: 100, length: 100 };
+    const groundShape = new CANNON.Box(new CANNON.Vec3(groundSize.width / 2, 0.05, groundSize.length / 2));
     const groundBody = new CANNON.Body({
-        type: CANNON.Body.STATIC,
+        mass: 0,
         shape: groundShape,
         material: groundMaterial
     });
-    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+    groundBody.position.set(0, -0.5, 0);
     world.addBody(groundBody);
 
     // Create grid texture and floor
-    const gridTexture = createGridTexture({ width: 100, length: 100 });
-    const floor = createFloor({ width: 100, length: 100 }, gridTexture, groundBody);
+    const gridTexture = createGridTexture(groundSize);
+    const floor = createFloor(groundSize, gridTexture, groundBody);
     scene.add(floor);
 
     // Add grid lines
-    const gridHelper = createGridHelper({ width: 100, length: 100 });
-    scene.add(gridHelper);
+    const gridHelper = createGridHelper(groundSize);
+    scene.add(gridHelper);;
 
     // Initialize controls
     const controls = new Controls(world);
