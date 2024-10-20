@@ -19,8 +19,12 @@ if (WebGL.isWebGL2Available()) {
 
     // Orbit controls
     const orbitControls = new OrbitControls(camera, renderer.domElement);
+    orbitControls.enabled = false; // Disable by default
     camera.position.set(0, 5, 10);
     orbitControls.update();
+
+    // Initialize camera manager
+    const cameraManager = new CameraManager(camera, scene);
 
     // Add lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -41,17 +45,29 @@ if (WebGL.isWebGL2Available()) {
     // Physics materials
     const groundMaterial = new CANNON.Material('ground');
     const carMaterial = new CANNON.Material('car');
+    const wheelMaterial = new CANNON.Material('wheel');
 
     // Contact material for car-ground interaction
     const carGroundContactMaterial = new CANNON.ContactMaterial(
         groundMaterial,
         carMaterial,
         {
-            friction: 0.005,
+            friction: 0.1,
             restitution: 0.3
         }
     );
     world.addContactMaterial(carGroundContactMaterial);
+
+    // Contact material for car-ground interaction
+    const wheelGroundContactMaterial = new CANNON.ContactMaterial(
+        groundMaterial,
+        wheelMaterial,
+        {
+            friction: 0.1,
+            restitution: 0.3
+        }
+    );
+    world.addContactMaterial(wheelGroundContactMaterial);
 
     // Create ground
     const groundShape = new CANNON.Plane();
@@ -72,14 +88,11 @@ if (WebGL.isWebGL2Available()) {
     const gridHelper = createGridHelper({ width: 100, length: 100 });
     scene.add(gridHelper);
 
-    // Initialize camera manager
-    const cameraManager = new CameraManager(camera, scene);
-
     // Initialize controls
     const controls = new Controls(world);
 
     // Load the car
-    const carLoader = new CarLoader(scene, world, carMaterial);
+    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial);
     let carObject, vehicle;
 
     carLoader.loadCar(carModel).then(({
@@ -108,6 +121,18 @@ if (WebGL.isWebGL2Available()) {
     document.addEventListener('keydown', (event) => {
         if (event.key === 'v') {
             cameraManager.switchCameraMode();
+            if (cameraManager.cameraMode === 2) {
+                orbitControls.enabled = true;
+                if (carObject) {
+                    // Set orbit controls target to car position
+                    orbitControls.target.copy(carObject.position);
+                    // Reset camera position relative to the car
+                    const offset = new THREE.Vector3(5, 3, 5);
+                    camera.position.copy(carObject.position).add(offset);
+                }
+            } else {
+                orbitControls.enabled = false;
+            }
         }
     });
 
@@ -116,7 +141,6 @@ if (WebGL.isWebGL2Available()) {
         world.step(1 / 60);
 
         if (carObject && vehicle) {
-
             // Define the visual offset for the car model
             const carVisualOffset = new THREE.Vector3(0, -1, 0); // Adjust the Y value to shift the car down
 
@@ -131,8 +155,14 @@ if (WebGL.isWebGL2Available()) {
             // Update speedometer
             updateSpeedometer(speed);
 
-            // Update camera
-            // cameraManager.updateCamera(vehicle.chassisBody, carObject);
+
+            // Update camera based on mode
+            if (cameraManager.cameraMode !== 2) {
+                cameraManager.updateCamera(vehicle.chassisBody, carObject);
+            } else {
+                // In free camera mode, update orbit controls target to follow the car
+                orbitControls.target.copy(carObject.position);
+            }
 
             // Apply controls
             controls.update();
@@ -147,8 +177,10 @@ if (WebGL.isWebGL2Available()) {
         // Update Cannon debugger
         cannonDebugger.update();
 
-        // Update orbit controls
-        orbitControls.update();
+        // Update orbit controls only in free camera mode
+        if (cameraManager.cameraMode === 2) {
+            orbitControls.update();
+        }
 
         renderer.render(scene, camera);
     }

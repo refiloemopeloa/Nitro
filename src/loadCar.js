@@ -3,10 +3,11 @@ import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class CarLoader {
-    constructor(scene, world, carMaterial) {
+    constructor(scene, world, carMaterial, wheelMaterial) {
         this.scene = scene;
         this.world = world;
         this.carMaterial = carMaterial;
+        this.wheelMaterial = wheelMaterial;
         this.loader = new GLTFLoader();
     }
 
@@ -42,7 +43,6 @@ export class CarLoader {
                     // Wheel setup
                     const mass = 0.5;
                     const wheelShape = new CANNON.Sphere(0.5);
-                    const wheelMaterial = new CANNON.Material('wheel');
                     const down = new CANNON.Vec3(0, -1, 0);
 
                     // Adjusted wheel positions
@@ -54,7 +54,7 @@ export class CarLoader {
                     ];
 
                     wheelPositions.forEach((position, index) => {
-                        const wheelBody = new CANNON.Body({ mass, material: wheelMaterial });
+                        const wheelBody = new CANNON.Body({ mass, material: this.wheelMaterial });
                         wheelBody.addShape(wheelShape);
                         wheelBody.angularDamping = 0.4;
 
