@@ -4,17 +4,17 @@ import * as THREE from 'three';
 export class Controls {
     constructor(world) {
         this.world = world;
-        this.controls = ['w', 'a', 's', 'd', 'v'];
-        this.pressed = [false, false, false, false, false];
-        this.carBody = null;
+        this.controls = ['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'];
+        this.pressed = this.controls.reduce((acc, key) => ({ ...acc, [key]: false }), {});
+        this.vehicle = null;
+        this.carParts = null;
         this.frontWheelSteerRotation = 0;
         this.maxFrontWheelSteerRotation = Math.PI / 4.5;
         this.frontWheelSteerRotationSpeed = 0.05;
         this.wheelRollRotation = 0;
         this.wheelRollRotationSpeed = 0.05;
-        this.maxTurnForce = 1450;
-        this.turnForceIncreaseRate = 100;
-        this.currentTurnForce = 0;
+        this.maxSteerVal = Math.PI / 8;
+        this.maxForce = 10;
 
         this.setupEventListeners();
     }
@@ -25,58 +25,65 @@ export class Controls {
     }
 
     handleKeyDown(event) {
-        const index = this.controls.indexOf(event.key);
-        if (index !== -1) this.pressed[index] = true;
+        if (this.controls.includes(event.key)) {
+            this.pressed[event.key] = true;
+        }
     }
 
     handleKeyUp(event) {
-        const index = this.controls.indexOf(event.key);
-        if (index !== -1) this.pressed[index] = false;
+        if (this.controls.includes(event.key)) {
+            this.pressed[event.key] = false;
+        }
     }
 
-    setCarBody(carBody) {
-        this.carBody = carBody;
+    setVehicle(vehicle) {
+        this.vehicle = vehicle;
     }
 
-    keyAction() {
-        if (!this.carBody) return;
+    setCarParts(carParts) {
+        this.carParts = carParts;
+    }
 
-        const force = 2000;
-        const turnForce = 1450;
+    update() {
+        if (!this.vehicle) return;
 
-        const velocity = this.carBody.velocity;
-        const localVelocity = this.carBody.quaternion.inverse().vmult(velocity);
-        const isReversing = localVelocity.x > 0;
-
-        if (this.pressed[this.controls.indexOf('w')]) {
-            this.carBody.applyLocalForce(new CANNON.Vec3(-force, 0, 0), new CANNON.Vec3(0, 0, 0));
+        if (this.pressed['w'] || this.pressed['ArrowUp']) {
+            this.vehicle.setWheelForce(this.maxForce, 2);
+            this.vehicle.setWheelForce(this.maxForce, 3);
             this.wheelRollRotation += this.wheelRollRotationSpeed;
-        }
-        if (this.pressed[this.controls.indexOf('s')]) {
-            this.carBody.applyLocalForce(new CANNON.Vec3(force, 0, 0), new CANNON.Vec3(0, 0, 0));
+        } else if (this.pressed['s'] || this.pressed['ArrowDown']) {
+            this.vehicle.setWheelForce(-this.maxForce / 2, 2);
+            this.vehicle.setWheelForce(-this.maxForce / 2, 3);
             this.wheelRollRotation -= this.wheelRollRotationSpeed;
-        }
-        if (this.pressed[this.controls.indexOf('a')]) {
-            this.carBody.applyTorque(new CANNON.Vec3(0, isReversing ? -turnForce : turnForce, 0));
-            this.frontWheelSteerRotation = Math.min(this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed, this.maxFrontWheelSteerRotation);
-        }
-        if (this.pressed[this.controls.indexOf('d')]) {
-            this.carBody.applyTorque(new CANNON.Vec3(0, isReversing ? turnForce : -turnForce, 0));
-            this.frontWheelSteerRotation = Math.max(this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed, -this.maxFrontWheelSteerRotation);
+        } else {
+            this.vehicle.setWheelForce(0, 2);
+            this.vehicle.setWheelForce(0, 3);
         }
 
-        if (!this.pressed[this.controls.indexOf('a')] && !this.pressed[this.controls.indexOf('d')]) {
+        if (this.pressed['a'] || this.pressed['ArrowLeft']) {
+            this.vehicle.setSteeringValue(this.maxSteerVal, 0);
+            this.vehicle.setSteeringValue(this.maxSteerVal, 1);
+            this.frontWheelSteerRotation = Math.min(this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed, this.maxFrontWheelSteerRotation);
+        } else if (this.pressed['d'] || this.pressed['ArrowRight']) {
+            this.vehicle.setSteeringValue(-this.maxSteerVal, 0);
+            this.vehicle.setSteeringValue(-this.maxSteerVal, 1);
+            this.frontWheelSteerRotation = Math.max(this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed, -this.maxFrontWheelSteerRotation);
+        } else {
+            this.vehicle.setSteeringValue(0, 0);
+            this.vehicle.setSteeringValue(0, 1);
             if (this.frontWheelSteerRotation > 0) {
                 this.frontWheelSteerRotation = Math.max(this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed / 2, 0);
             } else if (this.frontWheelSteerRotation < 0) {
                 this.frontWheelSteerRotation = Math.min(this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed / 2, 0);
             }
         }
-
-        this.carBody.applyForce(velocity.scale(-0.1), this.carBody.position);
     }
 
-    applyWheelTransformations(FrontWheel_L, FrontWheel_R, BackWheels) {
+    applyWheelTransformations() {
+        if (!this.carParts) return;
+
+        const { FrontWheel_L, FrontWheel_R, BackWheels } = this.carParts;
+
         if (FrontWheel_L && FrontWheel_R) {
             const steerMatrix = new THREE.Matrix4().makeRotationZ(this.frontWheelSteerRotation);
             const rollMatrix = new THREE.Matrix4().makeRotationX(this.wheelRollRotation);
@@ -90,6 +97,7 @@ export class Controls {
             FrontWheel_L.updateMatrixWorld(true);
             FrontWheel_R.updateMatrixWorld(true);
         }
+
         if (BackWheels) {
             BackWheels.rotation.x = this.wheelRollRotation;
         }

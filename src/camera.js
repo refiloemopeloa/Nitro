@@ -6,7 +6,7 @@ export class CameraManager {
         this.camera = camera;
         this.scene = scene;
         this.cameraMode = 0; // 0: Third-person, 1: First-person, 2: Free Camera
-        this.cameraOffset = new THREE.Vector3(3.7, 2, 0);
+        this.cameraOffset = new THREE.Vector3(6.5, 2.5, 0);
         this.cameraLookAhead = new THREE.Vector3(0, 2, 0);
         this.zoom = 3;
         this.camHeight = 3;
