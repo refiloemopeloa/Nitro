@@ -4,7 +4,8 @@
     "cannon-es": "^0.20.0",
     "expess": "^0.0.1-security",
     "express": "^4.21.1",
-    "three": "^0.169.0"
+    "three": "^0.169.0",
+    "type": "module"
   },
   "devDependencies": {
     "vite": "^5.4.8"
