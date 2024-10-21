@@ -10,6 +10,8 @@ import carModel from './models/armor_truck.glb';
 import buildingModel from './models/building.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
+import { BoostLoader } from './loadBoost.js';
+import boostModel from './models/atom.glb';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -283,6 +285,17 @@ if (WebGL.isWebGL2Available()) {
         console.error('Failed to load car model:', error);
     });
 
+    const boostLoader = new BoostLoader(scene, world);
+    const boostPositions = [
+        // add boost items here
+        new THREE.Vector3(10, 2, 10),
+    ];
+    boostLoader.loadBoost(boostModel, boostPositions).then(() => {
+        console.log('Boost objects loaded');
+    }).catch(error => {
+        console.error('Failed to load boost model:', error);
+    });
+
     // Cannon debugger
     const cannonDebugger = new CannonDebugger(scene, world);
 
@@ -307,6 +320,7 @@ if (WebGL.isWebGL2Available()) {
 
     function animate(time) {
         time *= 0.001; // Convert time to seconds
+        const deltaTime = time * 0.001;
 
         if (!gameOver) {
             world.step(1 / 60);
@@ -370,6 +384,13 @@ if (WebGL.isWebGL2Available()) {
 
                 // Apply wheel transformations
                 controls.applyWheelTransformations();
+
+                // Check for boost collision
+                if (boostLoader.checkBoostCollision(vehicle.chassisBody)) {
+                    controls.activateBoost();
+                }
+                // Update boost objects
+                boostLoader.update(deltaTime);
             }
 
             // Update skybox
