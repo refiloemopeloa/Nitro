@@ -120,10 +120,6 @@ if (WebGL.isWebGL2Available()) {
         trackPrevDir[1] += angleY;
         trackPrevDir[2] += angleZ;
 
-        // trackPrevDir[0] = floor.rotation.x;
-        // trackPrevDir[1] = floor.rotation.y;
-        // trackPrevDir[2] = floor.rotation.z;
-
         trackMergeDir.copy(trackDir);
     }
 
@@ -141,7 +137,7 @@ if (WebGL.isWebGL2Available()) {
                     console.error('Failed to load building model:', error);
                 });
                 break;
-                buildingABody.quaternion.setFromEuler(0, angleY, 0);
+                //buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
 
@@ -191,11 +187,16 @@ if (WebGL.isWebGL2Available()) {
     addScenery(270, 0, 40, 0, 0);
     addScenery(320, 0, 40, 0, 0);
 
-    trackEnd.set(160, -0.5, 80);
+    trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
     addRoadSeg(0, 3.14, -0.1);
+    addRoadSeg(0, 0, -0.1);
+    addRoadSeg(0, 0, 0.2);
     addRoadSeg(0, 0, 0);
-    addRoadSeg(0, 0, 0.1);
+
+    trackEnd.set(300, 5, 80);
+    trackSegSize.set(10, 0.05, 20);
+    addRoadSeg(0, 0, 0.2);
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
