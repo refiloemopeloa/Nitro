@@ -443,7 +443,7 @@ if (WebGL.isWebGL2Available()) {
             }
 
             renderer.render(scene, camera);
-        }
+        
     }
 
     function createGridTexture(groundSize) {
