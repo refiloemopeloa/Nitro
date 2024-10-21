@@ -1,5 +1,13 @@
 import * as THREE from 'three';
 
+// Import skybox textures
+import mysticFt from './assets/mystic/mystic_ft.jpg';
+import mysticBk from './assets/mystic/mystic_bk.jpg';
+import mysticUp from './assets/mystic/mystic_up.jpg';
+import mysticDn from './assets/mystic/mystic_dn.jpg';
+import mysticRt from './assets/mystic/mystic_rt.jpg';
+import mysticLf from './assets/mystic/mystic_lf.jpg';
+
 const vertexShader = `
 varying vec3 vWorldPosition;
 
@@ -19,7 +27,7 @@ void main() {
     vec3 direction = normalize(vWorldPosition);
     
     // Apply rotation to create movement illusion
-    float theta = time * 0.02;
+    float theta = time * 0.011;
     mat3 rotation = mat3(
         cos(theta), 0, sin(theta),
         0, 1, 0,
@@ -33,15 +41,17 @@ void main() {
 }
 `;
 
+
+
 export function createDynamicSkybox(scene) {
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        './resources/mystic/mystic_ft.jpg',
-        './resources/mystic/mystic_bk.jpg',
-        './resources/mystic/mystic_up.jpg',
-        './resources/mystic/mystic_dn.jpg',
-        './resources/mystic/mystic_rt.jpg',
-        './resources/mystic/mystic_lf.jpg',
+        mysticFt,
+        mysticBk,
+        mysticUp,
+        mysticDn,
+        mysticRt,
+        mysticLf
     ]);
 
     const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
@@ -56,6 +66,10 @@ export function createDynamicSkybox(scene) {
     });
 
     const skybox = new THREE.Mesh(geometry, material);
+
+    // Adjust the position of the skybox upwards
+    skybox.position.y += 480; // Increase the Y position as needed
+
     scene.add(skybox);
 
     return skybox;
