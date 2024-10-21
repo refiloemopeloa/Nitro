@@ -10,10 +10,10 @@ export class Controls {
         this.carParts = null;
         this.frontWheelSteerRotation = 0;
         this.maxFrontWheelSteerRotation = Math.PI / 4.5;
-        this.frontWheelSteerRotationSpeed = 2.05;
+        this.frontWheelSteerRotationSpeed = 3.05;
         this.wheelRollRotation = 0;
         this.wheelRollRotationSpeed = 1.05;
-        this.maxSteerVal = Math.PI / 8;
+        this.maxSteerVal = Math.PI / 3;
         this.maxForce = 10;
         this.boost = false;
         this.boostTimer = null;
@@ -51,13 +51,13 @@ export class Controls {
         clearTimeout(this.boostTimer);
         this.boostTimer = setTimeout(() => {
             this.boost = false;
-        }, 5000);
+        }, 1000);
     }
 
     update() {
         if (!this.vehicle) return;
 
-        const currentMaxForce = this.boost ? 20 : 10;
+        const currentMaxForce = this.boost ? 35 : 10;
 
         if (this.pressed['w'] || this.pressed['ArrowUp']) {
             this.vehicle.setWheelForce(currentMaxForce, 2);

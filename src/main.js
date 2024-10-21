@@ -79,7 +79,7 @@ if (WebGL.isWebGL2Available()) {
     let trackMergeDir = new THREE.Quaternion(0, 0, 0);
     let trackPrevDir = [0, 0, 0];
     const trackSegSize = new CANNON.Vec3(5, 0.05, 5);
-    //let trackDir = new CANNON.Vec3(0, 0, -1);
+    let trackDir = new CANNON.Vec3(0, 0, -1);
 
     // Function to add road segments
     function addRoadSeg(angleX, angleY, angleZ) {
@@ -94,7 +94,11 @@ if (WebGL.isWebGL2Available()) {
         world.addBody(groundBody);
 
         const floorGeometry = new THREE.BoxGeometry(trackSegSize.x * 2, trackSegSize.y * 2, trackSegSize.z * 2);
-        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfcfc });
+        const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            //color: 0xfcfcfc
+            map: concreteATexture,
+        });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         scene.add(floor);
 
@@ -164,8 +168,14 @@ if (WebGL.isWebGL2Available()) {
 
     addScenery(80, 0, -40, 0, 0);
     addScenery(100, 0, -80, 0, 0);
-    addScenery(140, 0, -60, 0, 0);
+    addScenery(140, 0, -80, 0, 0);
     addScenery(150, 0, -20, 0.5, 0);
+    addScenery(180, 0, -80, 0, 0);
+    addScenery(220, 0, -60, -0.4, 0);
+    addScenery(260, 0, -45, -0.4, 0);
+    addScenery(300, 0, -30, 0.5, 0);
+    addScenery(320, 0, 5, 1.75, 0);
+
     addScenery(150, 0, 40, 0, 0);
     addScenery(190, 0, 10, 0, 0);
 
@@ -176,8 +186,8 @@ if (WebGL.isWebGL2Available()) {
     addScenery(240, 0, 120, 0, 0);
     addScenery(280, 0, 120, 0, 0);
     addScenery(320, 0, 120, 0, 0);
-    addScenery(360, 0, 120, 0, 0);
-    addScenery(380, 0, 100, 0.7, 0);
+    addScenery(360, 0, 110, 0.3, 0);
+    addScenery(390, 0, 90, 1.4, 0);
     addScenery(400, 0, 40, 0, 0);
 
     addScenery(230, 0, 40, 0, 0);
@@ -188,13 +198,18 @@ if (WebGL.isWebGL2Available()) {
     addScenery(380, 0, -40, 0, 0);
     addScenery(380, 0, -80, 0, 0);
     addScenery(380, 0, -120, 0, 0);
+    addScenery(380, 0, -160, 0, 0);
+    addScenery(380, 0, -200, 0, 0);
     
     trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
     addRoadSeg(0, 3.14, -0.12);
     addRoadSeg(0, 0, -0.12);
     addRoadSeg(0, 0, 0.24);
+    addRoadSeg(0, 0, 1.65);
+    addRoadSeg(0, 0, -2.8)
 
+    trackPrevDir = [0, 3.14, 0];
     trackEnd.set(250, 12, 80);
     addRoadSeg(-0.08, 0, 0.3);
     addRoadSeg(0, 0, -0.3);
@@ -296,6 +311,7 @@ if (WebGL.isWebGL2Available()) {
     const boostPositions = [
         // add boost items here
         new THREE.Vector3(10, 2, 10),
+        new THREE.Vector3(12, 2, 10),
     ];
     boostLoader.loadBoost(boostModel, boostPositions).then(() => {
         console.log('Boost objects loaded');
