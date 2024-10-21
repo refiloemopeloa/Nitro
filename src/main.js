@@ -91,7 +91,7 @@ if (WebGL.isWebGL2Available()) {
         groundBody.quaternion.setFromEuler(trackPrevDir[0] + angleX, trackPrevDir[1] + angleY, trackPrevDir[2] + angleZ);
         world.addBody(groundBody);
 
-        const floorGeometry = new THREE.BoxGeometry(trackSegSize.x*2, trackSegSize.y*2, trackSegSize.z*2);
+        const floorGeometry = new THREE.BoxGeometry(trackSegSize.x * 2, trackSegSize.y * 2, trackSegSize.z * 2);
         const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfcfc });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         scene.add(floor);
@@ -129,8 +129,8 @@ if (WebGL.isWebGL2Available()) {
 
     const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
     // add scenery
-    function addScenery(x, y, z, angleY, type){
-        switch(type){
+    function addScenery(x, y, z, angleY, type) {
+        switch (type) {
             case 0:
                 case 0:
                 const buildingSize = new CANNON.Vec3(13, 8, 8);
@@ -143,8 +143,8 @@ if (WebGL.isWebGL2Available()) {
                 buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
-                
-                const buildingAGeometry = new THREE.BoxGeometry(2*buildingASize.x, 2*buildingASize.y, 2*buildingASize.z);
+
+                const buildingAGeometry = new THREE.BoxGeometry(2 * buildingASize.x, 2 * buildingASize.y, 2 * buildingASize.z);
                 const buildingAMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
                 const buidlingA = new THREE.Mesh(buildingAGeometry, buildingAMaterial);
                 scene.add(buidlingA);
@@ -185,6 +185,43 @@ if (WebGL.isWebGL2Available()) {
     // Initialize controls
     const controls = new Controls(world);
 
+    let gameTimer;
+    let gameOver = false;
+    let frameCounter = 0; 
+
+    function startGame() {
+        gameOver = false;
+        gameTimer = 120; //in seconds
+        frameCounter = 0;
+        updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(gameTimer / 60);
+        const seconds = gameTimer % 60;
+        const timerDisplay = document.getElementById('timer');
+        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function showGameOverPopup() {
+        const popup = document.getElementById('game-over-popup');
+        popup.style.display = 'block';
+    }
+
+    function hideGameOverPopup() {
+        const popup = document.getElementById('game-over-popup');
+        popup.style.display = 'none';
+    }
+
+    // Modify the restart button event listener
+    document.getElementById('restart-button').addEventListener('click', () => {
+        location.reload(); // This will reload the entire page
+    });
+
+    document.getElementById('main-menu-button').addEventListener('click', () => {
+        // Implement main menu logic here
+        console.log('Main menu button clicked');
+    });
     // Load the car
     const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial);
     let carObject, vehicle;
@@ -201,6 +238,9 @@ if (WebGL.isWebGL2Available()) {
 
         controls.setVehicle(vehicle);
         controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
+
+        // Start the game
+        startGame();
 
         // Start the animation loop
         renderer.setAnimationLoop(animate);
@@ -232,68 +272,84 @@ if (WebGL.isWebGL2Available()) {
 
     function animate(time) {
         time *= 0.001; // Convert time to seconds
-        world.step(1 / 60);
-    
-        if (carObject && vehicle) {
-            // Define the visual offset for the car model in local space
-            const carVisualOffset = new THREE.Vector3(0, -1, 0);
-    
-            // Create a matrix from the chassis body's position and rotation
-            const chassisMatrix = new THREE.Matrix4().compose(
-                new THREE.Vector3().copy(vehicle.chassisBody.position),
-                new THREE.Quaternion().copy(vehicle.chassisBody.quaternion),
-                new THREE.Vector3(1, 1, 1)
-            );
-    
-            // Apply the offset in local space
-            const offsetMatrix = new THREE.Matrix4().makeTranslation(
-                carVisualOffset.x,
-                carVisualOffset.y,
-                carVisualOffset.z
-            );
-    
-            // Combine the chassis matrix with the offset
-            const finalMatrix = chassisMatrix.multiply(offsetMatrix);
-    
-            // Apply the final transformation to the car object
-            carObject.matrix.copy(finalMatrix);
-            carObject.matrixAutoUpdate = false;
-            carObject.updateMatrixWorld(true);
-    
-            // Calculate speed in km/h
-            const velocity = vehicle.chassisBody.velocity;
-            const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
-    
-            // Update speedometer
-            updateSpeedometer(speed);
-    
-            // Update camera based on mode
-            if (cameraManager.cameraMode !== 2) {
-                cameraManager.updateCamera(vehicle.chassisBody, carObject);
-            } else {
-                // In free camera mode, update orbit controls target to follow the car
-                orbitControls.target.copy(carObject.position);
+
+        if (!gameOver) {
+            world.step(1 / 60);
+            frameCounter++; // Increment frame counter
+
+            if (frameCounter >= 60) { // Check if a second has passed
+                frameCounter = 0; // Reset frame counter
+                if (gameTimer > 0) {
+                    gameTimer--;
+                    updateTimerDisplay();
+                } else {
+                    gameOver = true;
+                    showGameOverPopup();
+                    return;
+                }
             }
-    
-            // Apply controls
-            controls.update();
-    
-            // Apply wheel transformations
-            controls.applyWheelTransformations();
+
+            if (carObject && vehicle) {
+                // Define the visual offset for the car model in local space
+                const carVisualOffset = new THREE.Vector3(0, -1, 0);
+
+                // Create a matrix from the chassis body's position and rotation
+                const chassisMatrix = new THREE.Matrix4().compose(
+                    new THREE.Vector3().copy(vehicle.chassisBody.position),
+                    new THREE.Quaternion().copy(vehicle.chassisBody.quaternion),
+                    new THREE.Vector3(1, 1, 1)
+                );
+
+                // Apply the offset in local space
+                const offsetMatrix = new THREE.Matrix4().makeTranslation(
+                    carVisualOffset.x,
+                    carVisualOffset.y,
+                    carVisualOffset.z
+                );
+
+                // Combine the chassis matrix with the offset
+                const finalMatrix = chassisMatrix.multiply(offsetMatrix);
+
+                // Apply the final transformation to the car object
+                carObject.matrix.copy(finalMatrix);
+                carObject.matrixAutoUpdate = false;
+                carObject.updateMatrixWorld(true);
+
+                // Calculate speed in km/h
+                const velocity = vehicle.chassisBody.velocity;
+                const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
+
+                // Update speedometer
+                updateSpeedometer(speed);
+
+                // Update camera based on mode
+                if (cameraManager.cameraMode !== 2) {
+                    cameraManager.updateCamera(vehicle.chassisBody, carObject);
+                } else {
+                    // In free camera mode, update orbit controls target to follow the car
+                    orbitControls.target.copy(carObject.position);
+                }
+
+                // Apply controls
+                controls.update();
+
+                // Apply wheel transformations
+                controls.applyWheelTransformations();
+            }
+
+            // Update skybox
+            updateSkybox(skybox, time);
+
+            // Update Cannon debugger
+            cannonDebugger.update();
+
+            // Update orbit controls only in free camera mode
+            if (cameraManager.cameraMode === 2) {
+                orbitControls.update();
+            }
+
+            renderer.render(scene, camera);
         }
-    
-        // Update skybox
-        updateSkybox(skybox, time);
-    
-        // Update Cannon debugger
-        cannonDebugger.update();
-    
-        // Update orbit controls only in free camera mode
-        if (cameraManager.cameraMode === 2) {
-            orbitControls.update();
-        }
-    
-        renderer.render(scene, camera);
     }
 
     function createGridTexture(groundSize) {

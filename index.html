@@ -63,6 +63,54 @@
             color: white;
             top: 25px;
         }
+    
+         /* New styles for timer and popup */
+         #timer {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        #game-over-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .popup-content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .popup-content button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -76,6 +124,17 @@
         <div class="speed-mark" style="transform: rotate(0deg);"><div class="speed-text" style="transform: rotate(0deg);">150</div></div>
         <div class="speed-mark" style="transform: rotate(45deg);"><div class="speed-text" style="transform: rotate(-45deg);">200</div></div>
     </div>
+
+    <div id="timer">01:00</div>
+
+    <div id="game-over-popup">
+        <div class="popup-content">
+            <h2>GAME OVER</h2>
+            <button id="restart-button">Restart</button>
+            <button id="main-menu-button">Main Menu</button>
+        </div>
+    </div>
+    
 <script src="./src/main.js" type="module"></script>
 </body>
 </html>
