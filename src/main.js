@@ -228,23 +228,40 @@ if (WebGL.isWebGL2Available()) {
     function animate(time) {
         time *= 0.001; // Convert time to seconds
         world.step(1 / 60);
-
+    
         if (carObject && vehicle) {
-            // Define the visual offset for the car model
-            const carVisualOffset = new THREE.Vector3(0, -1, 0); // Adjust the Y value to shift the car down
-
-            // Sync car model with Cannon.js body
-            carObject.position.copy(vehicle.chassisBody.position).add(carVisualOffset);
-            carObject.quaternion.copy(vehicle.chassisBody.quaternion);
-
+            // Define the visual offset for the car model in local space
+            const carVisualOffset = new THREE.Vector3(0, -1, 0);
+    
+            // Create a matrix from the chassis body's position and rotation
+            const chassisMatrix = new THREE.Matrix4().compose(
+                new THREE.Vector3().copy(vehicle.chassisBody.position),
+                new THREE.Quaternion().copy(vehicle.chassisBody.quaternion),
+                new THREE.Vector3(1, 1, 1)
+            );
+    
+            // Apply the offset in local space
+            const offsetMatrix = new THREE.Matrix4().makeTranslation(
+                carVisualOffset.x,
+                carVisualOffset.y,
+                carVisualOffset.z
+            );
+    
+            // Combine the chassis matrix with the offset
+            const finalMatrix = chassisMatrix.multiply(offsetMatrix);
+    
+            // Apply the final transformation to the car object
+            carObject.matrix.copy(finalMatrix);
+            carObject.matrixAutoUpdate = false;
+            carObject.updateMatrixWorld(true);
+    
             // Calculate speed in km/h
             const velocity = vehicle.chassisBody.velocity;
             const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
-
+    
             // Update speedometer
             updateSpeedometer(speed);
-
-
+    
             // Update camera based on mode
             if (cameraManager.cameraMode !== 2) {
                 cameraManager.updateCamera(vehicle.chassisBody, carObject);
@@ -252,25 +269,25 @@ if (WebGL.isWebGL2Available()) {
                 // In free camera mode, update orbit controls target to follow the car
                 orbitControls.target.copy(carObject.position);
             }
-
+    
             // Apply controls
             controls.update();
-
+    
             // Apply wheel transformations
             controls.applyWheelTransformations();
         }
-
+    
         // Update skybox
         updateSkybox(skybox, time);
-
+    
         // Update Cannon debugger
         cannonDebugger.update();
-
+    
         // Update orbit controls only in free camera mode
         if (cameraManager.cameraMode === 2) {
             orbitControls.update();
         }
-
+    
         renderer.render(scene, camera);
     }
 
