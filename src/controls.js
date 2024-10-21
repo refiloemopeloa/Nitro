@@ -10,9 +10,9 @@ export class Controls {
         this.carParts = null;
         this.frontWheelSteerRotation = 0;
         this.maxFrontWheelSteerRotation = Math.PI / 4.5;
-        this.frontWheelSteerRotationSpeed = 1.05;
+        this.frontWheelSteerRotationSpeed = 2.05;
         this.wheelRollRotation = 0;
-        this.wheelRollRotationSpeed = 0.05;
+        this.wheelRollRotationSpeed = 1.05;
         this.maxSteerVal = Math.PI / 8;
         this.maxForce = 10;
 

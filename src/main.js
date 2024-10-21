@@ -74,7 +74,8 @@ if (WebGL.isWebGL2Available()) {
     let trackEnd = new THREE.Vector3(0, 0, 0);
     let trackMergeDir = new THREE.Quaternion(0, 0, 0);
     let trackPrevDir = [0, 0, 0];
-    let trackSegSize = new CANNON.Vec3(5, 0.05, 10);
+    let trackSegSize = new CANNON.Vec3(5, 0.05, 5);
+    //let trackDir = new CANNON.Vec3(0, 0, -1);
 
     // Function to add road segments
     function addRoadSeg(angleX, angleY, angleZ) {
@@ -88,12 +89,12 @@ if (WebGL.isWebGL2Available()) {
         groundBody.quaternion.setFromEuler(trackPrevDir[0] + angleX, trackPrevDir[1] + angleY, trackPrevDir[2] + angleZ);
         world.addBody(groundBody);
 
-        const floorGeometry = new THREE.BoxGeometry(10, 0.1, 20);
+        const floorGeometry = new THREE.BoxGeometry(trackSegSize.x*2, trackSegSize.y*2, trackSegSize.z*2);
         const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfcfc });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         scene.add(floor);
 
-        const trackDir = new CANNON.Vec3(0, 0, -1);
+        const trackDir = new CANNON.Vec3(-1, 0, 0);
         groundBody.quaternion.vmult(trackDir, trackDir);
 
         let centered = angleY / 1.8;
@@ -117,9 +118,13 @@ if (WebGL.isWebGL2Available()) {
         trackPrevDir[1] += angleY;
         trackPrevDir[2] += angleZ;
 
+        // trackPrevDir[0] = floor.rotation.x;
+        // trackPrevDir[1] = floor.rotation.y;
+        // trackPrevDir[2] = floor.rotation.z;
+
         trackMergeDir.copy(trackDir);
     }
-
+    // add scenery
     function addScenery(x, y, z, angleY, type){
         switch(type){
             case 0:
@@ -132,7 +137,7 @@ if (WebGL.isWebGL2Available()) {
                 });
                 buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
-                buildingABody.position.set(x, y, x);
+                buildingABody.position.set(x, y, z);
                 
                 const buildingAGeometry = new THREE.BoxGeometry(2*buildingASize.x, 2*buildingASize.y, 2*buildingASize.z);
                 const buildingAMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
@@ -145,13 +150,10 @@ if (WebGL.isWebGL2Available()) {
     }
 
     // Create road segments
-    addRoadSeg(0, 0, 0);
-    addRoadSeg(0, 1.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
+    trackEnd.set(-10, -0.5, 0);
+    addRoadSeg(0, 1.9, -0.05);
+    addRoadSeg(0, 0, -0.1);
+    addRoadSeg(-0.1, 0.5, -0.2);
 
     addScenery(30, 0, 30, 0, 0);
 
