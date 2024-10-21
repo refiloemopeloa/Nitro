@@ -5,7 +5,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
+import { BuildingLoader } from './loadBuilding.js';
 import carModel from './models/armor_truck.glb';
+import buildingModel from './models/building.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 
@@ -124,17 +126,20 @@ if (WebGL.isWebGL2Available()) {
 
         trackMergeDir.copy(trackDir);
     }
+
+    const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
     // add scenery
     function addScenery(x, y, z, angleY, type){
         switch(type){
             case 0:
-                const buildingASize = new CANNON.Vec3(15, 35, 15);
-                const buildingAShape = new CANNON.Box(buildingASize);
-                const buildingABody = new CANNON.Body({
-                    mass: 0,
-                    shape: buildingAShape,
-                    material: groundMaterial
+                case 0:
+                const buildingSize = new CANNON.Vec3(13, 8, 8);
+                buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize).then(() => {
+                    console.log('Building loaded successfully');
+                }).catch(error => {
+                    console.error('Failed to load building model:', error);
                 });
+                break;
                 buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
