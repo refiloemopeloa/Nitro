@@ -408,6 +408,8 @@ if (WebGL.isWebGL2Available()) {
                 // Apply wheel transformations
                 controls.applyWheelTransformations();
 
+                carLoader.updateHeadlightPosition(carObject, vehicle);
+
                 // Check for boost collision
                 if (boostLoader.checkBoostCollision(vehicle.chassisBody)) {
                     controls.activateBoost();

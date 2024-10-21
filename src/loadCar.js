@@ -2,6 +2,43 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+class HeadLight {
+    constructor(color, intensity) {
+        this.light = new THREE.SpotLight(color, intensity);
+    }
+
+    setPosition(position) {
+        this.light.position.set(position.x, position.y, position.z);
+    }
+
+    setAngle(angle) {
+        this.light.angle = angle;
+    }
+
+    setPenumbra(penumbra) {
+        this.light.penumbra = penumbra;
+    }
+
+    setDecay(decay) {
+        this.light.decay = decay;
+    }
+
+    setShadow(shadow) {
+        this.light.castShadow = shadow;
+    }
+
+    setTarget(carObject, x, y, z) {// Create a target for the spotlight
+        const target = new THREE.Object3D();
+        target.position.set(-10, 0, 0); // Adjust as needed
+        carObject.add(target);
+        this.light.target = target;
+    }
+
+    setDistance(distance) {
+        this.light.distance = distance;
+    }
+}
+
 export class CarLoader {
     constructor(scene, world, carMaterial, wheelMaterial) {
         this.scene = scene;
@@ -67,6 +104,25 @@ export class CarLoader {
                         });
                     });
 
+                    // Add the headlights to the car object
+                    const leftHeadLight = new HeadLight(0xffff55, 100);
+                    leftHeadLight.setPosition(new THREE.Vector3(-1, 1, 1))
+                    leftHeadLight.setAngle(Math.PI / 6);
+                    leftHeadLight.setPenumbra(0.5);
+                    leftHeadLight.setDecay(2);
+                    leftHeadLight.setShadow(true);
+                    leftHeadLight.setTarget(carObject, 10, 1, 0);
+                    carObject.add(leftHeadLight.light);
+
+                    const rightHeadLight = new HeadLight(0xffff55, 100);
+                    rightHeadLight.setPosition(new THREE.Vector3(-1, 1, -1))
+                    rightHeadLight.setAngle(Math.PI / 6);
+                    rightHeadLight.setPenumbra(0.5);
+                    rightHeadLight.setDecay(2);
+                    rightHeadLight.setShadow(true);
+                    rightHeadLight.setTarget(carObject, 10, 1, 0);
+                    carObject.add(rightHeadLight.light);
+
                     vehicle.addToWorld(this.world);
 
                     resolve({
@@ -85,4 +141,12 @@ export class CarLoader {
             );
         });
     }
+    updateHeadlightPosition(carObject, vehicle) {
+        const position = vehicle.chassisBody.position;
+        const quaternion = vehicle.chassisBody.quaternion;
+
+        carObject.position.copy(position);
+        carObject.quaternion.copy(quaternion);
+    }
+
 }
