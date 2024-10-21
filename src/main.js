@@ -134,7 +134,8 @@ if (WebGL.isWebGL2Available()) {
             case 0:
                 case 0:
                 const buildingSize = new CANNON.Vec3(20, 20, 20);
-                buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize).then(() => {
+                const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
+                buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
                     console.log('Building loaded successfully');
                 }).catch(error => {
                     console.error('Failed to load building model:', error);
@@ -179,12 +180,12 @@ if (WebGL.isWebGL2Available()) {
     addScenery(190, 0, 10, 0, 0);
 
     addScenery(80, 0, 80, 0, 0);
-    addScenery(120, 0, 100, 0, 0);
-    addScenery(160, 0, 100, 0, 0);
-    addScenery(200, 0, 100, 0, 0);
-    addScenery(240, 0, 100, 0, 0);
-    addScenery(280, 0, 100, 0, 0);
-    addScenery(320, 0, 100, 0, 0);
+    addScenery(120, 0, 120, 0, 0);
+    addScenery(160, 0, 120, 0, 0);
+    addScenery(200, 0, 120, 0, 0);
+    addScenery(240, 0, 120, 0, 0);
+    addScenery(280, 0, 120, 0, 0);
+    addScenery(320, 0, 120, 0, 0);
 
     addScenery(230, 0, 40, 0, 0);
     addScenery(270, 0, 40, 0, 0);
