@@ -78,7 +78,7 @@ if (WebGL.isWebGL2Available()) {
     let trackEnd = new THREE.Vector3(0, 0, 0);
     let trackMergeDir = new THREE.Quaternion(0, 0, 0);
     let trackPrevDir = [0, 0, 0];
-    let trackSegSize = new CANNON.Vec3(5, 0.05, 5);
+    const trackSegSize = new CANNON.Vec3(5, 0.05, 5);
     //let trackDir = new CANNON.Vec3(0, 0, -1);
 
     // Function to add road segments
@@ -153,14 +153,6 @@ if (WebGL.isWebGL2Available()) {
         }
     }
 
-    // Create road segments
-    // trackEnd.set(-10, -0.5, 0);
-    // addRoadSeg(0, 1.9, -0.05);
-    // addRoadSeg(0, 0, -0.1);
-    // addRoadSeg(-0.1, 0.5, -0.2);
-
-    // addScenery(30, 0, 30, 0, 0);
-
     // creating map
     addScenery(-40, 0, 0, 0, 0);
     addScenery(-40, 0, -40, -0.01, 0);
@@ -184,21 +176,35 @@ if (WebGL.isWebGL2Available()) {
     addScenery(240, 0, 120, 0, 0);
     addScenery(280, 0, 120, 0, 0);
     addScenery(320, 0, 120, 0, 0);
+    addScenery(360, 0, 120, 0, 0);
+    addScenery(380, 0, 100, 0.7, 0);
+    addScenery(400, 0, 40, 0, 0);
 
     addScenery(230, 0, 40, 0, 0);
     addScenery(270, 0, 40, 0, 0);
     addScenery(320, 0, 40, 0, 0);
 
+    addScenery(380, 0, 0, 0, 0);
+    addScenery(380, 0, -40, 0, 0);
+    addScenery(380, 0, -80, 0, 0);
+    addScenery(380, 0, -120, 0, 0);
+    
     trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
-    addRoadSeg(0, 3.14, -0.1);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(0, 0, 0.2);
-    addRoadSeg(0, 0, 0);
+    addRoadSeg(0, 3.14, -0.12);
+    addRoadSeg(0, 0, -0.12);
+    addRoadSeg(0, 0, 0.24);
 
-    trackEnd.set(300, 5, 80);
-    trackSegSize.set(10, 0.05, 20);
-    addRoadSeg(0, 0, 0.2);
+    trackEnd.set(250, 12, 80);
+    addRoadSeg(-0.08, 0, 0.3);
+    addRoadSeg(0, 0, -0.3);
+    addRoadSeg(0, 0.2, 0);
+    addRoadSeg(0, 0, -0.3);
+
+    trackEnd.set(368, 0, 40);
+    trackPrevDir = [0, 3.14, 0];
+    addRoadSeg(0, 0, -0.31);
+    
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
