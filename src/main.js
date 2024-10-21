@@ -5,9 +5,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
+import { BuildingLoader } from './loadBuilding.js';
 import carModel from './models/armor_truck.glb';
+import buildingModel from './models/building.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
+import { BoostLoader } from './loadBoost.js';
+import boostModel from './models/atom.glb';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -129,12 +133,12 @@ if (WebGL.isWebGL2Available()) {
         groundBody.quaternion.setFromEuler(trackPrevDir[0] + angleX, trackPrevDir[1] + angleY, trackPrevDir[2] + angleZ);
         world.addBody(groundBody);
 
-        const floorGeometry = new THREE.BoxGeometry(10, 0.1, 20);
+        const floorGeometry = new THREE.BoxGeometry(trackSegSize.x * 2, trackSegSize.y * 2, trackSegSize.z * 2);
         const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfcfc });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         scene.add(floor);
 
-        const trackDir = new CANNON.Vec3(0, 0, -1);
+        const trackDir = new CANNON.Vec3(-1, 0, 0);
         groundBody.quaternion.vmult(trackDir, trackDir);
 
         let centered = angleY / 1.8;
@@ -161,24 +165,90 @@ if (WebGL.isWebGL2Available()) {
         trackMergeDir.copy(trackDir);
     }
 
+    const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
+    // add scenery
+    function addScenery(x, y, z, angleY, type) {
+        switch (type) {
+            case 0:
+                case 0:
+                const buildingSize = new CANNON.Vec3(20, 20, 20);
+                const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
+                buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
+                    console.log('Building loaded successfully');
+                }).catch(error => {
+                    console.error('Failed to load building model:', error);
+                });
+                break;
+                //buildingABody.quaternion.setFromEuler(0, angleY, 0);
+                world.addBody(buildingABody);
+                buildingABody.position.set(x, y, z);
+
+                const buildingAGeometry = new THREE.BoxGeometry(2 * buildingASize.x, 2 * buildingASize.y, 2 * buildingASize.z);
+                const buildingAMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const buidlingA = new THREE.Mesh(buildingAGeometry, buildingAMaterial);
+                scene.add(buidlingA);
+
+                buidlingA.position.copy(buildingABody.position);
+                buidlingA.quaternion.copy(buidlingA.quaternion);
+        }
+    }
+
     // Create road segments
+    // trackEnd.set(-10, -0.5, 0);
+    // addRoadSeg(0, 1.9, -0.05);
+    // addRoadSeg(0, 0, -0.1);
+    // addRoadSeg(-0.1, 0.5, -0.2);
+
+    // addScenery(30, 0, 30, 0, 0);
+
+    // creating map
+    addScenery(-40, 0, 0, 0, 0);
+    addScenery(-40, 0, -40, -0.01, 0);
+    addScenery(-40, 0, 40, 0.01, 0);
+    addScenery(0, 0, -40, 0, 0);
+    addScenery(0, 0, 40, 0, 0);
+    addScenery(40, 0, -40, 0, 0);
+    addScenery(40, 0, 40, 0, 0);
+
+    addScenery(80, 0, -40, 0, 0);
+    addScenery(100, 0, -80, 0, 0);
+    addScenery(140, 0, -60, 0, 0);
+    addScenery(150, 0, -20, 0.5, 0);
+    addScenery(150, 0, 40, 0, 0);
+    addScenery(190, 0, 10, 0, 0);
+
+    addScenery(80, 0, 80, 0, 0);
+    addScenery(120, 0, 120, 0, 0);
+    addScenery(160, 0, 120, 0, 0);
+    addScenery(200, 0, 120, 0, 0);
+    addScenery(240, 0, 120, 0, 0);
+    addScenery(280, 0, 120, 0, 0);
+    addScenery(320, 0, 120, 0, 0);
+
+    addScenery(230, 0, 40, 0, 0);
+    addScenery(270, 0, 40, 0, 0);
+    addScenery(320, 0, 40, 0, 0);
+
+    trackEnd.set(120, -0.5, 80);
+    trackSegSize.set(20, 0.05, 20);
+    addRoadSeg(0, 3.14, -0.1);
+    addRoadSeg(0, 0, -0.1);
+    addRoadSeg(0, 0, 0.2);
     addRoadSeg(0, 0, 0);
-    addRoadSeg(0, 1.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
-    addRoadSeg(0, 0.6, 0);
+
+    trackEnd.set(300, 5, 80);
+    trackSegSize.set(10, 0.05, 20);
+    addRoadSeg(0, 0, 0.2);
 
     // Create ground
-    const groundSize = { width: 100, length: 100 };
+    const groundSize = { width: 800, length: 800 };
     const groundShape = new CANNON.Box(new CANNON.Vec3(groundSize.width / 2, 0.05, groundSize.length / 2));
     const groundBody = new CANNON.Body({
         mass: 0,
         shape: groundShape,
         material: groundMaterial
     });
-    groundBody.position.set(0, -0.5, 0);
+    groundBody.position.set(0, 0, 0);
     world.addBody(groundBody);
 
     // Create grid texture and floor
@@ -193,6 +263,43 @@ if (WebGL.isWebGL2Available()) {
     // Initialize controls
     const controls = new Controls(world);
 
+    let gameTimer;
+    let gameOver = false;
+    let frameCounter = 0; 
+
+    function startGame() {
+        gameOver = false;
+        gameTimer = 120; //in seconds
+        frameCounter = 0;
+        updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(gameTimer / 60);
+        const seconds = gameTimer % 60;
+        const timerDisplay = document.getElementById('timer');
+        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function showGameOverPopup() {
+        const popup = document.getElementById('game-over-popup');
+        popup.style.display = 'block';
+    }
+
+    function hideGameOverPopup() {
+        const popup = document.getElementById('game-over-popup');
+        popup.style.display = 'none';
+    }
+
+    // Modify the restart button event listener
+    document.getElementById('restart-button').addEventListener('click', () => {
+        location.reload(); // This will reload the entire page
+    });
+
+    document.getElementById('main-menu-button').addEventListener('click', () => {
+        // Implement main menu logic here
+        console.log('Main menu button clicked');
+    });
     // Load the car
     const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial);
     let carObject, vehicle;
@@ -210,10 +317,24 @@ if (WebGL.isWebGL2Available()) {
         controls.setVehicle(vehicle);
         controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
 
+        // Start the game
+        startGame();
+
         // Start the animation loop
         renderer.setAnimationLoop(animate);
     }).catch(error => {
         console.error('Failed to load car model:', error);
+    });
+
+    const boostLoader = new BoostLoader(scene, world);
+    const boostPositions = [
+        // add boost items here
+        new THREE.Vector3(10, 2, 10),
+    ];
+    boostLoader.loadBoost(boostModel, boostPositions).then(() => {
+        console.log('Boost objects loaded');
+    }).catch(error => {
+        console.error('Failed to load boost model:', error);
     });
 
     // Cannon debugger
@@ -255,49 +376,74 @@ if (WebGL.isWebGL2Available()) {
             accumulatedTime -= 1 / 60;
         }
 
-        if (carObject && vehicle) {
-            // Define the visual offset for the car model
-            const carVisualOffset = new THREE.Vector3(0, -1, 0); // Adjust the Y value to shift the car down
+            if (carObject && vehicle) {
+                // Define the visual offset for the car model in local space
+                const carVisualOffset = new THREE.Vector3(0, -1, 0);
 
-            // Sync car model with Cannon.js body
-            carObject.position.copy(vehicle.chassisBody.position).add(carVisualOffset);
-            carObject.quaternion.copy(vehicle.chassisBody.quaternion);
+                // Create a matrix from the chassis body's position and rotation
+                const chassisMatrix = new THREE.Matrix4().compose(
+                    new THREE.Vector3().copy(vehicle.chassisBody.position),
+                    new THREE.Quaternion().copy(vehicle.chassisBody.quaternion),
+                    new THREE.Vector3(1, 1, 1)
+                );
 
-            // Calculate speed in km/h
-            const velocity = vehicle.chassisBody.velocity;
-            const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
+                // Apply the offset in local space
+                const offsetMatrix = new THREE.Matrix4().makeTranslation(
+                    carVisualOffset.x,
+                    carVisualOffset.y,
+                    carVisualOffset.z
+                );
 
-            // Update speedometer
-            updateSpeedometer(speed);
+                // Combine the chassis matrix with the offset
+                const finalMatrix = chassisMatrix.multiply(offsetMatrix);
 
+                // Apply the final transformation to the car object
+                carObject.matrix.copy(finalMatrix);
+                carObject.matrixAutoUpdate = false;
+                carObject.updateMatrixWorld(true);
 
-            // Update camera based on mode
-            if (cameraManager.cameraMode !== 2) {
-                cameraManager.updateCamera(vehicle.chassisBody, carObject);
-            } else {
-                // In free camera mode, update orbit controls target to follow the car
-                orbitControls.target.copy(carObject.position);
+                // Calculate speed in km/h
+                const velocity = vehicle.chassisBody.velocity;
+                const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
+
+                // Update speedometer
+                updateSpeedometer(speed);
+
+                // Update camera based on mode
+                if (cameraManager.cameraMode !== 2) {
+                    cameraManager.updateCamera(vehicle.chassisBody, carObject);
+                } else {
+                    // In free camera mode, update orbit controls target to follow the car
+                    orbitControls.target.copy(carObject.position);
+                }
+
+                // Apply controls
+                controls.update();
+
+                // Apply wheel transformations
+                controls.applyWheelTransformations();
+
+                // Check for boost collision
+                if (boostLoader.checkBoostCollision(vehicle.chassisBody)) {
+                    controls.activateBoost();
+                }
+                // Update boost objects
+                boostLoader.update(deltaTime);
             }
-
-            // Apply controls
-            controls.update();
-
-            // Apply wheel transformations
-            controls.applyWheelTransformations();
-        }
 
         // Update skybox
         updateSkybox(skybox, time * 0.001);
 
-        // Update Cannon debugger
-        cannonDebugger.update();
+            // Update Cannon debugger
+            cannonDebugger.update();
 
-        // Update orbit controls only in free camera mode
-        if (cameraManager.cameraMode === 2) {
-            orbitControls.update();
+            // Update orbit controls only in free camera mode
+            if (cameraManager.cameraMode === 2) {
+                orbitControls.update();
+            }
+
+            renderer.render(scene, camera);
         }
-
-        renderer.render(scene, camera);
     }
 
     function createGridTexture(groundSize) {
@@ -340,7 +486,7 @@ if (WebGL.isWebGL2Available()) {
         speedDisplay.textContent = `${Math.round(speed)} km/h`;
 
         // Rotate needle (assuming max speed of 200 km/h)
-        const rotation = Math.min(speed / 200 * 270 - 135, 135); // -135 to 135 degrees
+        const rotation = Math.min(speed / 200 * 182 - 135, 135); // -135 to 135 degrees
         needle.style.transform = `rotate(${rotation}deg)`;
     }
 

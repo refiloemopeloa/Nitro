@@ -10,11 +10,13 @@ export class Controls {
         this.carParts = null;
         this.frontWheelSteerRotation = 0;
         this.maxFrontWheelSteerRotation = Math.PI / 4.5;
-        this.frontWheelSteerRotationSpeed = 0.05;
+        this.frontWheelSteerRotationSpeed = 2.05;
         this.wheelRollRotation = 0;
-        this.wheelRollRotationSpeed = 0.05;
+        this.wheelRollRotationSpeed = 1.05;
         this.maxSteerVal = Math.PI / 8;
         this.maxForce = 10;
+        this.boost = false;
+        this.boostTimer = null;
 
         this.setupEventListeners();
     }
@@ -43,17 +45,27 @@ export class Controls {
     setCarParts(carParts) {
         this.carParts = carParts;
     }
+    
+    activateBoost() {
+        this.boost = true;
+        clearTimeout(this.boostTimer);
+        this.boostTimer = setTimeout(() => {
+            this.boost = false;
+        }, 5000);
+    }
 
     update() {
         if (!this.vehicle) return;
 
+        const currentMaxForce = this.boost ? 20 : 10;
+
         if (this.pressed['w'] || this.pressed['ArrowUp']) {
-            this.vehicle.setWheelForce(this.maxForce, 2);
-            this.vehicle.setWheelForce(this.maxForce, 3);
+            this.vehicle.setWheelForce(currentMaxForce, 2);
+            this.vehicle.setWheelForce(currentMaxForce, 3);
             this.wheelRollRotation += this.wheelRollRotationSpeed;
         } else if (this.pressed['s'] || this.pressed['ArrowDown']) {
-            this.vehicle.setWheelForce(-this.maxForce / 2, 2);
-            this.vehicle.setWheelForce(-this.maxForce / 2, 3);
+            this.vehicle.setWheelForce(-currentMaxForce / 1, 2);
+            this.vehicle.setWheelForce(-currentMaxForce / 1, 3);
             this.wheelRollRotation -= this.wheelRollRotationSpeed;
         } else {
             this.vehicle.setWheelForce(0, 2);
