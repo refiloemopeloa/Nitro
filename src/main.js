@@ -133,7 +133,7 @@ if (WebGL.isWebGL2Available()) {
         switch (type) {
             case 0:
                 case 0:
-                const buildingSize = new CANNON.Vec3(13, 8, 8);
+                const buildingSize = new CANNON.Vec3(20, 20, 20);
                 buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize).then(() => {
                     console.log('Building loaded successfully');
                 }).catch(error => {
@@ -155,22 +155,56 @@ if (WebGL.isWebGL2Available()) {
     }
 
     // Create road segments
-    trackEnd.set(-10, -0.5, 0);
-    addRoadSeg(0, 1.9, -0.05);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(-0.1, 0.5, -0.2);
+    // trackEnd.set(-10, -0.5, 0);
+    // addRoadSeg(0, 1.9, -0.05);
+    // addRoadSeg(0, 0, -0.1);
+    // addRoadSeg(-0.1, 0.5, -0.2);
 
-    addScenery(30, 0, 30, 0, 0);
+    // addScenery(30, 0, 30, 0, 0);
+
+    // creating map
+    addScenery(-40, 0, 0, 0, 0);
+    addScenery(-40, 0, -40, -0.01, 0);
+    addScenery(-40, 0, 40, 0.01, 0);
+    addScenery(0, 0, -40, 0, 0);
+    addScenery(0, 0, 40, 0, 0);
+    addScenery(40, 0, -40, 0, 0);
+    addScenery(40, 0, 40, 0, 0);
+
+    addScenery(80, 0, -40, 0, 0);
+    addScenery(100, 0, -80, 0, 0);
+    addScenery(140, 0, -60, 0, 0);
+    addScenery(150, 0, -20, 0.5, 0);
+    addScenery(150, 0, 40, 0, 0);
+    addScenery(190, 0, 10, 0, 0);
+
+    addScenery(80, 0, 80, 0, 0);
+    addScenery(120, 0, 100, 0, 0);
+    addScenery(160, 0, 100, 0, 0);
+    addScenery(200, 0, 100, 0, 0);
+    addScenery(240, 0, 100, 0, 0);
+    addScenery(280, 0, 100, 0, 0);
+    addScenery(320, 0, 100, 0, 0);
+
+    addScenery(230, 0, 40, 0, 0);
+    addScenery(270, 0, 40, 0, 0);
+    addScenery(320, 0, 40, 0, 0);
+
+    trackEnd.set(160, -0.5, 80);
+    trackSegSize.set(20, 0.05, 20);
+    addRoadSeg(0, 3.14, -0.1);
+    addRoadSeg(0, 0, 0);
+    addRoadSeg(0, 0, 0.1);
 
     // Create ground
-    const groundSize = { width: 200, length: 200 };
+    const groundSize = { width: 800, length: 800 };
     const groundShape = new CANNON.Box(new CANNON.Vec3(groundSize.width / 2, 0.05, groundSize.length / 2));
     const groundBody = new CANNON.Body({
         mass: 0,
         shape: groundShape,
         material: groundMaterial
     });
-    groundBody.position.set(0, -0.5, 0);
+    groundBody.position.set(0, 0, 0);
     world.addBody(groundBody);
 
     // Create grid texture and floor
@@ -392,7 +426,7 @@ if (WebGL.isWebGL2Available()) {
         speedDisplay.textContent = `${Math.round(speed)} km/h`;
 
         // Rotate needle (assuming max speed of 200 km/h)
-        const rotation = Math.min(speed / 200 * 270 - 135, 135); // -135 to 135 degrees
+        const rotation = Math.min(speed / 200 * 182 - 135, 135); // -135 to 135 degrees
         needle.style.transform = `rotate(${rotation}deg)`;
     }
 
