@@ -10,14 +10,14 @@ export class BuildingLoader {
         this.loader = new GLTFLoader();
     }
 
-    loadBuilding(buildingModel, x, y, z, angleY, size) {
+    loadBuilding(buildingModel, x, y, z, angleY, size, buildingScale) {
         return new Promise((resolve, reject) => {
             this.loader.load(
                 buildingModel,
                 (gltf) => {
                     console.log('Building model loaded successfully');
                     const buildingObject = gltf.scene;
-                    buildingObject.scale.set(1.7, 2, 2.5); // Adjust scale if needed
+                    buildingObject.scale.set(buildingScale.x, buildingScale.y, buildingScale.z); // Adjust scale if needed
                     buildingObject.position.set(x, y, z-6);
                     buildingObject.rotation.y = angleY;
                     this.scene.add(buildingObject);

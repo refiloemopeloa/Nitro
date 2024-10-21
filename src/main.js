@@ -10,6 +10,8 @@ import carModel from './models/armor_truck.glb';
 import buildingModel from './models/building.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
+import { BoostLoader } from './loadBoost.js';
+import boostModel from './models/atom.glb';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -120,10 +122,6 @@ if (WebGL.isWebGL2Available()) {
         trackPrevDir[1] += angleY;
         trackPrevDir[2] += angleZ;
 
-        // trackPrevDir[0] = floor.rotation.x;
-        // trackPrevDir[1] = floor.rotation.y;
-        // trackPrevDir[2] = floor.rotation.z;
-
         trackMergeDir.copy(trackDir);
     }
 
@@ -134,13 +132,14 @@ if (WebGL.isWebGL2Available()) {
             case 0:
                 case 0:
                 const buildingSize = new CANNON.Vec3(20, 20, 20);
-                buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize).then(() => {
+                const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
+                buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
                     console.log('Building loaded successfully');
                 }).catch(error => {
                     console.error('Failed to load building model:', error);
                 });
                 break;
-                buildingABody.quaternion.setFromEuler(0, angleY, 0);
+                //buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
 
@@ -179,22 +178,27 @@ if (WebGL.isWebGL2Available()) {
     addScenery(190, 0, 10, 0, 0);
 
     addScenery(80, 0, 80, 0, 0);
-    addScenery(120, 0, 100, 0, 0);
-    addScenery(160, 0, 100, 0, 0);
-    addScenery(200, 0, 100, 0, 0);
-    addScenery(240, 0, 100, 0, 0);
-    addScenery(280, 0, 100, 0, 0);
-    addScenery(320, 0, 100, 0, 0);
+    addScenery(120, 0, 120, 0, 0);
+    addScenery(160, 0, 120, 0, 0);
+    addScenery(200, 0, 120, 0, 0);
+    addScenery(240, 0, 120, 0, 0);
+    addScenery(280, 0, 120, 0, 0);
+    addScenery(320, 0, 120, 0, 0);
 
     addScenery(230, 0, 40, 0, 0);
     addScenery(270, 0, 40, 0, 0);
     addScenery(320, 0, 40, 0, 0);
 
-    trackEnd.set(160, -0.5, 80);
+    trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
     addRoadSeg(0, 3.14, -0.1);
+    addRoadSeg(0, 0, -0.1);
+    addRoadSeg(0, 0, 0.2);
     addRoadSeg(0, 0, 0);
-    addRoadSeg(0, 0, 0.1);
+
+    trackEnd.set(300, 5, 80);
+    trackSegSize.set(10, 0.05, 20);
+    addRoadSeg(0, 0, 0.2);
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
@@ -282,6 +286,17 @@ if (WebGL.isWebGL2Available()) {
         console.error('Failed to load car model:', error);
     });
 
+    const boostLoader = new BoostLoader(scene, world);
+    const boostPositions = [
+        // add boost items here
+        new THREE.Vector3(10, 2, 10),
+    ];
+    boostLoader.loadBoost(boostModel, boostPositions).then(() => {
+        console.log('Boost objects loaded');
+    }).catch(error => {
+        console.error('Failed to load boost model:', error);
+    });
+
     // Cannon debugger
     const cannonDebugger = new CannonDebugger(scene, world);
 
@@ -306,6 +321,7 @@ if (WebGL.isWebGL2Available()) {
 
     function animate(time) {
         time *= 0.001; // Convert time to seconds
+        const deltaTime = time * 0.001;
 
         if (!gameOver) {
             world.step(1 / 60);
@@ -369,6 +385,13 @@ if (WebGL.isWebGL2Available()) {
 
                 // Apply wheel transformations
                 controls.applyWheelTransformations();
+
+                // Check for boost collision
+                if (boostLoader.checkBoostCollision(vehicle.chassisBody)) {
+                    controls.activateBoost();
+                }
+                // Update boost objects
+                boostLoader.update(deltaTime);
             }
 
             // Update skybox
