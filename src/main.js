@@ -120,6 +120,30 @@ if (WebGL.isWebGL2Available()) {
         trackMergeDir.copy(trackDir);
     }
 
+    function addScenery(x, y, z, angleY, type){
+        switch(type){
+            case 0:
+                const buildingASize = new CANNON.Vec3(15, 35, 15);
+                const buildingAShape = new CANNON.Box(buildingASize);
+                const buildingABody = new CANNON.Body({
+                    mass: 0,
+                    shape: buildingAShape,
+                    material: groundMaterial
+                });
+                buildingABody.quaternion.setFromEuler(0, angleY, 0);
+                world.addBody(buildingABody);
+                buildingABody.position.set(x, y, x);
+                
+                const buildingAGeometry = new THREE.BoxGeometry(2*buildingASize.x, 2*buildingASize.y, 2*buildingASize.z);
+                const buildingAMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const buidlingA = new THREE.Mesh(buildingAGeometry, buildingAMaterial);
+                scene.add(buidlingA);
+
+                buidlingA.position.copy(buildingABody.position);
+                buidlingA.quaternion.copy(buidlingA.quaternion);
+        }
+    }
+
     // Create road segments
     addRoadSeg(0, 0, 0);
     addRoadSeg(0, 1.6, 0);
@@ -129,8 +153,10 @@ if (WebGL.isWebGL2Available()) {
     addRoadSeg(0, 0.6, 0);
     addRoadSeg(0, 0.6, 0);
 
+    addScenery(30, 0, 30, 0, 0);
+
     // Create ground
-    const groundSize = { width: 100, length: 100 };
+    const groundSize = { width: 200, length: 200 };
     const groundShape = new CANNON.Box(new CANNON.Vec3(groundSize.width / 2, 0.05, groundSize.length / 2));
     const groundBody = new CANNON.Body({
         mass: 0,
