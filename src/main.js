@@ -76,6 +76,47 @@ if (WebGL.isWebGL2Available()) {
     let trackPrevDir = [0, 0, 0];
     let trackSegSize = new CANNON.Vec3(5, 0.05, 10);
 
+    let isPaused = false;
+    let lastTime = 0;
+    let accumulatedTime = 0;
+
+    // Menu functionality
+    const menuButton = document.getElementById('menuButton');
+    const modal = document.getElementById('modal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const settingsButton = document.getElementById('settingsButton');
+    const quitButton = document.getElementById('quitButton');
+    const resumeButton = document.getElementById('resumeButton');
+
+    menuButton.addEventListener('click', openModal);
+    modalOverlay.addEventListener('click', closeModal);
+    settingsButton.addEventListener('click', openSettings);
+    quitButton.addEventListener('click', quitGame);
+    resumeButton.addEventListener('click', closeModal);
+
+    function openModal() {
+        modal.style.display = 'block';
+        modalOverlay.style.display = 'block';
+        isPaused = true;
+        controls.disable(); // Disable car controls
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+        isPaused = false;
+        controls.enable(); // Re-enable car controls
+    }
+
+    function openSettings() {
+        // Implement settings functionality here
+        console.log('Settings opened');
+    }
+
+    function quitGame() {
+        window.location.href = 'startPage.html';
+    }
+
     // Function to add road segments
     function addRoadSeg(angleX, angleY, angleZ) {
         // Create ground
@@ -198,8 +239,21 @@ if (WebGL.isWebGL2Available()) {
     });
 
     function animate(time) {
-        time *= 0.001; // Convert time to seconds
-        world.step(1 / 60);
+
+        if (isPaused) {
+            lastTime = time;
+            return;
+        }
+
+        const deltaTime = (time - lastTime) * 0.001; // Convert to seconds
+        lastTime = time;
+
+        accumulatedTime += deltaTime;
+        
+        while (accumulatedTime >= 1 / 60) {
+            world.step(1 / 60);
+            accumulatedTime -= 1 / 60;
+        }
 
         if (carObject && vehicle) {
             // Define the visual offset for the car model
@@ -233,7 +287,7 @@ if (WebGL.isWebGL2Available()) {
         }
 
         // Update skybox
-        updateSkybox(skybox, time);
+        updateSkybox(skybox, time * 0.001);
 
         // Update Cannon debugger
         cannonDebugger.update();
