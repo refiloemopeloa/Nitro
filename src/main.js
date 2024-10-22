@@ -189,7 +189,7 @@ if (WebGL.isWebGL2Available()) {
         const trackDir = new CANNON.Vec3(-1, 0, 0);
         groundBody.quaternion.vmult(trackDir, trackDir);
 
-        let centered = angleY / 1.8;
+        let centered = Math.abs(angleY) / 1.6;
 
         groundBody.position.set(
             trackEnd.x + (trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
@@ -220,8 +220,8 @@ if (WebGL.isWebGL2Available()) {
     // add scenery
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
-           case 0:
-                const buildingSize = new CANNON.Vec3(20, 20, 20);
+            case 0:
+                const buildingSize = new CANNON.Vec3(20, 16, 20);
                 const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
                 buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
                     console.log('Building loaded successfully');
@@ -232,15 +232,15 @@ if (WebGL.isWebGL2Available()) {
             break;
 
             case 1: // New case for graffiti wall
-            const wallSize = new CANNON.Vec3(30, 15, 20); // Adjust size as needed
+            const wallSize = new CANNON.Vec3(10, 22, 40); // Adjust size as needed
             graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize).then(() => {
                 console.log('Graffiti wall loaded successfully');
             }).catch(error => {
                 console.error('Failed to load graffiti wall model:', error);
             });
             break;
-            case 2: // New case for graffiti wall
-            const baseSize = new CANNON.Vec3(20, 20, 20); // Adjust size as needed
+            case 2: // New case for military base
+            const baseSize = new CANNON.Vec3(20, 20, 13); // Adjust size as needed
             militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
                 console.log('Base loaded successfully');
             }).catch(error => {
@@ -248,7 +248,7 @@ if (WebGL.isWebGL2Available()) {
             });
             break;
             case 3: // Wasteland store
-            const storeSize = new CANNON.Vec3(25, 15, 25);
+            const storeSize = new CANNON.Vec3(40, 16, 14.5);
             wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize).then(() => {
                 console.log('Wasteland store loaded successfully');
             }).catch(error => {
@@ -273,20 +273,20 @@ if (WebGL.isWebGL2Available()) {
     addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
     addScenery(-40, 0, 40, 0.01, 0);
-    addScenery(0, 0, -40, 0, 2);
-    addScenery(0, 0, 40, 0, 3);
+    addScenery(0, 0, -40, 0, 3);
+    addScenery(0, 0, 40, 0, 0);
     addScenery(40, 0, -40, 0, 0);
     addScenery(40, 0, 40, 0, 0);
 
-    addScenery(80, 0, -40, 0, 3);
+    addScenery(80, 0, -50, 0.1, 3);
     addScenery(100, 0, -80, 0, 0);
     addScenery(140, 0, -60, 0, 2);
-    addScenery(150, 0, -20, 0.5, 0);
+    addScenery(150, 0, -10, 0.5, 0);
     addScenery(180, 0, -80, 0, 0);
     addScenery(220, 0, -60, -0.4, 0);
     addScenery(260, 0, -45, -0.4, 0);
     addScenery(300, 0, -30, 0.5, 0);
-    addScenery(320, 0, 5, 1.75, 0);
+    addScenery(320, 0, 0, 0.1, 0);
 
     addScenery(150, 0, 40, 0, 0);
     addScenery(190, 0, 10, 0, 2);
@@ -326,6 +326,20 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
+    addScenery(380, 0, -240, 0, 0);
+    addScenery(340, 0, -240, 0, 0);
+    addScenery(300, 0, -240, 0, 0);
+    addScenery(260, 0, -240, 0, 0);
+    addScenery(220, 0, -250, 0, 2);
+    addScenery(180, 0, -250, 0, 3);
+    addScenery(140, 0, -250, 0, 0);
+    addScenery(100, 0, -250, 0, 0);
+
+    addScenery(280, 0, -170, 0, 0);
+    addScenery(240, 0, -170, 0, 0);
+    addScenery(200, 0, -160, -0.1, 2);
+    addScenery(80, 0, -160, 0, 0);
+    addScenery(140, 0, -115, -0.4, 2);
 
     trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
@@ -345,6 +359,17 @@ if (WebGL.isWebGL2Available()) {
     trackEnd.set(368, 0, 40);
     trackPrevDir = [0, 3.14, 0];
     addRoadSeg(0, 0, -0.31);
+
+    trackPrevDir = [0, 0, 0];
+    trackEnd.set(220, 0, -120);
+    addRoadSeg(0, -0.3, -0.1);
+    addRoadSeg(-0.04, -0.3, -0.1);
+    addRoadSeg(-0.09, -0.3, -0.1);
+    addRoadSeg(0.1, 0.3, 0.2);
+    addRoadSeg(0, 0.2, 0.1);
+    addRoadSeg(0, 0.3, 0.1);
+    addRoadSeg(0, 0.3, 0.1);
+    addRoadSeg(0, 0.3, 0.1);
 
 
     // Create ground
@@ -450,6 +475,7 @@ if (WebGL.isWebGL2Available()) {
 
         controls.setVehicle(vehicle);
         controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
+        controls.setCarLoader(carLoader);
 
         // Create fire effects using the emitters from the car
         fireEffect1 = getParticleSystem({
@@ -524,8 +550,11 @@ if (WebGL.isWebGL2Available()) {
     const boostLoader = new BoostLoader(scene, world);
     const boostPositions = [
         // add boost items here
-        new THREE.Vector3(10, 2, 10),
-        new THREE.Vector3(12, 2, 10),
+        new THREE.Vector3(20, 2, 10),
+        new THREE.Vector3(210, 15, 80),
+        new THREE.Vector3(220, 2, -120),
+        new THREE.Vector3(220, 2, -200),
+        new THREE.Vector3(290, 2, -200),
     ];
     boostLoader.loadBoost(boostModel, boostPositions).then(() => {
         console.log('Boost objects loaded');
@@ -537,6 +566,10 @@ if (WebGL.isWebGL2Available()) {
     const cratePositions = [
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
+        new THREE.Vector3(280, 2, -90),
+        new THREE.Vector3(260, 2, -100),
+        new THREE.Vector3(280, 2, -130),
+        new THREE.Vector3(260, 2, -140),
     ];
 
     // Load the crates
@@ -555,7 +588,7 @@ if (WebGL.isWebGL2Available()) {
     // Win Condition: contact wall
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
-        { x: 0, y: 2, z: 10 }, // Position - finish line
+        { x: -100, y: 2, z: -150 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
     );
 
@@ -769,7 +802,7 @@ document.addEventListener('keydown', (event) => {
         updateSkybox(skybox, time * 0.001);
 
             // Update Cannon debugger
-            cannonDebugger.update();
+            //cannonDebugger.update();
 
             // Update orbit controls only in free camera mode
             if (cameraManager.cameraMode === 2) {

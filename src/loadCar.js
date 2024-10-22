@@ -66,7 +66,7 @@ class HeadLight {
 
     setTarget(carObject, x, y, z) {// Create a target for the spotlight
         const target = new THREE.Object3D();
-        target.position.set(-10, 0, 0); // Adjust as needed
+        target.position.set(x, y, z); // Adjust as needed
         carObject.add(target);
         this.light.target = target;
     }
@@ -84,6 +84,16 @@ export class CarLoader {
         this.wheelMaterial = wheelMaterial;
         this.camera = camera;
         this.loader = new GLTFLoader();
+        this.headlights = []; // Array to store headlight references
+        this.headlightsOn = false; // Track headlight state
+    }
+
+    toggleHeadlights() {
+        this.headlightsOn = !this.headlightsOn;
+        this.headlights.forEach(light => {
+            light.light.visible = this.headlightsOn;
+            light.light.intensity = this.headlightsOn ? 100 : 0;
+        });
     }
 
 
@@ -109,6 +119,7 @@ export class CarLoader {
                         mass: 10,
                         position: new CANNON.Vec3(0, 2, -10),
                         //position: new CANNON.Vec3(360, 2, 40),
+                        //position : new CANNON.Vec3(220, 2, -120),
                         shape: new CANNON.Box(new CANNON.Vec3(2.6, 0.5, 1.1)),
                         material: this.carMaterial
                     });
@@ -150,8 +161,10 @@ export class CarLoader {
                     leftHeadLight.setPenumbra(0.5);
                     leftHeadLight.setDecay(2);
                     leftHeadLight.setShadow(true);
-                    leftHeadLight.setTarget(carObject, 10, 1, 0);
+                    leftHeadLight.setTarget(carObject, -10, 1, 0);
+                    leftHeadLight.light.visible = false;
                     carObject.add(leftHeadLight.light);
+                    this.headlights.push(leftHeadLight);
 
                     const rightHeadLight = new HeadLight(0xffff55, 100);
                     rightHeadLight.setPosition(new THREE.Vector3(-2, 1, -1))
@@ -159,8 +172,11 @@ export class CarLoader {
                     rightHeadLight.setPenumbra(0.5);
                     rightHeadLight.setDecay(2);
                     rightHeadLight.setShadow(true);
-                    rightHeadLight.setTarget(carObject, 10, 1, 0);
+                    rightHeadLight.setTarget(carObject, -10, 1, 0);
+                    rightHeadLight.light.visible = false;
                     carObject.add(rightHeadLight.light);
+                    this.headlights.push(rightHeadLight);
+
 
                     vehicle.addToWorld(this.world);
 
