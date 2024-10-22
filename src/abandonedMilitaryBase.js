@@ -22,7 +22,7 @@ export class MilitaryBaseLoader {
                     militaryBaseObject.scale.set(7, 4, 5);
                     
                     // Position the base with a slight elevation to account for ground level
-                    militaryBaseObject.position.set(x+2, y , z);
+                    militaryBaseObject.position.set(x+4, y , z-3);
                     militaryBaseObject.rotation.y = angleY;
                     
                     // Add shadows
@@ -44,14 +44,17 @@ export class MilitaryBaseLoader {
                     this.scene.add(militaryBaseObject);
 
                     // Create compound shape for complex collision
+                    // const mainBuildingShape = new CANNON.Box(
+                    //     new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)
+                    // );
                     const mainBuildingShape = new CANNON.Box(
-                        new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)
+                        new CANNON.Vec3(size.x, size.y, size.z)
                     );
 
                     // Add additional collision boxes for various parts of the base
-                    const wallsShape = new CANNON.Box(
-                        new CANNON.Vec3(size.x / 1.8, size.y / 4, size.z / 1.8)
-                    );
+                    // const wallsShape = new CANNON.Box(
+                    //     new CANNON.Vec3(size.x / 1.8, size.y / 4, size.z / 1.8)
+                    // );
 
                     // Create the military base physics body
                     const militaryBaseBody = new CANNON.Body({
@@ -62,7 +65,7 @@ export class MilitaryBaseLoader {
 
                     // Add shapes with offsets for better collision detection
                     militaryBaseBody.addShape(mainBuildingShape);
-                    militaryBaseBody.addShape(wallsShape, new CANNON.Vec3(0, -size.y / 4, 0));
+                    //militaryBaseBody.addShape(wallsShape, new CANNON.Vec3(0, -size.y / 4, 0));
 
                     // Set rotation
                     militaryBaseBody.quaternion.setFromEuler(0, angleY, 0);

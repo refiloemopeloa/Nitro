@@ -18,7 +18,7 @@ export class GraffitiWallLoader {
                     console.log('Graffiti wall model loaded successfully');
                     const graffitiWallObject = gltf.scene;
                     graffitiWallObject.scale.set(4.5, 3, 1); // Adjust scale as needed
-                    graffitiWallObject.position.set(x, y+10, z);
+                    graffitiWallObject.position.set(x+5, y+10, z);
                     graffitiWallObject.rotation.y = Math.PI/2;
                     this.scene.add(graffitiWallObject);
 
