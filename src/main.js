@@ -354,15 +354,20 @@ if (WebGL.isWebGL2Available()) {
     // Initialize controls
     const controls = new Controls(world);
 
+    let isGameStarted = false;
     let gameTimer;
     let gameOver = false;
     let frameCounter = 0;
 
     function startGame() {
-        gameOver = false;
-        gameTimer = 120; //in seconds
-        frameCounter = 0;
-        updateTimerDisplay();
+        if (!isGameStarted) {
+            isGameStarted = true;
+            gameOver = false;
+            gameTimer = 120; // in seconds
+            frameCounter = 0;
+            updateTimerDisplay();
+            console.log('Game started!');
+        }
     }
 
     function updateTimerDisplay() {
@@ -370,7 +375,7 @@ if (WebGL.isWebGL2Available()) {
         const seconds = gameTimer % 60;
         const timerDisplay = document.getElementById('timer');
         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
+    }    
 
     function showGameOverPopup() {
         const popup = document.getElementById('game-over-popup');
@@ -428,7 +433,7 @@ if (WebGL.isWebGL2Available()) {
         });
 
         // Start the game
-        startGame();
+        //startGame();
 
         // Start the animation loop
         renderer.setAnimationLoop(animate);
@@ -477,6 +482,29 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
+// Modify your existing event listener for keydown
+document.addEventListener('keydown', (event) => {
+    // Existing camera switch code
+    if (event.key === 'v') {
+        cameraManager.switchCameraMode();
+        if (cameraManager.cameraMode === 2) {
+            orbitControls.enabled = true;
+            if (carObject) {
+                orbitControls.target.copy(carObject.position);
+                const offset = new THREE.Vector3(5, 3, 5);
+                camera.position.copy(carObject.position).add(offset);
+            }
+        } else {
+            orbitControls.enabled = false;
+        }
+    }
+
+    // Start game on WASD press
+    if (['w', 'a', 's', 'd'].includes(event.key.toLowerCase()) && !isGameStarted) {
+        startGame();
+    }
+});
+
     function animate(time) {
 
         
@@ -493,6 +521,21 @@ if (WebGL.isWebGL2Available()) {
         while (accumulatedTime >= 1 / 60) {
             world.step(1 / 60);
             accumulatedTime -= 1 / 60;
+        }
+
+        if (isGameStarted && !gameOver) {
+            frameCounter++;
+            if (frameCounter >= 60) { // Check if a second has passed
+                frameCounter = 0;
+                if (gameTimer > 0) {
+                    gameTimer--;
+                    updateTimerDisplay();
+                } else {
+                    gameOver = true;
+                    showGameOverPopup();
+                    return;
+                }
+            }
         }
 
             if (carObject && vehicle) {
