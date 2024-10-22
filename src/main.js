@@ -189,6 +189,20 @@ if (WebGL.isWebGL2Available()) {
     addScenery(270, 0, 40, 0, 0);
     addScenery(320, 0, 40, 0, 0);
 
+
+    // After loading buildings, update their shader uniforms
+    scene.traverse((object) => {
+        if (object.isMesh && object.material && object.material.type === 'ShaderMaterial' && object.material.uniforms) {
+            if (object.material.uniforms.lightDirection) {
+                object.material.uniforms.lightDirection.value.copy(directionalLight.position).normalize();
+            }
+            if (object.material.uniforms.lightColor) {
+                object.material.uniforms.lightColor.value.copy(directionalLight.color);
+            }
+        }
+    });
+
+
     trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
     addRoadSeg(0, 3.14, -0.1);
@@ -394,6 +408,37 @@ if (WebGL.isWebGL2Available()) {
                 }
                 // Update boost objects
                 boostLoader.update(deltaTime);
+
+
+                const headlightPositions = [
+                    new THREE.Vector3().setFromMatrixPosition(carObject.children[0].matrixWorld),
+                    new THREE.Vector3().setFromMatrixPosition(carObject.children[1].matrixWorld)
+                ];
+
+                // Update building shaders with headlight positions
+                // In your animate function, when updating building shaders:
+                scene.traverse((object) => {
+                    if (object.isMesh && object.material.type === 'ShaderMaterial' && object.material.uniforms) {
+                        // Update directional light
+                        if (object.material.uniforms.lightDirection) {
+                            object.material.uniforms.lightDirection.value.copy(directionalLight.position).normalize();
+                        }
+                        if (object.material.uniforms.lightColor) {
+                            object.material.uniforms.lightColor.value.copy(directionalLight.color);
+                        }
+
+                        // Update headlight positions
+                        if (object.material.uniforms.pointLightPositions) {
+                            object.material.uniforms.pointLightPositions.value = headlightPositions;
+                        }
+                        if (object.material.uniforms.pointLightColors) {
+                            object.material.uniforms.pointLightColors.value = [
+                                new THREE.Color(0xffff00),
+                                new THREE.Color(0xffff00)
+                            ];
+                        }
+                    }
+                });
             }
 
             // Update skybox
