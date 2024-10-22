@@ -8,7 +8,7 @@ let audioState = {
 };
   
   self.addEventListener('fetch', (event) => {
-    if (event.request.url.includes('./src/assets/sport-rock-background-250761.mp3')) {
+    if (event.request.url.includes('./src/assets/tense-atmosphere-with-haunting-dark-soundscapes-227740.mp3')) {
       event.respondWith(
         caches.open('audio-cache').then(cache => {
           return cache.match(event.request).then(cachedResponse => {
