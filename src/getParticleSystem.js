@@ -110,7 +110,7 @@ function getParticleSystem(params) {
     return c.lerp(b, t);
   });
   colorSpline.addPoint(0.0, new THREE.Color(0xFFFFFF));
-  colorSpline.addPoint(1.0, new THREE.Color(0x0000FF));
+  colorSpline.addPoint(1.0, new THREE.Color(0x000000));
 
   const sizeSpline = getLinearSpline((t, a, b) => {
     return a + t * (b - a);
