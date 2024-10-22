@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <script src="src/audioControls.js"></script>
     <title>Car Game</title>
     <style>
         #speedometer {
@@ -115,6 +117,17 @@
 </head>
 <body>
     <div id="threeJs"></div>
+    <button id="menuButton">Menu</button>
+
+    <div id="modalOverlay"></div>
+    <div id="modal">
+        <h2>Game Menu</h2>
+        <button id="settingsButton">Settings</button>
+        <button id="quitButton">Quit Game</button>
+        <button id="resumeButton">Resume</button>
+        <button id="muteButton" onclick="toggleMute()">Mute</button>
+    </div>
+    
     <div id="speedometer">
         <div id="speed-display">0 km/h</div>
         <div id="needle"></div>

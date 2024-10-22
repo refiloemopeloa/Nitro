@@ -6,8 +6,14 @@ import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
 import { BuildingLoader } from './loadBuilding.js';
+import { WastelandStoreLoader } from './loadWastelandStore.js';
+import { GraffitiWallLoader } from './loadGraffitiWall.js';
+import { MilitaryBaseLoader } from './abandonedMilitaryBase.js';
 import carModel from './models/armor_truck.glb';
+import wastelandStoreModel from './models/wasteland_stores.glb';
 import buildingModel from './models/building.glb';
+import graffitiWallModel from './models/ghetto_hood_graffiti_detroit_building_1.glb';
+import militaryBaseModel from './models/post_apocalyptic_building_-_lowpoly.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 import { BoostLoader } from './loadBoost.js';
@@ -60,7 +66,7 @@ if (WebGL.isWebGL2Available()) {
         groundMaterial,
         carMaterial,
         {
-            friction: 0.1,
+            friction: 0.0,
             restitution: 0.3
         }
     );
@@ -114,8 +120,48 @@ if (WebGL.isWebGL2Available()) {
     let trackEnd = new THREE.Vector3(0, 0, 0);
     let trackMergeDir = new THREE.Quaternion(0, 0, 0);
     let trackPrevDir = [0, 0, 0];
-    const trackSegSize = new CANNON.Vec3(5, 0.05, 5);
-    let trackDir = new CANNON.Vec3(0, 0, -1);
+    let trackSegSize = new CANNON.Vec3(5, 0.05, 10);
+
+    let isPaused = false;
+    let lastTime = 0;
+    let accumulatedTime = 0;
+
+    // Menu functionality
+    const menuButton = document.getElementById('menuButton');
+    const modal = document.getElementById('modal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const settingsButton = document.getElementById('settingsButton');
+    const quitButton = document.getElementById('quitButton');
+    const resumeButton = document.getElementById('resumeButton');
+
+    menuButton.addEventListener('click', openModal);
+    modalOverlay.addEventListener('click', closeModal);
+    settingsButton.addEventListener('click', openSettings);
+    quitButton.addEventListener('click', quitGame);
+    resumeButton.addEventListener('click', closeModal);
+
+    function openModal() {
+        modal.style.display = 'block';
+        modalOverlay.style.display = 'block';
+        isPaused = true;
+        controls.disable(); // Disable car controls
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+        isPaused = false;
+        controls.enable(); // Re-enable car controls
+    }
+
+    function openSettings() {
+        // Implement settings functionality here
+        console.log('Settings opened');
+    }
+
+    function quitGame() {
+        window.location.href = 'startPage.html';
+    }
 
     // Function to add road segments
     function addRoadSeg(angleX, angleY, angleZ) {
@@ -166,6 +212,9 @@ if (WebGL.isWebGL2Available()) {
     }
 
     const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
+    const graffitiWallLoader = new GraffitiWallLoader(scene, world, groundMaterial);
+    const militaryBaseLoader = new MilitaryBaseLoader(scene, world, groundMaterial);
+    const wastelandStoreLoader = new WastelandStoreLoader(scene, world, groundMaterial);
     // add scenery
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
@@ -178,7 +227,33 @@ if (WebGL.isWebGL2Available()) {
                 }).catch(error => {
                     console.error('Failed to load building model:', error);
                 });
-                break;
+            
+            break;
+
+            case 1: // New case for graffiti wall
+            const wallSize = new CANNON.Vec3(30, 15, 20); // Adjust size as needed
+            graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize).then(() => {
+                console.log('Graffiti wall loaded successfully');
+            }).catch(error => {
+                console.error('Failed to load graffiti wall model:', error);
+            });
+            break;
+            case 2: // New case for graffiti wall
+            const baseSize = new CANNON.Vec3(20, 20, 20); // Adjust size as needed
+            militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
+                console.log('Base loaded successfully');
+            }).catch(error => {
+                console.error('Failed to load base model:', error);
+            });
+            break;
+            case 3: // Wasteland store
+            const storeSize = new CANNON.Vec3(25, 15, 25);
+            wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize).then(() => {
+                console.log('Wasteland store loaded successfully');
+            }).catch(error => {
+                console.error('Failed to load wasteland store model:', error);
+            });
+            break;
                 //buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
@@ -202,9 +277,9 @@ if (WebGL.isWebGL2Available()) {
     // addScenery(40, 0, -40, 0, 0);
     // addScenery(40, 0, 40, 0, 0);
 
-    addScenery(80, 0, -40, 0, 0);
+    addScenery(80, 0, -40, 0, 3);
     addScenery(100, 0, -80, 0, 0);
-    addScenery(140, 0, -80, 0, 0);
+    addScenery(140, 0, -60, 0, 2);
     addScenery(150, 0, -20, 0.5, 0);
     addScenery(180, 0, -80, 0, 0);
     addScenery(220, 0, -60, -0.4, 0);
@@ -213,21 +288,21 @@ if (WebGL.isWebGL2Available()) {
     addScenery(320, 0, 0, 0.1, 0);
 
     addScenery(150, 0, 40, 0, 0);
-    addScenery(190, 0, 10, 0, 0);
+    addScenery(190, 0, 10, 0, 2);
 
     addScenery(80, 0, 80, 0, 0);
-    addScenery(120, 0, 120, 0, 0);
-    addScenery(160, 0, 120, 0, 0);
+    addScenery(120, 0, 120, 0, 2);
+    addScenery(160, 0, 120, 0, 2);
     addScenery(200, 0, 120, 0, 0);
     addScenery(240, 0, 120, 0, 0);
-    addScenery(280, 0, 120, 0, 0);
+    addScenery(280, 0, 120, 0, 2);
     addScenery(320, 0, 120, 0, 0);
     addScenery(360, 0, 110, 0.3, 0);
     addScenery(390, 0, 90, 1.4, 0);
     addScenery(400, 0, 40, 0, 0);
 
-    addScenery(230, 0, 40, 0, 0);
-    addScenery(270, 0, 40, 0, 0);
+    addScenery(230, 0, 40, 0, 3);
+    addScenery(270, 0, 40, 0, 2);
     addScenery(320, 0, 40, 0, 0);
 
     addScenery(380, 0, 0, 0, 0);
@@ -411,24 +486,22 @@ if (WebGL.isWebGL2Available()) {
     });
 
     function animate(time) {
-        time *= 0.001; // Convert time to seconds
-        const deltaTime = time * 0.001;
 
-        if (!gameOver && !wallLoader.checkGameStatus()) {
+        
+        if (isPaused) {
+            lastTime = time;
+            return;
+        }
+
+        const deltaTime = (time - lastTime) * 0.001; // Convert to seconds
+        lastTime = time;
+
+        accumulatedTime += deltaTime;
+        
+        while (accumulatedTime >= 1 / 60) {
             world.step(1 / 60);
-            frameCounter++; // Increment frame counter
-
-            if (frameCounter >= 60) { // Check if a second has passed
-                frameCounter = 0; // Reset frame counter
-                if (gameTimer > 0) {
-                    gameTimer--;
-                    updateTimerDisplay();
-                } else {
-                    gameOver = true;
-                    showGameOverPopup();
-                    return;
-                }
-            }
+            accumulatedTime -= 1 / 60;
+        }
 
             if (carObject && vehicle) {
                 // Define the visual offset for the car model in local space
@@ -523,14 +596,8 @@ if (WebGL.isWebGL2Available()) {
                 wallLoader.update(deltaTime);
             }
 
-            // Rotate cubes
-            // cube1.rotation.x += 0.01;
-            // cube1.rotation.y += 0.02;
-            // cube2.rotation.x += 0.02;
-            // cube2.rotation.y += 0.01
-
-            // Update skybox
-            updateSkybox(skybox, time);
+        // Update skybox
+        updateSkybox(skybox, time * 0.001);
 
             // Update Cannon debugger
             cannonDebugger.update();
@@ -541,7 +608,7 @@ if (WebGL.isWebGL2Available()) {
             }
 
             renderer.render(scene, camera);
-        }
+        
     }
 
     function createGridTexture(groundSize) {
