@@ -513,7 +513,7 @@ if (WebGL.isWebGL2Available()) {
             updateSkybox(skybox, time);
 
             // Update Cannon debugger
-            cannonDebugger.update();
+            //cannonDebugger.update();
 
             // Update orbit controls only in free camera mode
             if (cameraManager.cameraMode === 2) {
