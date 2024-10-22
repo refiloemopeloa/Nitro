@@ -6,10 +6,14 @@ import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
 import { BuildingLoader } from './loadBuilding.js';
+import { WastelandStoreLoader } from './loadWastelandStore.js';
 import { GraffitiWallLoader } from './loadGraffitiWall.js';
+import { MilitaryBaseLoader } from './abandonedMilitaryBase.js';
 import carModel from './models/armor_truck.glb';
+import wastelandStoreModel from './models/wasteland_stores.glb';
 import buildingModel from './models/building.glb';
 import graffitiWallModel from './models/ghetto_hood_graffiti_detroit_building_1.glb';
+import militaryBaseModel from './models/post_apocalyptic_building_-_lowpoly.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 import { BoostLoader } from './loadBoost.js';
@@ -169,6 +173,8 @@ if (WebGL.isWebGL2Available()) {
 
     const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
     const graffitiWallLoader = new GraffitiWallLoader(scene, world, groundMaterial);
+    const militaryBaseLoader = new MilitaryBaseLoader(scene, world, groundMaterial);
+    const wastelandStoreLoader = new WastelandStoreLoader(scene, world, groundMaterial);
     // add scenery
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
@@ -189,6 +195,22 @@ if (WebGL.isWebGL2Available()) {
                 console.log('Graffiti wall loaded successfully');
             }).catch(error => {
                 console.error('Failed to load graffiti wall model:', error);
+            });
+            break;
+            case 2: // New case for graffiti wall
+            const baseSize = new CANNON.Vec3(20, 20, 20); // Adjust size as needed
+            militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
+                console.log('Base loaded successfully');
+            }).catch(error => {
+                console.error('Failed to load base model:', error);
+            });
+            break;
+            case 3: // Wasteland store
+            const storeSize = new CANNON.Vec3(25, 15, 25);
+            wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize).then(() => {
+                console.log('Wasteland store loaded successfully');
+            }).catch(error => {
+                console.error('Failed to load wasteland store model:', error);
             });
             break;
                 //buildingABody.quaternion.setFromEuler(0, angleY, 0);
@@ -217,28 +239,28 @@ if (WebGL.isWebGL2Available()) {
     addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
     addScenery(-40, 0, 40, 0.01, 0);
-    addScenery(0, 0, -40, 0, 0);
-    addScenery(0, 0, 40, 0, 0);
+    addScenery(0, 0, -40, 0, 2);
+    addScenery(0, 0, 40, 0, 3);
     addScenery(40, 0, -40, 0, 0);
     addScenery(40, 0, 40, 0, 0);
 
-    addScenery(80, 0, -40, 0, 0);
+    addScenery(80, 0, -40, 0, 3);
     addScenery(100, 0, -80, 0, 0);
-    addScenery(140, 0, -60, 0, 0);
+    addScenery(140, 0, -60, 0, 2);
     addScenery(150, 0, -20, 0.5, 0);
     addScenery(150, 0, 40, 0, 0);
-    addScenery(190, 0, 10, 0, 0);
+    addScenery(190, 0, 10, 0, 2);
 
     addScenery(80, 0, 80, 0, 0);
-    addScenery(120, 0, 120, 0, 0);
-    addScenery(160, 0, 120, 0, 0);
+    addScenery(120, 0, 120, 0, 2);
+    addScenery(160, 0, 120, 0, 2);
     addScenery(200, 0, 120, 0, 0);
     addScenery(240, 0, 120, 0, 0);
-    addScenery(280, 0, 120, 0, 0);
+    addScenery(280, 0, 120, 0, 2);
     addScenery(320, 0, 120, 0, 0);
 
-    addScenery(230, 0, 40, 0, 0);
-    addScenery(270, 0, 40, 0, 0);
+    addScenery(230, 0, 40, 0, 3);
+    addScenery(270, 0, 40, 0, 2);
     addScenery(320, 0, 40, 0, 0);
 
     trackEnd.set(120, -0.5, 80);
