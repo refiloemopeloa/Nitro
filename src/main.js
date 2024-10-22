@@ -171,7 +171,7 @@ if (WebGL.isWebGL2Available()) {
         switch (type) {
             case 0:
             case 0:
-                const buildingSize = new CANNON.Vec3(20, 20, 20);
+                const buildingSize = new CANNON.Vec3(20, 16, 20);
                 const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
                 buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
                     console.log('Building loaded successfully');
@@ -194,13 +194,13 @@ if (WebGL.isWebGL2Available()) {
     }
 
     // creating map
-    addScenery(-40, 0, 0, 0, 0);
-    addScenery(-40, 0, -40, -0.01, 0);
-    addScenery(-40, 0, 40, 0.01, 0);
-    addScenery(0, 0, -40, 0, 0);
-    addScenery(0, 0, 40, 0, 0);
-    addScenery(40, 0, -40, 0, 0);
-    addScenery(40, 0, 40, 0, 0);
+    // addScenery(-40, 0, 0, 0, 0);
+    // addScenery(-40, 0, -40, -0.01, 0);
+    // addScenery(-40, 0, 40, 0.01, 0);
+    // addScenery(0, 0, -40, 0, 0);
+    // addScenery(0, 0, 40, 0, 0);
+    // addScenery(40, 0, -40, 0, 0);
+    // addScenery(40, 0, 40, 0, 0);
 
     addScenery(80, 0, -40, 0, 0);
     addScenery(100, 0, -80, 0, 0);
@@ -210,7 +210,7 @@ if (WebGL.isWebGL2Available()) {
     addScenery(220, 0, -60, -0.4, 0);
     addScenery(260, 0, -45, -0.4, 0);
     addScenery(300, 0, -30, 0.5, 0);
-    addScenery(320, 0, 5, 1.75, 0);
+    addScenery(320, 0, 0, 0.1, 0);
 
     addScenery(150, 0, 40, 0, 0);
     addScenery(190, 0, 10, 0, 0);
@@ -236,6 +236,13 @@ if (WebGL.isWebGL2Available()) {
     addScenery(380, 0, -120, 0, 0);
     addScenery(380, 0, -160, 0, 0);
     addScenery(380, 0, -200, 0, 0);
+    addScenery(380, 0, -240, 0, 0);
+    addScenery(340, 0, -240, 0, 0);
+    addScenery(300, 0, -240, 0, 0);
+    addScenery(260, 0, -240, 0, 0);
+
+    addScenery(280, 0, -170, 0, 0);
+    addScenery(240, 0, -170, 0, 0);
 
     trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
@@ -513,7 +520,7 @@ if (WebGL.isWebGL2Available()) {
             updateSkybox(skybox, time);
 
             // Update Cannon debugger
-            //cannonDebugger.update();
+            cannonDebugger.update();
 
             // Update orbit controls only in free camera mode
             if (cameraManager.cameraMode === 2) {
