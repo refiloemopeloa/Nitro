@@ -67,9 +67,8 @@ export function createDynamicSkybox(scene) {
 
     const skybox = new THREE.Mesh(geometry, material);
 
-    // Adjust the position of the skybox upwards
-    skybox.position.y += 480; // Increase the Y position as needed
-
+    
+    skybox.position.y += 480; 
     scene.add(skybox);
 
     return skybox;
