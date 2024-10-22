@@ -22,6 +22,8 @@ import { getParticleSystem } from './getParticleSystem.js';
 import getLayer from './getLayer.js';
 import img from './img/fire.png'
 import { WallLoader } from './loadWall.js';
+import { CrateLoader } from './loadCrate.js';
+import crateModel from './models/Crate.glb';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -367,6 +369,13 @@ if (WebGL.isWebGL2Available()) {
     let frameCounter = 0;
 
     function startGame() {
+        gameOver = false;
+        gameTimer = 120;
+        frameCounter = 0;
+        carHealth = MAX_HEALTH; // Reset health
+        lastCollisionTime = 0;
+        updateHealthBar(); // Initialize health bar
+        updateTimerDisplay();
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
@@ -419,6 +428,19 @@ if (WebGL.isWebGL2Available()) {
         carObject = loadedCarObject;
         vehicle = loadedVehicle;
 
+        // Add collision event listener to the chassis body
+        vehicle.chassisBody.addEventListener('collide', (event) => {
+            const relativeVelocity = event.contact.getImpactVelocityAlongNormal();
+
+            // Only register significant collisions
+            if (Math.abs(relativeVelocity) > 5) {
+                const damage = Math.min(COLLISION_DAMAGE, Math.abs(relativeVelocity * 2));
+                damageVehicle(damage);
+            }
+        });
+
+        crateLoader.setCarBody(vehicle.chassisBody);
+
         controls.setVehicle(vehicle);
         controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
 
@@ -448,6 +470,50 @@ if (WebGL.isWebGL2Available()) {
         console.error('Failed to load car model:', error);
     });
 
+
+    let carHealth = 100;
+    const MAX_HEALTH = 100;
+    const COLLISION_DAMAGE = 10;
+    const HEALTH_REGEN_RATE = 2;
+    const HEALTH_REGEN_DELAY = 3000; // 3 seconds
+    let lastCollisionTime = 0;
+
+    // Add this function to update the health bar display
+    function updateHealthBar() {
+        const healthBar = document.getElementById('health-bar');
+        const healthPercent = (carHealth / MAX_HEALTH) * 100;
+        healthBar.style.width = `${healthPercent}%`;
+
+        // Change color based on health level
+        if (healthPercent > 60) {
+            healthBar.style.backgroundColor = '#2ecc71'; // Green
+        } else if (healthPercent > 30) {
+            healthBar.style.backgroundColor = '#f1c40f'; // Yellow
+        } else {
+            healthBar.style.backgroundColor = '#e74c3c'; // Red
+        }
+    }
+
+    // Add this function to handle damage
+    function damageVehicle(damage) {
+        carHealth = Math.max(0, carHealth - damage);
+        lastCollisionTime = Date.now();
+        updateHealthBar();
+
+        if (carHealth <= 0) {
+            gameOver = true;
+            showGameOverPopup();
+        }
+    }
+
+    // Add this function to handle health regeneration
+    function regenerateHealth(currentTime) {
+        if (carHealth < MAX_HEALTH && (currentTime - lastCollisionTime) > HEALTH_REGEN_DELAY) {
+            carHealth = Math.min(MAX_HEALTH, carHealth + HEALTH_REGEN_RATE * (1 / 60));
+            updateHealthBar();
+        }
+    }
+
     const boostLoader = new BoostLoader(scene, world);
     const boostPositions = [
         // add boost items here
@@ -458,6 +524,25 @@ if (WebGL.isWebGL2Available()) {
         console.log('Boost objects loaded');
     }).catch(error => {
         console.error('Failed to load boost model:', error);
+    });
+
+    const crateLoader = new CrateLoader(scene, world);
+    const cratePositions = [
+        // Add crate positions here
+        new THREE.Vector3(0, 2, 2),
+    ];
+
+    // Load the crates
+    crateLoader.loadCrates(crateModel, cratePositions).then(() => {
+        console.log('Crate objects loaded');
+    }).catch(error => {
+        console.error('Failed to load crate model:', error);
+    });
+
+
+    //event listener for crate damage
+    window.addEventListener('crateDamage', (event) => {
+        damageVehicle(event.detail.damage);
     });
 
     // Win Condition: contact wall
@@ -589,6 +674,8 @@ document.addEventListener('keydown', (event) => {
                 // Apply controls
                 controls.update();
 
+                regenerateHealth(Date.now());
+
                 // Apply wheel transformations
                 controls.applyWheelTransformations();
 
@@ -600,7 +687,7 @@ document.addEventListener('keydown', (event) => {
                 }
                 // Update boost objects
                 boostLoader.update(deltaTime);
-                
+
                 if (fireEffect1 && fireEffect2) {
                     // Get the car's world position and rotation
                     carObject.updateMatrixWorld();
@@ -608,34 +695,36 @@ document.addEventListener('keydown', (event) => {
                     const carWorldQuaternion = new THREE.Quaternion();
                     carObject.getWorldPosition(carWorldPosition);
                     carObject.getWorldQuaternion(carWorldQuaternion);
-                
+
                     // Get the car's velocity in world space
                     const velocity = vehicle.chassisBody.velocity;
                     const carVelocity = new THREE.Vector3(velocity.x, velocity.y, velocity.z);
-                    
+
                     // Scale the velocity for the particle effect
                     const velocityScale = 2.0; // Adjust this value to control the particle spread
                     const particleVelocity = carVelocity.multiplyScalar(-velocityScale); // Negative to emit backwards
-                    
+
                     // Add some upward velocity to make it more visually interesting
                     particleVelocity.y += 2;
-                
+
                     // Update emitter positions and velocities
                     const updateEmitter = (fireEffect, localOffset) => {
                         const worldOffset = localOffset.clone().applyQuaternion(carWorldQuaternion);
                         fireEffect.emitter.position.copy(carWorldPosition).add(worldOffset);
                         fireEffect.setVelocity(particleVelocity);
                     };
-                
+
                     updateEmitter(fireEffect1, new THREE.Vector3(2, 0, 0.5));
                     updateEmitter(fireEffect2, new THREE.Vector3(2, 0, -0.5));
-                
+
                     // Update fire effects
                     fireEffect1.update(deltaTime);
                     fireEffect2.update(deltaTime);
 
                 }
                 wallLoader.update(deltaTime);
+                // Update crates
+                crateLoader.update(deltaTime);
             }
 
         // Update skybox
