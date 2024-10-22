@@ -43,6 +43,9 @@ Alternatively, you can run:
 ```shell
 npx vite
 ```
+## Push to lamp server
+
+When you push anything to main, it will automatically push to the lamp server.
 
 This will do the same thing as the run script above.
 
