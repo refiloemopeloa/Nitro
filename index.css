@@ -1,0 +1,88 @@
+#speedometer {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    height: 200px;
+    background-color:rgba(51, 51, 51, 0.7);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#speed-display {
+    position: absolute;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    color: white;
+    bottom: 60px;
+}
+
+#needle {
+    position: absolute;
+    width: 4px;
+    height: 90px;
+    background-color: red;
+    bottom: 100px;
+    left: 98px;
+    transform-origin: bottom center;
+    transform: rotate(-90deg);
+    transition: transform 0.2s ease-out;
+}
+
+.speed-mark {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.speed-mark::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 10px;
+    background-color: white;
+    top: 10px;
+}
+
+.speed-text {
+    position: absolute;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: white;
+    top: 25px;
+}
+
+#menuButton {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+#modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    z-index: 1001;
+}
+#modalOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
