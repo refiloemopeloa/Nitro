@@ -485,7 +485,7 @@ if (WebGL.isWebGL2Available()) {
                 }
                 // Update boost objects
                 boostLoader.update(deltaTime);
-                // Update emitter positions
+                
                 if (fireEffect1 && fireEffect2) {
                     // Get the car's world position and rotation
                     carObject.updateMatrixWorld();
@@ -493,19 +493,32 @@ if (WebGL.isWebGL2Available()) {
                     const carWorldQuaternion = new THREE.Quaternion();
                     carObject.getWorldPosition(carWorldPosition);
                     carObject.getWorldQuaternion(carWorldQuaternion);
-
-                    // Update emitter positions relative to the car
-                    const updateEmitterPosition = (fireEffect, localOffset) => {
-                        const worldOffset = localOffset.applyQuaternion(carWorldQuaternion);
+                
+                    // Get the car's velocity in world space
+                    const velocity = vehicle.chassisBody.velocity;
+                    const carVelocity = new THREE.Vector3(velocity.x, velocity.y, velocity.z);
+                    
+                    // Scale the velocity for the particle effect
+                    const velocityScale = 2.0; // Adjust this value to control the particle spread
+                    const particleVelocity = carVelocity.multiplyScalar(-velocityScale); // Negative to emit backwards
+                    
+                    // Add some upward velocity to make it more visually interesting
+                    particleVelocity.y += 2;
+                
+                    // Update emitter positions and velocities
+                    const updateEmitter = (fireEffect, localOffset) => {
+                        const worldOffset = localOffset.clone().applyQuaternion(carWorldQuaternion);
                         fireEffect.emitter.position.copy(carWorldPosition).add(worldOffset);
+                        fireEffect.setVelocity(particleVelocity);
                     };
-
-                    updateEmitterPosition(fireEffect1, new THREE.Vector3(2, 0, 0.5));
-                    updateEmitterPosition(fireEffect2, new THREE.Vector3(2, 0, -0.5));
-
+                
+                    updateEmitter(fireEffect1, new THREE.Vector3(2, 0, 0.5));
+                    updateEmitter(fireEffect2, new THREE.Vector3(2, 0, -0.5));
+                
                     // Update fire effects
-                    if (fireEffect1) fireEffect1.update(deltaTime);
-                    if (fireEffect2) fireEffect2.update(deltaTime);
+                    fireEffect1.update(deltaTime);
+                    fireEffect2.update(deltaTime);
+
                 }
                 wallLoader.update(deltaTime);
             }
