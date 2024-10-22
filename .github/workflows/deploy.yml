@@ -18,8 +18,8 @@ jobs:
       # Deploy to the LAMP server using rsync
       - name: Deploy to LAMP server
         run: |
-          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "rsync -r ./Nitro sonsite@lamp.ms.wits.ac.za:~/public_html/"
-          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "chown sonsite:www-data /home/sonsite/public_html"
+          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "rsync -r --exclude='.git/' . sonsite@lamp.ms.wits.ac.za:~/public_html/"
+          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "chown -R sonsite:www-data /home/sonsite/public_html"
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
 
