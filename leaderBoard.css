@@ -5,6 +5,7 @@ body, html {
     overflow: hidden;
     font-family: Arial, sans-serif;
 }
+
 #canvas-container2 {
     position: fixed;
     top: 0;
@@ -13,6 +14,7 @@ body, html {
     height: 100%;
     z-index: 1;
 }
+
 #content2 {
     position: relative;
     z-index: 2;
@@ -22,6 +24,7 @@ body, html {
     align-items: center;
     height: 100vh;
 }
+
 .leaderboard {
     background-color: rgba(0, 0, 0, 0.7);
     padding: 20px;
@@ -29,23 +32,34 @@ body, html {
     max-width: 500px;
     width: 100%;
 }
+
 h1 {
     text-align: center;
     color: #fff;
+    margin-bottom: 20px;
 }
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
+
 th, td {
-    padding: 10px;
+    padding: 12px;
     text-align: left;
     border-bottom: 1px solid #444;
 }
+
 th {
     background-color: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
 }
+
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
 #backButton {
     position: fixed;
     top: 20px;
@@ -59,6 +73,25 @@ th {
     border-radius: 5px;
     z-index: 3;
 }
+
 #backButton:hover {
+    background-color: rgba(24, 14, 14, 0.3);
+}
+
+.mute-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    border-radius: 5px;
+    z-index: 3;
+}
+
+.mute-button:hover {
     background-color: rgba(24, 14, 14, 0.3);
 }
