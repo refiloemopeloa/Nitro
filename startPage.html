@@ -13,11 +13,7 @@
         <h1></h1>
         <button id="start-btn">Start</button>
         <button id="leaderboard-btn">Leaderboard</button>
-        <form id="nameForm">
-            <input type="text" id="playerName" placeholder="Enter your name" required>
-            <button id = "add-player-btn">Submit Player</button>
-        </form>
-        <div id="message"></div>
+        
         
         <button id="muteButton" onclick="toggleMute()">Mute</button>
     </div>
@@ -98,58 +94,7 @@
             });
           }
 
-          async function addPlayer(name, score) {
-            try {
-              const response = await fetch('http://localhost:5174/api/leaderBoard', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, score }),
-              });
           
-              if (!response.ok) {
-                throw new Error('Failed to add player');
-              }
-          
-              const data = await response.json();
-              leaderboard = data.message;
-              updateLeaderboardDisplay();
-          
-              const messageElement = document.getElementById('message');
-              if (messageElement) {
-                messageElement.textContent = `Player "${name}" added successfully!`;
-                setTimeout(() => {
-                  messageElement.textContent = '';
-                }, 3000);
-              }
-            } catch (error) {
-              console.error('Error adding player:', error);
-              alert('Failed to add player. Please try again.');
-            }
-          }
-
-          function setupAddPlayerForm() {
-            const addPlayerBtn = document.getElementById('add-player-btn');
-            if (addPlayerBtn) {
-              addPlayerBtn.addEventListener('click', () => {
-                const nameInput = document.getElementById('playerName');
-                const name = nameInput.value.trim();
-                const score = 0;
-          
-                if (name) {
-                  addPlayer(name, score);
-                  nameInput.value = '';
-                } else {
-                  alert('Please enter a valid name and score.');
-                }
-              });
-            }
-          }
-
-          document.addEventListener('DOMContentLoaded', () => {
-            setupAddPlayerForm();
-          });
     </script>
 </body>
 </html>
