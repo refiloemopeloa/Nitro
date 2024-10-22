@@ -219,7 +219,6 @@ if (WebGL.isWebGL2Available()) {
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
             case 0:
-            case 0:
                 const buildingSize = new CANNON.Vec3(20, 16, 20);
                 const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
                 buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
@@ -238,7 +237,7 @@ if (WebGL.isWebGL2Available()) {
                 console.error('Failed to load graffiti wall model:', error);
             });
             break;
-            case 2: // New case for graffiti wall
+            case 2: // New case for military base
             const baseSize = new CANNON.Vec3(20, 20, 20); // Adjust size as needed
             militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
                 console.log('Base loaded successfully');
@@ -269,13 +268,13 @@ if (WebGL.isWebGL2Available()) {
     }
 
     // creating map
-    // addScenery(-40, 0, 0, 0, 0);
-    // addScenery(-40, 0, -40, -0.01, 0);
-    // addScenery(-40, 0, 40, 0.01, 0);
-    // addScenery(0, 0, -40, 0, 0);
-    // addScenery(0, 0, 40, 0, 0);
-    // addScenery(40, 0, -40, 0, 0);
-    // addScenery(40, 0, 40, 0, 0);
+    addScenery(-40, 0, 0, 0, 1);
+    addScenery(-40, 0, -40, -0.01, 0);
+    addScenery(-40, 0, 40, 0.01, 0);
+    addScenery(0, 0, -40, 0, 0);
+    addScenery(0, 0, 40, 0, 0);
+    addScenery(40, 0, -40, 0, 0);
+    addScenery(40, 0, 40, 0, 0);
 
     addScenery(80, 0, -40, 0, 3);
     addScenery(100, 0, -80, 0, 0);
