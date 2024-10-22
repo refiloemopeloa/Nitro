@@ -3,7 +3,7 @@ let audioState = {
   isPlaying: false,
   isMuted: false,
   currentTime: 0,
-  volume: 1.0,  // Add volume to state
+  volume: 6.0,  // Add volume to state
   lastUpdateTime: Date.now()
 };
   
