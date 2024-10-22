@@ -450,6 +450,7 @@ if (WebGL.isWebGL2Available()) {
 
         controls.setVehicle(vehicle);
         controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
+        controls.setCarLoader(carLoader);
 
         // Create fire effects using the emitters from the car
         fireEffect1 = getParticleSystem({

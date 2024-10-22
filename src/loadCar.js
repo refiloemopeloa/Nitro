@@ -84,6 +84,16 @@ export class CarLoader {
         this.wheelMaterial = wheelMaterial;
         this.camera = camera;
         this.loader = new GLTFLoader();
+        this.headlights = []; // Array to store headlight references
+        this.headlightsOn = false; // Track headlight state
+    }
+
+    toggleHeadlights() {
+        this.headlightsOn = !this.headlightsOn;
+        this.headlights.forEach(light => {
+            light.light.visible = this.headlightsOn;
+            light.light.intensity = this.headlightsOn ? 100 : 0;
+        });
     }
 
 
@@ -151,7 +161,9 @@ export class CarLoader {
                     leftHeadLight.setDecay(2);
                     leftHeadLight.setShadow(true);
                     leftHeadLight.setTarget(carObject, -10, 1, 0);
+                    leftHeadLight.light.visible = false;
                     carObject.add(leftHeadLight.light);
+                    this.headlights.push(leftHeadLight);
 
                     const rightHeadLight = new HeadLight(0xffff55, 100);
                     rightHeadLight.setPosition(new THREE.Vector3(-2, 1, -1))
@@ -160,7 +172,10 @@ export class CarLoader {
                     rightHeadLight.setDecay(2);
                     rightHeadLight.setShadow(true);
                     rightHeadLight.setTarget(carObject, -10, 1, 0);
+                    rightHeadLight.light.visible = false;
                     carObject.add(rightHeadLight.light);
+                    this.headlights.push(rightHeadLight);
+
 
                     vehicle.addToWorld(this.world);
 

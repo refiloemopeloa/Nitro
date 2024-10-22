@@ -38,7 +38,7 @@ const buildingFragmentShader = `
         vec3 normal = normalize(vNormal);
         
         // Directional light calculation
-        float directionalIntensity = max(dot(normal, normalize(lightDirection)), 0.3);
+        float directionalIntensity = max(dot(normal, normalize(lightDirection)), 0.6);
         vec3 directionalLight = lightColor * directionalIntensity * 0.7; // Increased intensity
         
         // Point lights (headlights) calculation
