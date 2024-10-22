@@ -66,7 +66,7 @@ class HeadLight {
 
     setTarget(carObject, x, y, z) {// Create a target for the spotlight
         const target = new THREE.Object3D();
-        target.position.set(-10, 0, 0); // Adjust as needed
+        target.position.set(x, y, z); // Adjust as needed
         carObject.add(target);
         this.light.target = target;
     }
@@ -150,7 +150,7 @@ export class CarLoader {
                     leftHeadLight.setPenumbra(0.5);
                     leftHeadLight.setDecay(2);
                     leftHeadLight.setShadow(true);
-                    leftHeadLight.setTarget(carObject, 10, 1, 0);
+                    leftHeadLight.setTarget(carObject, -10, 1, 0);
                     carObject.add(leftHeadLight.light);
 
                     const rightHeadLight = new HeadLight(0xffff55, 100);
@@ -159,7 +159,7 @@ export class CarLoader {
                     rightHeadLight.setPenumbra(0.5);
                     rightHeadLight.setDecay(2);
                     rightHeadLight.setShadow(true);
-                    rightHeadLight.setTarget(carObject, 10, 1, 0);
+                    rightHeadLight.setTarget(carObject, -10, 1, 0);
                     carObject.add(rightHeadLight.light);
 
                     vehicle.addToWorld(this.world);
