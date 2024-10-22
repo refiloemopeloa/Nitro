@@ -1,0 +1,26 @@
+name: Deploy to LAMP server
+
+# Trigger the workflow on pushes to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Deploy to the LAMP server using rsync
+      - name: Deploy to LAMP server
+        run: |
+          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "mkdir -p ~/public_html/Nitro"
+          rsync -r ./Nitro sonsite@lamp.ms.wits.ac.za:~/public_html/
+          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "chown sonsite:www-data /home/sonsite/public_html"
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+
