@@ -27,7 +27,7 @@ void main() {
     vec3 direction = normalize(vWorldPosition);
     
     // Apply rotation to create movement illusion
-    float theta = time * 0.02;
+    float theta = time * 0.011;
     mat3 rotation = mat3(
         cos(theta), 0, sin(theta),
         0, 1, 0,
@@ -40,6 +40,8 @@ void main() {
     gl_FragColor = texColor;
 }
 `;
+
+
 
 export function createDynamicSkybox(scene) {
     const loader = new THREE.CubeTextureLoader();
@@ -64,6 +66,9 @@ export function createDynamicSkybox(scene) {
     });
 
     const skybox = new THREE.Mesh(geometry, material);
+
+    
+    skybox.position.y += 480; 
     scene.add(skybox);
 
     return skybox;
