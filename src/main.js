@@ -500,6 +500,7 @@ if (WebGL.isWebGL2Available()) {
                     if (fireEffect1) fireEffect1.update(deltaTime);
                     if (fireEffect2) fireEffect2.update(deltaTime);
                 }
+                wallLoader.update(deltaTime);
             }
 
             // Rotate cubes

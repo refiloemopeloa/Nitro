@@ -1,4 +1,5 @@
 import * as CANNON from 'cannon-es';
+import * as THREE from 'three';
 
 export class WallLoader {
     constructor(scene, world) {
@@ -6,18 +7,55 @@ export class WallLoader {
         this.world = world;
         this.wall = null;
         this.isGameWon = false;
-        this.startTime = 120; // Initial game time in seconds
+        this.startTime = 120;
+        this.wallMesh = null;
+        this.wallLight = null;
+        this.glowMesh = null;
     }
 
     createWall(position, size) {
-        // Create a physics body for the wall
+        // Create physics body for the wall
         const wallShape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2));
         const wallBody = new CANNON.Body({
-            mass: 0, // Static body
+            mass: 0,
             shape: wallShape,
             position: new CANNON.Vec3(position.x, position.y, position.z),
-            isTrigger: true // Make it a trigger volume
+            isTrigger: true
         });
+
+        // Create visual representation of the wall
+        const wallGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+        const wallMaterial = new THREE.MeshPhongMaterial({
+            color: 0x0088ff,
+            transparent: true,
+            opacity: 0.3,
+            emissive: 0x0044aa,
+            shininess: 100
+        });
+        this.wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+        this.wallMesh.position.copy(position);
+        this.scene.add(this.wallMesh);
+
+        // Add glow effect
+        const glowGeometry = new THREE.BoxGeometry(
+            size.x + 0.4, 
+            size.y + 0.4, 
+            size.z + 0.4
+        );
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: 0x0088ff,
+            transparent: true,
+            opacity: 0.2,
+            side: THREE.BackSide
+        });
+        this.glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+        this.glowMesh.position.copy(position);
+        this.scene.add(this.glowMesh);
+
+        // Add point light
+        this.wallLight = new THREE.PointLight(0x0088ff, 1, 20);
+        this.wallLight.position.copy(position);
+        this.scene.add(this.wallLight);
 
         // Add collision event listener
         wallBody.addEventListener('collide', (event) => {
@@ -30,20 +68,36 @@ export class WallLoader {
         this.wall = wallBody;
     }
 
+    update(deltaTime) {
+        if (this.wallMesh && this.glowMesh && this.wallLight) {
+            // Make the light intensity and glow opacity pulsate
+            const pulseFactor = (Math.sin(Date.now() * 0.003) + 1) / 2; // Slower pulsation than boost
+            
+            // Update wall transparency
+            this.wallMesh.material.opacity = 0.2 + 0.2 * pulseFactor;
+            
+            // Update glow effect
+            this.glowMesh.material.opacity = 0.1 + 0.1 * pulseFactor;
+            
+            // Update light intensity
+            this.wallLight.intensity = 0.8 + 0.4 * pulseFactor;
+
+            // Update wall material emissive intensity
+            this.wallMesh.material.emissiveIntensity = 0.3 + 0.3 * pulseFactor;
+        }
+    }
+
     handleWallCollision() {
         this.isGameWon = true;
         
-        // Get remaining time from timer display
         const timerDisplay = document.getElementById('timer');
         const [minutes, seconds] = timerDisplay.textContent.split(':').map(Number);
         const remainingTime = minutes * 60 + seconds;
         
-        // Calculate completion time
         const completionTime = this.startTime - remainingTime;
         const completionMinutes = Math.floor(completionTime / 60);
         const completionSeconds = completionTime % 60;
         
-        // Create win popup if it doesn't exist
         let winPopup = document.getElementById('win-popup');
         if (!winPopup) {
             winPopup = document.createElement('div');
@@ -58,17 +112,14 @@ export class WallLoader {
             `;
             document.body.appendChild(winPopup);
 
-            // Add event listeners for the buttons
             document.getElementById('win-restart-button').addEventListener('click', () => {
                 location.reload();
             });
 
             document.getElementById('win-main-menu-button').addEventListener('click', () => {
-                // Implement main menu logic here
                 console.log('Main menu button clicked');
             });
 
-            // Add styles for the win popup
             const style = document.createElement('style');
             style.textContent = `
                 #win-popup {
@@ -94,7 +145,6 @@ export class WallLoader {
             document.head.appendChild(style);
         }
 
-        // Show the win popup
         winPopup.style.display = 'block';
     }
 
