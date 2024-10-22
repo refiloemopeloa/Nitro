@@ -15,14 +15,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
-
       # Deploy to the LAMP server using rsync
       - name: Deploy to LAMP server
         run: |
-          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "mkdir -p ~/public_html/Nitro"
-          rsync -r ./Nitro sonsite@lamp.ms.wits.ac.za:~/public_html/
+          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "rsync -r ./Nitro sonsite@lamp.ms.wits.ac.za:~/public_html/"
           sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "chown sonsite:www-data /home/sonsite/public_html"
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
