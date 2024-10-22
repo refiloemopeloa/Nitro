@@ -6,8 +6,10 @@ import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
 import { BuildingLoader } from './loadBuilding.js';
+import { GraffitiWallLoader } from './loadGraffitiWall.js';
 import carModel from './models/armor_truck.glb';
 import buildingModel from './models/building.glb';
+import graffitiWallModel from './models/ghetto_hood_graffiti_detroit_building_1.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 import { BoostLoader } from './loadBoost.js';
@@ -166,11 +168,11 @@ if (WebGL.isWebGL2Available()) {
     }
 
     const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
+    const graffitiWallLoader = new GraffitiWallLoader(scene, world, groundMaterial);
     // add scenery
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
-            case 0:
-                case 0:
+           case 0:
                 const buildingSize = new CANNON.Vec3(20, 20, 20);
                 const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
                 buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
@@ -178,7 +180,17 @@ if (WebGL.isWebGL2Available()) {
                 }).catch(error => {
                     console.error('Failed to load building model:', error);
                 });
-                break;
+            
+            break;
+
+            case 1: // New case for graffiti wall
+            const wallSize = new CANNON.Vec3(30, 15, 20); // Adjust size as needed
+            graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize).then(() => {
+                console.log('Graffiti wall loaded successfully');
+            }).catch(error => {
+                console.error('Failed to load graffiti wall model:', error);
+            });
+            break;
                 //buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
@@ -202,7 +214,7 @@ if (WebGL.isWebGL2Available()) {
     // addScenery(30, 0, 30, 0, 0);
 
     // creating map
-    addScenery(-40, 0, 0, 0, 0);
+    addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
     addScenery(-40, 0, 40, 0.01, 0);
     addScenery(0, 0, -40, 0, 0);
