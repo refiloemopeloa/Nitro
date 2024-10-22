@@ -123,27 +123,44 @@ function getParticleSystem(params) {
  const maxSize = 2.0;
  let particleCount = 0;
 
- function _AddParticles(timeElapsed) {
-   particleCount += timeElapsed * rate;
-   const n = Math.floor(particleCount);
-   particleCount -= n;
+ let _currentVelocity = new THREE.Vector3(7, 4, 0);
+  
+  function setVelocity(velocity) {
+    _currentVelocity.copy(velocity);
+  }
 
-   for (let i = 0; i < n; i++) {
-     const life = (Math.random() * 0.75 + 0.25) * maxLife;
-     _particles.push({
-       position: new THREE.Vector3(
-         (Math.random() * 2 - 1) * radius,
-         (Math.random() * 2 - 1) * radius,
-         (Math.random() * 2 - 1) * radius
-       ).add(emitter.position),
-       size: (Math.random() * 0.5 + 0.5) * maxSize,
-       colour: new THREE.Color(),
-       alpha: 1.0,
-       life: life,
-       maxLife: life,
-       rotation: Math.random() * 2.0 * Math.PI,
-       velocity: new THREE.Vector3(0, 4, 0),
-     });
+  function _AddParticles(timeElapsed) {
+    particleCount += timeElapsed * rate;
+    const n = Math.floor(particleCount);
+    particleCount -= n;
+
+    for (let i = 0; i < n; i++) {
+      const life = (Math.random() * 0.75 + 0.25) * maxLife;
+      
+      // Add some randomization to the velocity
+      const randomVelocity = new THREE.Vector3(
+        (Math.random() * 2 - 1) * 2,  // Random spread in x
+        (Math.random() * 2 - 1) * 2,  // Random spread in y
+        (Math.random() * 2 - 1) * 2   // Random spread in z
+      );
+      
+      // Combine base velocity with random spread
+      const finalVelocity = _currentVelocity.clone().add(randomVelocity);
+      
+      _particles.push({
+        position: new THREE.Vector3(
+          (Math.random() * 2 - 1) * radius,
+          (Math.random() * 2 - 1) * radius,
+          (Math.random() * 2 - 1) * radius
+        ).add(emitter.position),
+        size: (Math.random() * 0.5 + 0.5) * maxSize,
+        colour: new THREE.Color(),
+        alpha: 1.0,
+        life: life,
+        maxLife: life,
+        rotation: Math.random() * 2.0 * Math.PI,
+        velocity: finalVelocity,
+      });
    }
  }
 
@@ -222,7 +239,12 @@ function getParticleSystem(params) {
     _UpdateParticles(timeElapsed);
     _UpdateGeometry();
   }
-  return { update, emitter };
+
+  return { 
+    update,
+    emitter,
+    setVelocity  // Expose the setVelocity function
+  };
 }
 
 export { getParticleSystem };
