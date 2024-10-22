@@ -230,7 +230,7 @@ if (WebGL.isWebGL2Available()) {
             break;
 
             case 1: // New case for graffiti wall
-            const wallSize = new CANNON.Vec3(30, 15, 20); // Adjust size as needed
+            const wallSize = new CANNON.Vec3(10, 22, 40); // Adjust size as needed
             graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize).then(() => {
                 console.log('Graffiti wall loaded successfully');
             }).catch(error => {
@@ -238,7 +238,7 @@ if (WebGL.isWebGL2Available()) {
             });
             break;
             case 2: // New case for military base
-            const baseSize = new CANNON.Vec3(20, 20, 20); // Adjust size as needed
+            const baseSize = new CANNON.Vec3(20, 20, 13); // Adjust size as needed
             militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
                 console.log('Base loaded successfully');
             }).catch(error => {
@@ -246,7 +246,7 @@ if (WebGL.isWebGL2Available()) {
             });
             break;
             case 3: // Wasteland store
-            const storeSize = new CANNON.Vec3(25, 15, 25);
+            const storeSize = new CANNON.Vec3(40, 16, 14.5);
             wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize).then(() => {
                 console.log('Wasteland store loaded successfully');
             }).catch(error => {
@@ -271,7 +271,7 @@ if (WebGL.isWebGL2Available()) {
     addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
     addScenery(-40, 0, 40, 0.01, 0);
-    addScenery(0, 0, -40, 0, 0);
+    addScenery(0, 0, -40, 0, 3);
     addScenery(0, 0, 40, 0, 0);
     addScenery(40, 0, -40, 0, 0);
     addScenery(40, 0, 40, 0, 0);
@@ -304,38 +304,38 @@ if (WebGL.isWebGL2Available()) {
     addScenery(270, 0, 40, 0, 2);
     addScenery(320, 0, 40, 0, 0);
 
-    addScenery(380, 0, 0, 0, 0);
-    addScenery(380, 0, -40, 0, 0);
-    addScenery(380, 0, -80, 0, 0);
-    addScenery(380, 0, -120, 0, 0);
-    addScenery(380, 0, -160, 0, 0);
-    addScenery(380, 0, -200, 0, 0);
-    addScenery(380, 0, -240, 0, 0);
-    addScenery(340, 0, -240, 0, 0);
-    addScenery(300, 0, -240, 0, 0);
-    addScenery(260, 0, -240, 0, 0);
+    // addScenery(380, 0, 0, 0, 0);
+    // addScenery(380, 0, -40, 0, 0);
+    // addScenery(380, 0, -80, 0, 0);
+    // addScenery(380, 0, -120, 0, 0);
+    // addScenery(380, 0, -160, 0, 0);
+    // addScenery(380, 0, -200, 0, 0);
+    // addScenery(380, 0, -240, 0, 0);
+    // addScenery(340, 0, -240, 0, 0);
+    // addScenery(300, 0, -240, 0, 0);
+    // addScenery(260, 0, -240, 0, 0);
 
-    addScenery(280, 0, -170, 0, 0);
-    addScenery(240, 0, -170, 0, 0);
+    // addScenery(280, 0, -170, 0, 0);
+    // addScenery(240, 0, -170, 0, 0);
 
-    trackEnd.set(120, -0.5, 80);
-    trackSegSize.set(20, 0.05, 20);
-    addRoadSeg(0, 3.14, -0.12);
-    addRoadSeg(0, 0, -0.12);
-    addRoadSeg(0, 0, 0.24);
-    addRoadSeg(0, 0, 1.65);
-    addRoadSeg(0, 0, -2.8)
+    // trackEnd.set(120, -0.5, 80);
+    // trackSegSize.set(20, 0.05, 20);
+    // addRoadSeg(0, 3.14, -0.12);
+    // addRoadSeg(0, 0, -0.12);
+    // addRoadSeg(0, 0, 0.24);
+    // addRoadSeg(0, 0, 1.65);
+    // addRoadSeg(0, 0, -2.8)
 
-    trackPrevDir = [0, 3.14, 0];
-    trackEnd.set(250, 12, 80);
-    addRoadSeg(-0.08, 0, 0.3);
-    addRoadSeg(0, 0, -0.3);
-    addRoadSeg(0, 0.2, 0);
-    addRoadSeg(0, 0, -0.3);
+    // trackPrevDir = [0, 3.14, 0];
+    // trackEnd.set(250, 12, 80);
+    // addRoadSeg(-0.08, 0, 0.3);
+    // addRoadSeg(0, 0, -0.3);
+    // addRoadSeg(0, 0.2, 0);
+    // addRoadSeg(0, 0, -0.3);
 
-    trackEnd.set(368, 0, 40);
-    trackPrevDir = [0, 3.14, 0];
-    addRoadSeg(0, 0, -0.31);
+    // trackEnd.set(368, 0, 40);
+    // trackPrevDir = [0, 3.14, 0];
+    // addRoadSeg(0, 0, -0.31);
 
 
     // Create ground

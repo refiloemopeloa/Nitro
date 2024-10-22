@@ -54,9 +54,9 @@ export class WastelandStoreLoader {
                     );
 
                     // Add collision for storefront/awning
-                    const awningShape = new CANNON.Box(
-                        new CANNON.Vec3(size.x / 1.8, size.y / 6, size.z / 1.5)
-                    );
+                    // const awningShape = new CANNON.Box(
+                    //     new CANNON.Vec3(size.x / 1.8, size.y / 6, size.z / 1.5)
+                    // );
 
                     // Create the store physics body
                     const storeBody = new CANNON.Body({
@@ -67,7 +67,7 @@ export class WastelandStoreLoader {
 
                     // Add shapes with offsets
                     storeBody.addShape(mainStoreShape);
-                    storeBody.addShape(awningShape, new CANNON.Vec3(0, size.y / 3, size.z / 4));
+                    //storeBody.addShape(awningShape, new CANNON.Vec3(0, size.y / 3, size.z / 4));
 
                     // Set rotation
                     storeBody.quaternion.setFromEuler(0, angleY, 0);
