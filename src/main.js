@@ -802,7 +802,7 @@ document.addEventListener('keydown', (event) => {
         updateSkybox(skybox, time * 0.001);
 
             // Update Cannon debugger
-            cannonDebugger.update();
+            //cannonDebugger.update();
 
             // Update orbit controls only in free camera mode
             if (cameraManager.cameraMode === 2) {
