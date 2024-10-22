@@ -35,7 +35,7 @@ if (WebGL.isWebGL2Available()) {
     scene.add(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(0, 10, 0);
+    directionalLight.position.set(1, 1, 1).normalize();
     scene.add(directionalLight);
 
     // Add dynamic skybox
@@ -139,6 +139,7 @@ if (WebGL.isWebGL2Available()) {
                     console.error('Failed to load building model:', error);
                 });
                 break;
+
                 //buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
@@ -275,7 +276,7 @@ if (WebGL.isWebGL2Available()) {
         console.log('Main menu button clicked');
     });
     // Load the car
-    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial);
+    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
     let carObject, vehicle;
 
     carLoader.loadCar(carModel).then(({
