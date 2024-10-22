@@ -14,7 +14,7 @@ async function initAudio() {
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
   
   try {
-    const response = await fetch('./src/assets/sport-rock-background-250761.mp3');
+    const response = await fetch('./src/assets/tense-atmosphere-with-haunting-dark-soundscapes-227740.mp3');
     const arrayBuffer = await response.arrayBuffer();
     audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     isInitialized = true;
