@@ -15,6 +15,7 @@ import boostModel from './models/atom.glb';
 import { getParticleSystem } from './getParticleSystem.js';
 import getLayer from './getLayer.js';
 import img from './img/fire.png'
+import { WallLoader } from './loadWall.js';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -373,6 +374,13 @@ if (WebGL.isWebGL2Available()) {
         console.error('Failed to load boost model:', error);
     });
 
+    // Win Condition: contact wall
+    const wallLoader = new WallLoader(scene, world);
+    wallLoader.createWall(
+        { x: 0, y: 2, z: 10 }, // Position - finish line
+        { x: 5, y: 4, z: 10 }    // Size 
+    );
+
     // Cannon debugger
     const cannonDebugger = new CannonDebugger(scene, world);
 
@@ -399,7 +407,7 @@ if (WebGL.isWebGL2Available()) {
         time *= 0.001; // Convert time to seconds
         const deltaTime = time * 0.001;
 
-        if (!gameOver) {
+        if (!gameOver && !wallLoader.checkGameStatus()) {
             world.step(1 / 60);
             frameCounter++; // Increment frame counter
 
