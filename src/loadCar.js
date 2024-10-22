@@ -70,6 +70,7 @@ export class CarLoader {
                         mass: 10,
                         position: new CANNON.Vec3(0, 2, -10),
                         //position: new CANNON.Vec3(360, 2, 40),
+                        //position : new CANNON.Vec3(220, 2, -120),
                         shape: new CANNON.Box(new CANNON.Vec3(2.6, 0.5, 1.1)),
                         material: this.carMaterial
                     });
