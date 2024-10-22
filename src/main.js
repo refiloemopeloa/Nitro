@@ -20,7 +20,7 @@ import { BoostLoader } from './loadBoost.js';
 import boostModel from './models/atom.glb';
 import { getParticleSystem } from './getParticleSystem.js';
 import getLayer from './getLayer.js';
-import img from './img/fire.png'
+import img from './img/smoke.png'
 import { WallLoader } from './loadWall.js';
 import { CrateLoader } from './loadCrate.js';
 import crateModel from './models/Crate.glb';
