@@ -12,6 +12,9 @@ import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 import { BoostLoader } from './loadBoost.js';
 import boostModel from './models/atom.glb';
+import { getParticleSystem } from './getParticleSystem.js';
+import getLayer from './getLayer.js';
+import img from './img/fire.png'
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -73,6 +76,38 @@ if (WebGL.isWebGL2Available()) {
     );
     world.addContactMaterial(wheelGroundContactMaterial);
 
+    // Add two cubes with fire effects
+    // const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    // const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+
+    // const cube1 = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    // cube1.position.set(368, 2, 40);
+    // scene.add(cube1);
+
+    // const cube2 = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    // cube2.position.set(360, 2, 45);
+    // scene.add(cube2);
+
+    // Create invisible emitters
+    // const emitter1 = new THREE.Object3D();
+    // const emitter2 = new THREE.Object3D();
+
+    // Add fire effects to invisible emitters
+    // const fireEffect1 = getParticleSystem({
+    //     camera,
+    //     emitter: emitter1,
+    //     parent: scene,
+    //     rate: 50.0,
+    //     texture: img,
+    // });
+
+    // const fireEffect2 = getParticleSystem({
+    //     camera,
+    //     emitter: emitter2,
+    //     parent: scene,
+    //     rate: 50.0,
+    //     texture: img,
+    // });
 
     // Variables for track creation
     let trackEnd = new THREE.Vector3(0, 0, 0);
@@ -95,7 +130,7 @@ if (WebGL.isWebGL2Available()) {
 
         const floorGeometry = new THREE.BoxGeometry(trackSegSize.x * 2, trackSegSize.y * 2, trackSegSize.z * 2);
         const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
-        const floorMaterial = new THREE.MeshStandardMaterial({ 
+        const floorMaterial = new THREE.MeshStandardMaterial({
             //color: 0xfcfcfc
             map: concreteATexture,
         });
@@ -134,7 +169,7 @@ if (WebGL.isWebGL2Available()) {
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
             case 0:
-                case 0:
+            case 0:
                 const buildingSize = new CANNON.Vec3(20, 20, 20);
                 const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
                 buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
@@ -200,7 +235,7 @@ if (WebGL.isWebGL2Available()) {
     addScenery(380, 0, -120, 0, 0);
     addScenery(380, 0, -160, 0, 0);
     addScenery(380, 0, -200, 0, 0);
-    
+
     trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
     addRoadSeg(0, 3.14, -0.12);
@@ -219,7 +254,7 @@ if (WebGL.isWebGL2Available()) {
     trackEnd.set(368, 0, 40);
     trackPrevDir = [0, 3.14, 0];
     addRoadSeg(0, 0, -0.31);
-    
+
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
@@ -246,7 +281,7 @@ if (WebGL.isWebGL2Available()) {
 
     let gameTimer;
     let gameOver = false;
-    let frameCounter = 0; 
+    let frameCounter = 0;
 
     function startGame() {
         gameOver = false;
@@ -283,20 +318,39 @@ if (WebGL.isWebGL2Available()) {
     });
     // Load the car
     const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial);
-    let carObject, vehicle;
+    let carObject, vehicle, fireEffect1, fireEffect2;
 
     carLoader.loadCar(carModel).then(({
         carObject: loadedCarObject,
         vehicle: loadedVehicle,
         FrontWheel_L,
         FrontWheel_R,
-        BackWheels
+        BackWheels,
+        emitter1,
+        emitter2
     }) => {
         carObject = loadedCarObject;
         vehicle = loadedVehicle;
 
         controls.setVehicle(vehicle);
         controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
+
+        // Create fire effects using the emitters from the car
+        fireEffect1 = getParticleSystem({
+            camera,
+            emitter: emitter1,
+            parent: scene,
+            rate: 50.0,
+            texture: img,
+        });
+
+        fireEffect2 = getParticleSystem({
+            camera,
+            emitter: emitter2,
+            parent: scene,
+            rate: 50.0,
+            texture: img,
+        });
 
         // Start the game
         startGame();
@@ -416,7 +470,35 @@ if (WebGL.isWebGL2Available()) {
                 }
                 // Update boost objects
                 boostLoader.update(deltaTime);
+                // Update emitter positions
+                if (fireEffect1 && fireEffect2) {
+                    // Get the car's world position and rotation
+                    carObject.updateMatrixWorld();
+                    const carWorldPosition = new THREE.Vector3();
+                    const carWorldQuaternion = new THREE.Quaternion();
+                    carObject.getWorldPosition(carWorldPosition);
+                    carObject.getWorldQuaternion(carWorldQuaternion);
+
+                    // Update emitter positions relative to the car
+                    const updateEmitterPosition = (fireEffect, localOffset) => {
+                        const worldOffset = localOffset.applyQuaternion(carWorldQuaternion);
+                        fireEffect.emitter.position.copy(carWorldPosition).add(worldOffset);
+                    };
+
+                    updateEmitterPosition(fireEffect1, new THREE.Vector3(2, 0, 0.5));
+                    updateEmitterPosition(fireEffect2, new THREE.Vector3(2, 0, -0.5));
+
+                    // Update fire effects
+                    if (fireEffect1) fireEffect1.update(deltaTime);
+                    if (fireEffect2) fireEffect2.update(deltaTime);
+                }
             }
+
+            // Rotate cubes
+            // cube1.rotation.x += 0.01;
+            // cube1.rotation.y += 0.02;
+            // cube2.rotation.x += 0.02;
+            // cube2.rotation.y += 0.01
 
             // Update skybox
             updateSkybox(skybox, time);

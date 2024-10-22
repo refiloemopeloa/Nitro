@@ -125,12 +125,26 @@ export class CarLoader {
 
                     vehicle.addToWorld(this.world);
 
+                    // Create emitters and attach them to the car
+                    const emitter1 = new THREE.Object3D();
+                    const emitter2 = new THREE.Object3D();
+
+                    // Position the emitters at the back of the car
+                    emitter1.position.set(2, 0, 0.5);  // Adjust these values as needed
+                    emitter2.position.set(2, 0, -0.5); // Adjust these values as needed
+
+                    // Add emitters as children of the car object
+                    carObject.add(emitter1);
+                    carObject.add(emitter2);
+
                     resolve({
                         carObject,
                         vehicle,
                         FrontWheel_L,
                         FrontWheel_R,
-                        BackWheels
+                        BackWheels,
+                        emitter1,
+                        emitter2
                     });
                 },
                 undefined,
