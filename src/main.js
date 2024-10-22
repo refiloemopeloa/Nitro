@@ -519,7 +519,7 @@ if (WebGL.isWebGL2Available()) {
         console.error('Failed to load boost model:', error);
     });
 
-    const crateLoader = new CrateLoader(scene, world);
+    const crateLoader = new CrateLoader(scene, world, camera);
     const cratePositions = [
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),

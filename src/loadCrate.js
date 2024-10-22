@@ -1,17 +1,22 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { getParticleSystem } from './getParticleSystem2.js';
+import img from './img/fire.png';
 
 export class CrateLoader {
-    constructor(scene, world) {
+    constructor(scene, world, camera) { 
         this.scene = scene;
         this.world = world;
+        this.camera = camera; 
         this.loader = new GLTFLoader();
         this.crateModels = [];
         this.crateBodies = [];
-        this.damageAmount = 20;
+        this.fireEffects = [];
+        this.fireEmitters = [];
+        this.damageAmount = 10;
         this.lastDamageTime = 0;
-        this.damageCooldown = 2000; // Reduced cooldown to 500ms for more responsive damage
+        this.damageCooldown = 2000;
         this.carBody = null;
         this.crateMaterial = new CANNON.Material('crate');
     }
@@ -19,7 +24,6 @@ export class CrateLoader {
     setCarBody(carBody) {
         this.carBody = carBody;
         
-        // Create contact material between crate and car
         const crateCarContact = new CANNON.ContactMaterial(
             this.crateMaterial,
             carBody.material,
@@ -47,6 +51,23 @@ export class CrateLoader {
                         this.scene.add(crateObject);
                         this.crateModels.push(crateObject);
 
+                        // Create crate as fire emitter
+                        const crateEmitter = new THREE.Object3D();
+                        crateEmitter.position.copy(position);
+                        crateEmitter.position.y += 0; // Offset fire slightly above crate
+                        this.scene.add(crateEmitter);
+                        this.fireEmitters.push(crateEmitter);
+
+                        // Create fire effect using getParticleSystem2 with proper camera reference
+                        const fireEffect = getParticleSystem({
+                            camera: this.camera, 
+                            emitter: crateEmitter,
+                            parent: this.scene,
+                            rate: 35.0,
+                            texture: img
+                        });
+                        this.fireEffects.push(fireEffect);
+
                         crateObject.traverse((child) => {
                             if (child.isMesh) {
                                 child.material = new THREE.MeshPhongMaterial({
@@ -67,7 +88,6 @@ export class CrateLoader {
 
                         crateBody.addEventListener('collide', (event) => {
                             const currentTime = Date.now();
-                            // Check if we're colliding with the car and enough time has passed since last damage
                             if (this.carBody && event.body === this.carBody && 
                                 currentTime - this.lastDamageTime >= this.damageCooldown) {
                                     
@@ -105,8 +125,10 @@ export class CrateLoader {
                         this.world.addBody(crateBody);
                         this.crateBodies.push(crateBody);
 
-                        const light = new THREE.PointLight(0xff0000, 0.5, 3);
+                        // Add point light for fire illumination
+                        const light = new THREE.PointLight(0xff6600, 1, 4);
                         light.position.copy(position);
+                        light.position.y += 1;
                         this.scene.add(light);
                     });
 
@@ -125,15 +147,40 @@ export class CrateLoader {
         if (index >= 0 && index < this.crateModels.length) {
             this.scene.remove(this.crateModels[index]);
             this.world.removeBody(this.crateBodies[index]);
+            
+            // Remove fire emitter and effect
+            if (this.fireEmitters[index]) {
+                this.scene.remove(this.fireEmitters[index]);
+            }
+            
+            this.fireEffects.splice(index, 1);
+            this.fireEmitters.splice(index, 1);
             this.crateModels.splice(index, 1);
             this.crateBodies.splice(index, 1);
         }
     }
 
     update(deltaTime) {
+        // Update crate positions and rotations
         this.crateModels.forEach((crate, index) => {
-            crate.position.copy(this.crateBodies[index].position);
-            crate.quaternion.copy(this.crateBodies[index].quaternion);
+            const crateBody = this.crateBodies[index];
+            const emitter = this.fireEmitters[index];
+            const fireEffect = this.fireEffects[index];
+            
+            // Update crate position and rotation
+            crate.position.copy(crateBody.position);
+            crate.quaternion.copy(crateBody.quaternion);
+            
+            // Update fire emitter position to follow crate
+            if (emitter) {
+                emitter.position.copy(crateBody.position);
+                emitter.position.y += 1; // Keep fire above crate
+            }
+            
+            // Update fire particle system
+            if (fireEffect) {
+                fireEffect.update(deltaTime);
+            }
         });
     }
 
