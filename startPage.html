@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="startPage.css">
+    <script src="src/audioControls.js"></script>
     <title>Document</title>
 </head>
 <div id="canvas-container"></div>
@@ -12,11 +13,9 @@
         <h1></h1>
         <button id="start-btn">Start</button>
         <button id="leaderboard-btn">Leaderboard</button>
-        <form id="nameForm">
-            <input type="text" id="playerName" placeholder="Enter your name" required>
-            <input type="submit" value="Submit Name">
-        </form>
-        <div id="message"></div>
+        
+        
+        <button id="muteButton" onclick="toggleMute()">Mute</button>
     </div>
 
     <script type="module">
@@ -66,7 +65,36 @@
             window.location.href = 'leaderBoard.html';
         });
 
-        
+        async function fetchLeaderboardData() {
+            try {
+              const response = await fetch('http://localhost:5174/api/leaderBoard');
+              if (!response.ok) {
+                throw new Error('Failed to fetch leaderboard data');
+              }
+              const data = await response.json();
+              return data.message;
+            } catch (error) {
+              console.error('Error fetching leaderboard data:', error);
+              return [];
+            }
+          }
+
+          function updateLeaderboardDisplay() {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            if (!leaderboardList) return; // Exit if not on leaderboard page
+          
+            leaderboardList.innerHTML = '';
+            
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            leaderboard.forEach((player, index) => {
+              const li = document.createElement('li');
+              li.textContent = `${index + 1}. ${player.name}: ${player.score}`;
+              leaderboardList.appendChild(li);
+            });
+          }
+
+          
     </script>
 </body>
 </html>
