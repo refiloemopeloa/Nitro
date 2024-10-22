@@ -3,30 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Time Leaderboard</title>
     <link rel="stylesheet" href="leaderBoard.css">
-    <script src="src/audioControls.js"></script>
-    <title>Leaderboard</title>
 </head>
 <body>
     <div id="canvas-container2"></div>
-    <button id="backButton">Back to Start</button>
+
+    <button id="backButton" onclick="window.location.href='startPage.html'">Back to Start</button>
+
     <div id="content2">
         <div class="leaderboard">
-            <h1>Leaderboard</h1>
+            <h1>Top 5 Times</h1>
             <table id="leaderboardTable">
                 <thead>
                     <tr>
                         <th>Rank</th>
                         <th>Name</th>
-                        <th>Score</th>
+                        <th>Time</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="leaderboardBody">
+                    <!-- Table rows will be inserted here by JavaScript -->
                 </tbody>
             </table>
         </div>
-        <button id="muteButton" onclick="toggleMute()">Mute</button>
     </div>
+
+    <button id="muteButton" class="mute-button">Mute</button>
 
     <script type="module">
         import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
@@ -64,24 +67,78 @@
 
         init();
 
-        // Fetch and display leaderboard data
-        fetch('./src/leaderBoard.json')
-            .then(response => response.json())
-            .then(data => {
-                const tableBody = document.querySelector('#leaderboardTable tbody');
-                data.forEach((player, index) => {
-                    const row = tableBody.insertRow();
-                    row.insertCell(0).textContent = index + 1;
-                    row.insertCell(1).textContent = player.name;
-                    row.insertCell(2).textContent = player.score;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to format time from seconds to MM:SS
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+        
+            // Function to update the leaderboard
+            function updateLeaderboard(leaderboardData) {
+                const tableBody = document.getElementById('leaderboardBody');
+                tableBody.innerHTML = ''; // Clear existing entries
+        
+                // Sort the data by time (ascending)
+                leaderboardData.sort((a, b) => a.time - b.time);
+        
+                // Take only top 5 entries
+                const topEntries = leaderboardData.slice(0, 5);
+        
+                // Add each entry to the table
+                topEntries.forEach((entry, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${entry.name}</td>
+                        <td>${formatTime(entry.time)}</td>
+                    `;
+                    tableBody.appendChild(row);
                 });
-            })
-            .catch(error => console.error('Error:', error));
-
-        // Add back button functionality
-        document.getElementById('backButton').addEventListener('click', () => {
-            console.log('Back button clicked');
-            window.location.href = 'startPage.html';
+            }
+        
+            // Sample data - replace this with your actual data loading mechanism
+            const sampleData = [
+                { name: "SpeedRunner", time: 85 },  // 1:25
+                { name: "QuickLap", time: 92 },     // 1:32
+                { name: "RaceMaster", time: 98 },   // 1:38
+                { name: "DriftKing", time: 105 },   // 1:45
+                { name: "FastTrack", time: 112 }    // 1:52
+            ];
+        
+            // Function to save a new time
+            function saveNewTime(name, time) {
+                // Load existing data
+                let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData')) || [];
+                
+                // Add new entry
+                leaderboardData.push({ name, time });
+                
+                // Sort and keep only top 5
+                leaderboardData.sort((a, b) => a.time - b.time);
+                leaderboardData = leaderboardData.slice(0, 5);
+                
+                // Save back to localStorage
+                localStorage.setItem('leaderboardData', JSON.stringify(leaderboardData));
+                
+                // Update display
+                updateLeaderboard(leaderboardData);
+            }
+        
+            // Initialize the leaderboard
+            const savedData = JSON.parse(localStorage.getItem('leaderboardData'));
+            updateLeaderboard(savedData || sampleData);
+        
+            // Mute button functionality
+            const muteButton = document.getElementById('muteButton');
+            let isMuted = false;
+        
+            muteButton.addEventListener('click', function() {
+                isMuted = !isMuted;
+                this.textContent = isMuted ? 'Unmute' : 'Mute';
+                // Add your audio muting logic here
+            });
         });
     </script>
 </body>

@@ -93,31 +93,71 @@ export class WallLoader {
         const timerDisplay = document.getElementById('timer');
         const [minutes, seconds] = timerDisplay.textContent.split(':').map(Number);
         const remainingTime = minutes * 60 + seconds;
-        
         const completionTime = this.startTime - remainingTime;
-        const completionMinutes = Math.floor(completionTime / 60);
-        const completionSeconds = completionTime % 60;
-        
+
+        // Check if time qualifies for leaderboard
+        const leaderboardData = JSON.parse(localStorage.getItem('leaderboardData')) || [];
+        const isTopFive = this.checkIfTopFive(completionTime, leaderboardData);
+
         let winPopup = document.getElementById('win-popup');
         if (!winPopup) {
             winPopup = document.createElement('div');
             winPopup.id = 'win-popup';
-            winPopup.innerHTML = `
+            
+            const content = isTopFive ? `
                 <div class="popup-content">
                     <h2>YOU WIN!</h2>
-                    <p>Completion Time: ${completionMinutes}:${completionSeconds.toString().padStart(2, '0')}</p>
-                    <button id="win-restart-button">Restart</button>
-                    <button id="win-main-menu-button">Main Menu</button>
+                    <p>Completion Time: ${this.formatTime(completionTime)}</p>
+                    <p class="highlight">Congratulations! You made it to the Top 5!</p>
+                    <div class="name-input">
+                        <input type="text" id="player-name" maxlength="15" placeholder="Enter your name">
+                        <button id="submit-score">Submit Score</button>
+                    </div>
+                    <div class="button-container">
+                        <button id="win-restart-button">Restart</button>
+                        <button id="win-main-menu-button">Main Menu</button>
+                    </div>
+                </div>
+            ` : `
+                <div class="popup-content">
+                    <h2>YOU WIN!</h2>
+                    <p>Completion Time: ${this.formatTime(completionTime)}</p>
+                    <div class="button-container">
+                        <button id="win-restart-button">Restart</button>
+                        <button id="win-main-menu-button">Main Menu</button>
+                    </div>
                 </div>
             `;
+            
+            winPopup.innerHTML = content;
             document.body.appendChild(winPopup);
+
+            // Add event listeners
+            if (isTopFive) {
+                document.getElementById('submit-score').addEventListener('click', () => {
+                    const playerName = document.getElementById('player-name').value.trim();
+                    if (playerName) {
+                        this.saveScore(playerName, completionTime);
+                        window.location.href = 'leaderBoard.html';
+                    } else {
+                        alert('Please enter your name');
+                    }
+                });
+
+                // Allow submission with Enter key
+                document.getElementById('player-name').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        document.getElementById('submit-score').click();
+                    }
+                });
+            }
 
             document.getElementById('win-restart-button').addEventListener('click', () => {
                 location.reload();
             });
 
             document.getElementById('win-main-menu-button').addEventListener('click', () => {
-                console.log('Main menu button clicked');
+                window.location.href = 'startPage.html';
             });
 
             const style = document.createElement('style');
@@ -128,24 +168,103 @@ export class WallLoader {
                     top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%);
-                    background-color: rgba(255, 255, 255, 0.9);
+                    background-color: rgba(0, 0, 0, 0.9);
                     padding: 40px;
                     border-radius: 10px;
                     text-align: center;
                     z-index: 1000;
+                    color: white;
                 }
 
-                #win-popup button {
-                    margin: 10px;
+                .popup-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                }
+
+                .highlight {
+                    color: #ffd700;
+                    font-weight: bold;
+                }
+
+                .name-input {
+                    display: flex;
+                    gap: 10px;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                #player-name {
+                    padding: 8px;
+                    border-radius: 4px;
+                    border: 1px solid #666;
+                    background: rgba(255, 255, 255, 0.9);
+                    color: black;
+                }
+
+                .button-container {
+                    display: flex;
+                    gap: 10px;
+                    justify-content: center;
+                }
+
+                button {
                     padding: 10px 20px;
                     font-size: 16px;
                     cursor: pointer;
+                    background-color: #444;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    transition: background-color 0.3s;
+                }
+
+                button:hover {
+                    background-color: #666;
+                }
+
+                #submit-score {
+                    background-color: #4CAF50;
+                }
+
+                #submit-score:hover {
+                    background-color: #45a049;
                 }
             `;
             document.head.appendChild(style);
         }
 
         winPopup.style.display = 'block';
+    }
+
+    formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    checkIfTopFive(newTime, leaderboardData) {
+        if (leaderboardData.length < 5) return true;
+        return leaderboardData.some(entry => newTime < entry.time);
+    }
+
+    saveScore(playerName, completionTime) {
+        let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData')) || [];
+        
+        // Add new score
+        leaderboardData.push({
+            name: playerName,
+            time: completionTime
+        });
+
+        // Sort by time (ascending)
+        leaderboardData.sort((a, b) => a.time - b.time);
+
+        // Keep only top 5
+        leaderboardData = leaderboardData.slice(0, 5);
+
+        // Save to localStorage
+        localStorage.setItem('leaderboardData', JSON.stringify(leaderboardData));
     }
 
     checkGameStatus() {
