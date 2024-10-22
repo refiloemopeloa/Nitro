@@ -1,31 +1,37 @@
 // audio-controller.js
 let audioContext;
 let source;
+let gainNode;  // Add gain node for volume control
 let audioBuffer;
 let startTime;
 let isInitialized = false;
 let isPlaying = false;
 let isMuted = false;
 let hasInteracted = false;
+let currentVolume = 1.0;  // Store current volume level
 
 async function initAudio() {
   if (isInitialized) return;
 
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  gainNode = audioContext.createGain();  // Create gain node
+  gainNode.connect(audioContext.destination);  // Connect gain to destination
   
   try {
-    const response = await fetch('./src/assets/sport-rock-background-250761.mp3');
+    const response = await fetch('./src/assets/tense-atmosphere-with-haunting-dark-soundscapes-227740.mp3');
     const arrayBuffer = await response.arrayBuffer();
     audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     isInitialized = true;
     
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('src/audioServiceWorker.js').then(() => {
-            // Once registered, retrieve audio state and play it accordingly.
             navigator.serviceWorker.ready.then(() => {
               getStateFromServiceWorker().then(state => {
+                if (state.volume !== undefined) {
+                    setVolume(state.volume);  // Restore volume from service worker
+                }
                 if (state.isPlaying) {
-                  playAudio(state.currentTime % audioBuffer.duration); // Resume from the last known time
+                  playAudio(state.currentTime % audioBuffer.duration);
                 }
               });
             });
@@ -58,13 +64,38 @@ async function playAudio(startFrom = 0) {
 
   source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
-  source.connect(audioContext.destination);
+  source.connect(gainNode);  // Connect source to gain node instead of destination
   source.loop = true;
   
   startTime = audioContext.currentTime - startFrom;
   source.start(0, startFrom);
 
   updateServiceWorkerState({ isPlaying: true, currentTime: startFrom });
+}
+
+function setVolume(value) {
+    if (!gainNode) return;
+    
+    // Clamp value between 0 and 1
+    currentVolume = Math.max(0, Math.min(1, value));
+    gainNode.gain.value = currentVolume;
+    
+    // Update service worker state with new volume
+    updateServiceWorkerState({ volume: currentVolume });
+    
+    // Update volume display if it exists
+    updateVolumeDisplay();
+}
+
+function updateVolumeDisplay() {
+    const volumeDisplay = document.getElementById('volumeDisplay');
+    if (volumeDisplay) {
+        volumeDisplay.textContent = `Volume: ${Math.round(currentVolume * 100)}%`;
+    }
+}
+
+function changeVolume(delta) {
+    setVolume(currentVolume + delta);
 }
 
 function pauseAudio() {
@@ -77,7 +108,7 @@ function pauseAudio() {
 
 function muteAudio() {
   if (audioContext) {
-    audioContext.suspend();
+    gainNode.gain.value = 0;  // Use gain node to mute
     isMuted = true;
     updateServiceWorkerState({ isMuted: true });
   }
@@ -85,7 +116,7 @@ function muteAudio() {
 
 function unmuteAudio() {
   if (audioContext) {
-    audioContext.resume();
+    gainNode.gain.value = currentVolume;  // Restore previous volume
     isMuted = false;
     updateServiceWorkerState({ isMuted: false });
   }
@@ -128,10 +159,19 @@ async function getStateFromServiceWorker() {
         [messageChannel.port2]
       );
     } else {
-      resolve({ isPlaying: false, isMuted: false, currentTime: 0 });
+      resolve({ isPlaying: false, isMuted: false, currentTime: 0, volume: 1.0 });
     }
   });
 }
+
+// Add keyboard controls for volume
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp') {
+        changeVolume(0.1);  // Increase volume by 10%
+    } else if (event.key === 'ArrowDown') {
+        changeVolume(-0.1);  // Decrease volume by 10%
+    }
+});
 
 window.addEventListener('load', async () => {
   document.addEventListener('mousemove', startAudioOnInteraction, { once: true });

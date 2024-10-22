@@ -1,10 +1,11 @@
 // audio-service-worker.js
 let audioState = {
-    isPlaying: false,
-    isMuted: false,
-    currentTime: 0,
-    lastUpdateTime: Date.now()
-  };
+  isPlaying: false,
+  isMuted: false,
+  currentTime: 0,
+  volume: 1.0,  // Add volume to state
+  lastUpdateTime: Date.now()
+};
   
   self.addEventListener('fetch', (event) => {
     if (event.request.url.includes('./src/assets/sport-rock-background-250761.mp3')) {

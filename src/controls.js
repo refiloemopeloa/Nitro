@@ -4,10 +4,11 @@ import * as THREE from 'three';
 export class Controls {
     constructor(world) {
         this.world = world;
-        this.controls = ['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'];
+        this.controls = ['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'o'];
         this.pressed = this.controls.reduce((acc, key) => ({ ...acc, [key]: false }), {});
         this.vehicle = null;
         this.carParts = null;
+        this.carLoader = null; // Add reference to carLoader
         this.frontWheelSteerRotation = 0;
         this.maxFrontWheelSteerRotation = Math.PI / 4.5;
         this.frontWheelSteerRotationSpeed = 0.05;
@@ -21,6 +22,10 @@ export class Controls {
         this.setupEventListeners();
     }
 
+    setCarLoader(carLoader) {
+        this.carLoader = carLoader;
+    }
+
     setupEventListeners() {
         document.addEventListener('keydown', (event) => this.handleKeyDown(event));
         document.addEventListener('keyup', (event) => this.handleKeyUp(event));
@@ -29,6 +34,11 @@ export class Controls {
     handleKeyDown(event) {
         if (this.controls.includes(event.key)) {
             this.pressed[event.key] = true;
+        }
+
+        // Handle headlight toggle
+        if (event.key === 'o' && this.carLoader) {
+            this.carLoader.toggleHeadlights();
         }
     }
 

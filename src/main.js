@@ -20,7 +20,7 @@ import { BoostLoader } from './loadBoost.js';
 import boostModel from './models/atom.glb';
 import { getParticleSystem } from './getParticleSystem.js';
 import getLayer from './getLayer.js';
-import img from './img/fire.png'
+import img from './img/smoke.png'
 import { WallLoader } from './loadWall.js';
 import { CrateLoader } from './loadCrate.js';
 import crateModel from './models/Crate.glb';
@@ -47,7 +47,7 @@ if (WebGL.isWebGL2Available()) {
     scene.add(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(0, 10, 0);
+    directionalLight.position.set(1, 1, 1).normalize();
     scene.add(directionalLight);
 
     // Add dynamic skybox
@@ -228,7 +228,7 @@ if (WebGL.isWebGL2Available()) {
                 }).catch(error => {
                     console.error('Failed to load building model:', error);
                 });
-            
+
             break;
 
             case 1: // New case for graffiti wall
@@ -312,6 +312,20 @@ if (WebGL.isWebGL2Available()) {
     addScenery(380, 0, -120, 0, 0);
     addScenery(380, 0, -160, 0, 0);
     addScenery(380, 0, -200, 0, 0);
+
+
+    // After loading buildings, update their shader uniforms
+    scene.traverse((object) => {
+        if (object.isMesh && object.material && object.material.type === 'ShaderMaterial' && object.material.uniforms) {
+            if (object.material.uniforms.lightDirection) {
+                object.material.uniforms.lightDirection.value.copy(directionalLight.position).normalize();
+            }
+            if (object.material.uniforms.lightColor) {
+                object.material.uniforms.lightColor.value.copy(directionalLight.color);
+            }
+        }
+    });
+
     addScenery(380, 0, -240, 0, 0);
     addScenery(340, 0, -240, 0, 0);
     addScenery(300, 0, -240, 0, 0);
@@ -409,7 +423,7 @@ if (WebGL.isWebGL2Available()) {
         const seconds = gameTimer % 60;
         const timerDisplay = document.getElementById('timer');
         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }    
+    }
 
     function showGameOverPopup() {
         const popup = document.getElementById('game-over-popup');
@@ -431,7 +445,7 @@ if (WebGL.isWebGL2Available()) {
         console.log('Main menu button clicked');
     });
     // Load the car
-    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial);
+    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
     let carObject, vehicle, fireEffect1, fireEffect2;
 
     carLoader.loadCar(carModel).then(({
@@ -461,6 +475,7 @@ if (WebGL.isWebGL2Available()) {
 
         controls.setVehicle(vehicle);
         controls.setCarParts({ FrontWheel_L, FrontWheel_R, BackWheels });
+        controls.setCarLoader(carLoader);
 
         // Create fire effects using the emitters from the car
         fireEffect1 = getParticleSystem({
@@ -547,7 +562,7 @@ if (WebGL.isWebGL2Available()) {
         console.error('Failed to load boost model:', error);
     });
 
-    const crateLoader = new CrateLoader(scene, world);
+    const crateLoader = new CrateLoader(scene, world, camera);
     const cratePositions = [
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
@@ -574,7 +589,7 @@ if (WebGL.isWebGL2Available()) {
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
         { x: -100, y: 2, z: -150 }, // Position - finish line
-        { x: 5, y: 4, z: 10 }    // Size 
+        { x: 5, y: 4, z: 10 }    // Size
     );
 
     // Cannon debugger
@@ -624,7 +639,7 @@ document.addEventListener('keydown', (event) => {
 
     function animate(time) {
 
-        
+
         if (isPaused) {
             lastTime = time;
             return;
@@ -634,7 +649,7 @@ document.addEventListener('keydown', (event) => {
         lastTime = time;
 
         accumulatedTime += deltaTime;
-        
+
         while (accumulatedTime >= 1 / 60) {
             world.step(1 / 60);
             accumulatedTime -= 1 / 60;
@@ -750,6 +765,37 @@ document.addEventListener('keydown', (event) => {
                 wallLoader.update(deltaTime);
                 // Update crates
                 crateLoader.update(deltaTime);
+
+
+                const headlightPositions = [
+                    new THREE.Vector3().setFromMatrixPosition(carObject.children[0].matrixWorld),
+                    new THREE.Vector3().setFromMatrixPosition(carObject.children[1].matrixWorld)
+                ];
+
+                // Update building shaders with headlight positions
+                // In your animate function, when updating building shaders:
+                scene.traverse((object) => {
+                    if (object.isMesh && object.material.type === 'ShaderMaterial' && object.material.uniforms) {
+                        // Update directional light
+                        if (object.material.uniforms.lightDirection) {
+                            object.material.uniforms.lightDirection.value.copy(directionalLight.position).normalize();
+                        }
+                        if (object.material.uniforms.lightColor) {
+                            object.material.uniforms.lightColor.value.copy(directionalLight.color);
+                        }
+
+                        // Update headlight positions
+                        if (object.material.uniforms.pointLightPositions) {
+                            object.material.uniforms.pointLightPositions.value = headlightPositions;
+                        }
+                        if (object.material.uniforms.pointLightColors) {
+                            object.material.uniforms.pointLightColors.value = [
+                                new THREE.Color(0xffff00),
+                                new THREE.Color(0xffff00)
+                            ];
+                        }
+                    }
+                });
             }
 
         // Update skybox
@@ -764,7 +810,7 @@ document.addEventListener('keydown', (event) => {
             }
 
             renderer.render(scene, camera);
-        
+
     }
 
     function createGridTexture(groundSize) {
