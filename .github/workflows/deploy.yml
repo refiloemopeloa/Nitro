@@ -15,16 +15,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Install sshpass
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # Deploy to the LAMP server using rsync
       - name: Deploy to LAMP server
         run: |
-          export SSHPASS=$SSH_PASSWORD
           sshpass -e ssh -o StrictHostKeyChecking=no sonsite@lamp.ms.wits.ac.za "rsync -r --exclude='.git/' . sonsite@lamp.ms.wits.ac.za:~/public_html/"
           sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "chown -R sonsite:www-data /home/sonsite/public_html"
-        env:
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+
 
