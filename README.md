@@ -49,6 +49,12 @@ When you push anything to main, it will automatically push to the lamp server.
 
 This will do the same thing as the run script above.
 
+## Accessing the game
+
+You can access the game by going to the following URL:
+
+[https://lamp.ms.wits.ac.za/~/sonsite/public_html/index.html](https://lamp.ms.wits.ac.za/~/sonsite/public_html/index.html)
+
 ## Learn More
 
 If you're interested in reading more on `three.js`, here is a guide: [Guide to three.js](https://github.com/refiloemopeloa/three.js/blob/main/Guide%20to%20three.js.md)
