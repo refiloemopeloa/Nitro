@@ -12,28 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H lamp.ms.wits.ac.za >> ~/.ssh/known_hosts
-
       - name: Deploy to LAMP server
         env:
-          SSHPASS: "cartoons1234"
+          SSHPASS: "${{ secrets.SSH_PASSWORD }}"
         run: |
           sshpass -e rsync -avz --exclude='.git/' \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./ sonsite@lamp.ms.wits.ac.za:~/public_html/
-
-      - name: Set permissions
-        env:
-          SSHPASS: "cartoons1234"
-        run: |
-          sshpass -e ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
-            sonsite@lamp.ms.wits.ac.za \
-            "chmod -R 755 ~/public_html && chown -R sonsite:www-data ~/public_html"
