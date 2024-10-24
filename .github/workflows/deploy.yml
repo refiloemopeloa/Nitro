@@ -1,6 +1,5 @@
 name: Deploy to LAMP server
 
-# Trigger the workflow on pushes to the main branch
 on:
   push:
     branches:
@@ -9,21 +8,32 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
-      # Deploy to the LAMP server using rsync
-      - name: Deploy to LAMP server
+      - name: Setup SSH key
         run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no sonsite@lamp.ms.wits.ac.za "rsync -r --exclude='.git/' . sonsite@lamp.ms.wits.ac.za:~/public_html/"
-          sshpass -p "cartoons1234" ssh sonsite@lamp.ms.wits.ac.za "chown -R sonsite:www-data /home/sonsite/public_html"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H lamp.ms.wits.ac.za >> ~/.ssh/known_hosts
 
+      - name: Deploy to LAMP server
+        env:
+          SSHPASS: "cartoons1234"
+        run: |
+          sshpass -e rsync -avz --exclude='.git/' \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            ./ sonsite@lamp.ms.wits.ac.za:~/public_html/
 
+      - name: Set permissions
+        env:
+          SSHPASS: "cartoons1234"
+        run: |
+          sshpass -e ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            sonsite@lamp.ms.wits.ac.za \
+            "chmod -R 755 ~/public_html && chown -R sonsite:www-data ~/public_html"
