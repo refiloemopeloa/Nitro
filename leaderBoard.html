@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Time Leaderboard</title>
+    <link rel="stylesheet" href="leaderBoard.css">
+    <script src="src/audioControls.js"></script>
+</head>
+<body>
+    <div id="canvas-container2"></div>
+
+    <button id="backButton" onclick="window.location.href='startPage.html'">Back to Start</button>
+
+    <button id="muteButton" class="mute-button">Mute</button>
+    <div id="content2">
+        <div class="leaderboard">
+            <h1>Top 5 Times</h1>
+            <table id="leaderboardTable">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <!-- Table rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button id="muteButton" class="mute-button">Mute</button>
+
+    <script type="module">
+        import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+        import { createDynamicSkybox, updateSkybox } from './src/skybox.js';
+
+        let scene, camera, renderer, skybox;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container2').appendChild(renderer.domElement);
+
+            skybox = createDynamicSkybox(scene);
+
+            window.addEventListener('resize', onWindowResize, false);
+
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updateSkybox(skybox, performance.now() / 1000);
+            renderer.render(scene, camera);
+        }
+
+        init();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to format time from seconds to MM:SS
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+        
+            // Function to update the leaderboard
+            function updateLeaderboard(leaderboardData) {
+                const tableBody = document.getElementById('leaderboardBody');
+                tableBody.innerHTML = ''; // Clear existing entries
+        
+                // Sort the data by time (ascending)
+                leaderboardData.sort((a, b) => a.time - b.time);
+        
+                // Take only top 5 entries
+                const topEntries = leaderboardData.slice(0, 5);
+        
+                // Add each entry to the table
+                topEntries.forEach((entry, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${entry.name}</td>
+                        <td>${formatTime(entry.time)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        
+            // Sample data - replace this with your actual data loading mechanism
+            const sampleData = [
+                { name: "SpeedRunner", time: 85 },  // 1:25
+                { name: "QuickLap", time: 92 },     // 1:32
+                { name: "RaceMaster", time: 98 },   // 1:38
+                { name: "DriftKing", time: 105 },   // 1:45
+                { name: "FastTrack", time: 112 }    // 1:52
+            ];
+        
+            // Function to save a new time
+            function saveNewTime(name, time) {
+                // Load existing data
+                let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData')) || [];
+                
+                // Add new entry
+                leaderboardData.push({ name, time });
+                
+                // Sort and keep only top 5
+                leaderboardData.sort((a, b) => a.time - b.time);
+                leaderboardData = leaderboardData.slice(0, 5);
+                
+                // Save back to localStorage
+                localStorage.setItem('leaderboardData', JSON.stringify(leaderboardData));
+                
+                // Update display
+                updateLeaderboard(leaderboardData);
+            }
+        
+            // Initialize the leaderboard
+            const savedData = JSON.parse(localStorage.getItem('leaderboardData'));
+            updateLeaderboard(savedData || sampleData);
+        
+            // Mute button functionality
+            const muteButton = document.getElementById('muteButton');
+            let isMuted = false;
+        
+            muteButton.addEventListener('click', function() {
+                isMuted = !isMuted;
+                this.textContent = isMuted ? 'Unmute' : 'Mute';
+                // Add your audio muting logic here
+            });
+        });
+    </script>
+</body>
+</html>
