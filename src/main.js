@@ -24,6 +24,7 @@ import img from './img/smoke.png'
 import { WallLoader } from './loadWall.js';
 import { CrateLoader } from './loadCrate.js';
 import crateModel from './models/Crate.glb';
+import { RubbleLoader } from './RubbleLoader.js';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -217,6 +218,7 @@ if (WebGL.isWebGL2Available()) {
     const graffitiWallLoader = new GraffitiWallLoader(scene, world, groundMaterial);
     const militaryBaseLoader = new MilitaryBaseLoader(scene, world, groundMaterial);
     const wastelandStoreLoader = new WastelandStoreLoader(scene, world, groundMaterial);
+    const rubbleLoader = new RubbleLoader(scene, world, groundMaterial);
     // add scenery
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
@@ -371,6 +373,11 @@ if (WebGL.isWebGL2Available()) {
     addRoadSeg(0, 0.3, 0.1);
     addRoadSeg(0, 0.3, 0.1);
 
+//Rubble placement for the road
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
+rubbleLoader.addRubbleCluster(new THREE.Vector3(250, 12, 80), 8, 12);
+rubbleLoader.addRubbleCluster(new THREE.Vector3(368, 0, 40), 8, 10);
+rubbleLoader.addRubbleCluster(new THREE.Vector3(220, 0, -120), 8, 20);
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
@@ -654,6 +661,8 @@ document.addEventListener('keydown', (event) => {
             world.step(1 / 60);
             accumulatedTime -= 1 / 60;
         }
+
+        rubbleLoader.update();
 
         if (isGameStarted && !gameOver) {
             frameCounter++;
