@@ -21,10 +21,10 @@ export class Controls {
         // Steering properties
         this.currentSteerValue = 0;
         this.steerSpeed = 0.1;         // Base steering speed
-        this.returnSteerSpeed = 0.15;  // Speed for returning to center
+        this.returnSteerSpeed = 0.5;  // Speed for returning to center
         this.maxSteerVal = Math.PI / 3;
 
-        this.maxForce = 20;
+        this.maxForce = 10;
 
         this.boost = false;
         this.boostTimer = null;
@@ -77,7 +77,7 @@ export class Controls {
     update() {
         if (!this.vehicle) return;
 
-        const currentMaxForce = this.boost ? 35 : 20;
+        const currentMaxForce = this.boost ? 35 : 10;
 
         if (this.pressed['w'] || this.pressed['ArrowUp']) {
             this.vehicle.setWheelForce(currentMaxForce, 2);
@@ -97,7 +97,7 @@ export class Controls {
         const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
         
         // Adjust steering speed based on velocity (slower turning at higher speeds)
-        const speedFactor = Math.max(0.5, 1 - speed / 50);
+        const speedFactor = Math.max(0.3, 1 - speed / 30);
         const currentSteerSpeed = this.steerSpeed * speedFactor;
 
         // Determine target steering value
