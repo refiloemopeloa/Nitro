@@ -236,32 +236,32 @@ if (WebGL.isWebGL2Available()) {
                     console.error('Failed to load building model:', error);
                 });
 
-            break;
+                break;
 
             case 1: // New case for graffiti wall
-            const wallSize = new CANNON.Vec3(10, 22, 40); // Adjust size as needed
-            graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize).then(() => {
-                console.log('Graffiti wall loaded successfully');
-            }).catch(error => {
-                console.error('Failed to load graffiti wall model:', error);
-            });
-            break;
+                const wallSize = new CANNON.Vec3(10, 22, 40); // Adjust size as needed
+                graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize).then(() => {
+                    console.log('Graffiti wall loaded successfully');
+                }).catch(error => {
+                    console.error('Failed to load graffiti wall model:', error);
+                });
+                break;
             case 2: // New case for military base
-            const baseSize = new CANNON.Vec3(20, 20, 13); // Adjust size as needed
-            militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
-                console.log('Base loaded successfully');
-            }).catch(error => {
-                console.error('Failed to load base model:', error);
-            });
-            break;
+                const baseSize = new CANNON.Vec3(20, 20, 13); // Adjust size as needed
+                militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
+                    console.log('Base loaded successfully');
+                }).catch(error => {
+                    console.error('Failed to load base model:', error);
+                });
+                break;
             case 3: // Wasteland store
-            const storeSize = new CANNON.Vec3(40, 16, 14.5);
-            wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize).then(() => {
-                console.log('Wasteland store loaded successfully');
-            }).catch(error => {
-                console.error('Failed to load wasteland store model:', error);
-            });
-            break;
+                const storeSize = new CANNON.Vec3(40, 16, 14.5);
+                wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize).then(() => {
+                    console.log('Wasteland store loaded successfully');
+                }).catch(error => {
+                    console.error('Failed to load wasteland store model:', error);
+                });
+                break;
                 //buildingABody.quaternion.setFromEuler(0, angleY, 0);
                 world.addBody(buildingABody);
                 buildingABody.position.set(x, y, z);
@@ -348,41 +348,41 @@ if (WebGL.isWebGL2Available()) {
     addScenery(80, 0, -160, 0, 0);
     addScenery(140, 0, -115, -0.4, 2);
 
-    trackEnd.set(120, -0.5, 80);
-    trackSegSize.set(20, 0.05, 20);
-    addRoadSeg(0, 3.14, -0.12);
-    addRoadSeg(0, 0, -0.12);
-    addRoadSeg(0, 0, 0.24);
-    addRoadSeg(0, 0, 1.65);
-    addRoadSeg(0, 0, -2.8)
+    // trackEnd.set(120, -0.5, 80);
+    // trackSegSize.set(20, 0.05, 20);
+    // addRoadSeg(0, 3.14, -0.12);
+    // addRoadSeg(0, 0, -0.12);
+    // addRoadSeg(0, 0, 0.24);
+    // addRoadSeg(0, 0, 1.65);
+    // addRoadSeg(0, 0, -2.8)
 
-    trackPrevDir = [0, 3.14, 0];
-    trackEnd.set(250, 12, 80);
-    addRoadSeg(-0.08, 0, 0.3);
-    addRoadSeg(0, 0, -0.3);
-    addRoadSeg(0, 0.2, 0);
-    addRoadSeg(0, 0, -0.3);
+    // trackPrevDir = [0, 3.14, 0];
+    // trackEnd.set(250, 12, 80);
+    // addRoadSeg(-0.08, 0, 0.3);
+    // addRoadSeg(0, 0, -0.3);
+    // addRoadSeg(0, 0.2, 0);
+    // addRoadSeg(0, 0, -0.3);
 
-    trackEnd.set(368, 0, 40);
-    trackPrevDir = [0, 3.14, 0];
-    addRoadSeg(0, 0, -0.31);
+    // trackEnd.set(368, 0, 40);
+    // trackPrevDir = [0, 3.14, 0];
+    // addRoadSeg(0, 0, -0.31);
 
-    trackPrevDir = [0, 0, 0];
-    trackEnd.set(220, 0, -120);
-    addRoadSeg(0, -0.3, -0.1);
-    addRoadSeg(-0.04, -0.3, -0.1);
-    addRoadSeg(-0.09, -0.3, -0.1);
-    addRoadSeg(0.1, 0.3, 0.2);
-    addRoadSeg(0, 0.2, 0.1);
-    addRoadSeg(0, 0.3, 0.1);
-    addRoadSeg(0, 0.3, 0.1);
-    addRoadSeg(0, 0.3, 0.1);
+    // trackPrevDir = [0, 0, 0];
+    // trackEnd.set(220, 0, -120);
+    // addRoadSeg(0, -0.3, -0.1);
+    // addRoadSeg(-0.04, -0.3, -0.1);
+    // addRoadSeg(-0.09, -0.3, -0.1);
+    // addRoadSeg(0.1, 0.3, 0.2);
+    // addRoadSeg(0, 0.2, 0.1);
+    // addRoadSeg(0, 0.3, 0.1);
+    // addRoadSeg(0, 0.3, 0.1);
+    // addRoadSeg(0, 0.3, 0.1);
 
-//Rubble placement for the road
+    //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
-rubbleLoader.addRubbleCluster(new THREE.Vector3(250, 12, 80), 8, 12);
-rubbleLoader.addRubbleCluster(new THREE.Vector3(368, 0, 40), 8, 10);
-rubbleLoader.addRubbleCluster(new THREE.Vector3(220, 0, -120), 8, 20);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(250, 12, 80), 8, 12);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(368, 0, 40), 8, 10);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(220, 0, -120), 8, 20);
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
@@ -690,146 +690,149 @@ document.addEventListener('keyup', (event) => {
             }
         }
 
-            if (carObject && vehicle) {
-                // Define the visual offset for the car model in local space
-                const carVisualOffset = new THREE.Vector3(0, -1, 0);
+        if (carObject && vehicle) {
+            // Define the visual offset for the car model in local space
+            const carVisualOffset = new THREE.Vector3(0, -1, 0);
 
-                // Create a matrix from the chassis body's position and rotation
-                const chassisMatrix = new THREE.Matrix4().compose(
-                    new THREE.Vector3().copy(vehicle.chassisBody.position),
-                    new THREE.Quaternion().copy(vehicle.chassisBody.quaternion),
-                    new THREE.Vector3(1, 1, 1)
-                );
+            // Create a matrix from the chassis body's position and rotation
+            const chassisMatrix = new THREE.Matrix4().compose(
+                new THREE.Vector3().copy(vehicle.chassisBody.position),
+                new THREE.Quaternion().copy(vehicle.chassisBody.quaternion),
+                new THREE.Vector3(1, 1, 1)
+            );
 
-                // Apply the offset in local space
-                const offsetMatrix = new THREE.Matrix4().makeTranslation(
-                    carVisualOffset.x,
-                    carVisualOffset.y,
-                    carVisualOffset.z
-                );
+            // Apply the offset in local space
+            const offsetMatrix = new THREE.Matrix4().makeTranslation(
+                carVisualOffset.x,
+                carVisualOffset.y,
+                carVisualOffset.z
+            );
 
-                // Combine the chassis matrix with the offset
-                const finalMatrix = chassisMatrix.multiply(offsetMatrix);
+            // Combine the chassis matrix with the offset
+            const finalMatrix = chassisMatrix.multiply(offsetMatrix);
 
-                // Apply the final transformation to the car object
-                carObject.matrix.copy(finalMatrix);
-                carObject.matrixAutoUpdate = false;
-                carObject.updateMatrixWorld(true);
+            // Apply the final transformation to the car object
+            carObject.matrix.copy(finalMatrix);
+            carObject.matrixAutoUpdate = false;
+            carObject.updateMatrixWorld(true);
 
-                // Calculate speed in km/h
-                const velocity = vehicle.chassisBody.velocity;
-                const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 3.6; // Convert m/s to km/h
+            // Calculate speed in km/h
+            const velocity = vehicle.chassisBody.velocity;
+            const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 
-                // Update speedometer
-                updateSpeedometer(speed);
+            // Update speedometer
+            updateSpeedometer(speed * 3.6); // Convert m/s to km/h
 
-                // Update camera based on mode
-                if (cameraManager.cameraMode !== 2) {
-                    cameraManager.updateCamera(vehicle.chassisBody, carObject);
-                } else {
-                    // In free camera mode, update orbit controls target to follow the car
-                    orbitControls.target.copy(carObject.position);
-                }
+            // Add this line to update debug info
+            controls.updateDebugInfo(speed);
 
-                // Apply controls
-                controls.update();
-
-                regenerateHealth(Date.now());
-
-                // Apply wheel transformations
-                controls.applyWheelTransformations();
-
-                carLoader.updateHeadlightPosition(carObject, vehicle);
-
-                // Check for boost collision
-                if (boostLoader.checkBoostCollision(vehicle.chassisBody)) {
-                    controls.activateBoost();
-                }
-                // Update boost objects
-                boostLoader.update(deltaTime);
-
-                if (fireEffect1 && fireEffect2) {
-                    // Get the car's world position and rotation
-                    carObject.updateMatrixWorld();
-                    const carWorldPosition = new THREE.Vector3();
-                    const carWorldQuaternion = new THREE.Quaternion();
-                    carObject.getWorldPosition(carWorldPosition);
-                    carObject.getWorldQuaternion(carWorldQuaternion);
-
-                    // Get the car's velocity in world space
-                    const velocity = vehicle.chassisBody.velocity;
-                    const carVelocity = new THREE.Vector3(velocity.x, velocity.y, velocity.z);
-
-                    // Scale the velocity for the particle effect
-                    const velocityScale = 2.0; // Adjust this value to control the particle spread
-                    const particleVelocity = carVelocity.multiplyScalar(-velocityScale); // Negative to emit backwards
-
-                    // Add some upward velocity to make it more visually interesting
-                    particleVelocity.y += 2;
-
-                    // Update emitter positions and velocities
-                    const updateEmitter = (fireEffect, localOffset) => {
-                        const worldOffset = localOffset.clone().applyQuaternion(carWorldQuaternion);
-                        fireEffect.emitter.position.copy(carWorldPosition).add(worldOffset);
-                        fireEffect.setVelocity(particleVelocity);
-                    };
-
-                    updateEmitter(fireEffect1, new THREE.Vector3(2, 0, 0.5));
-                    updateEmitter(fireEffect2, new THREE.Vector3(2, 0, -0.5));
-
-                    // Update fire effects
-                    fireEffect1.update(deltaTime);
-                    fireEffect2.update(deltaTime);
-
-                }
-                wallLoader.update(deltaTime);
-                // Update crates
-                crateLoader.update(deltaTime);
-
-
-                const headlightPositions = [
-                    new THREE.Vector3().setFromMatrixPosition(carObject.children[0].matrixWorld),
-                    new THREE.Vector3().setFromMatrixPosition(carObject.children[1].matrixWorld)
-                ];
-
-                // Update building shaders with headlight positions
-                // In your animate function, when updating building shaders:
-                scene.traverse((object) => {
-                    if (object.isMesh && object.material.type === 'ShaderMaterial' && object.material.uniforms) {
-                        // Update directional light
-                        if (object.material.uniforms.lightDirection) {
-                            object.material.uniforms.lightDirection.value.copy(directionalLight.position).normalize();
-                        }
-                        if (object.material.uniforms.lightColor) {
-                            object.material.uniforms.lightColor.value.copy(directionalLight.color);
-                        }
-
-                        // Update headlight positions
-                        if (object.material.uniforms.pointLightPositions) {
-                            object.material.uniforms.pointLightPositions.value = headlightPositions;
-                        }
-                        if (object.material.uniforms.pointLightColors) {
-                            object.material.uniforms.pointLightColors.value = [
-                                new THREE.Color(0xffff00),
-                                new THREE.Color(0xffff00)
-                            ];
-                        }
-                    }
-                });
+            // Update camera based on mode
+            if (cameraManager.cameraMode !== 2) {
+                cameraManager.updateCamera(vehicle.chassisBody, carObject);
+            } else {
+                // In free camera mode, update orbit controls target to follow the car
+                orbitControls.target.copy(carObject.position);
             }
+
+            // Apply controls
+            controls.update();
+
+            regenerateHealth(Date.now());
+
+            // Apply wheel transformations
+            controls.applyWheelTransformations();
+
+            carLoader.updateHeadlightPosition(carObject, vehicle);
+
+            // Check for boost collision
+            if (boostLoader.checkBoostCollision(vehicle.chassisBody)) {
+                controls.activateBoost();
+            }
+            // Update boost objects
+            boostLoader.update(deltaTime);
+
+            if (fireEffect1 && fireEffect2) {
+                // Get the car's world position and rotation
+                carObject.updateMatrixWorld();
+                const carWorldPosition = new THREE.Vector3();
+                const carWorldQuaternion = new THREE.Quaternion();
+                carObject.getWorldPosition(carWorldPosition);
+                carObject.getWorldQuaternion(carWorldQuaternion);
+
+                // Get the car's velocity in world space
+                const velocity = vehicle.chassisBody.velocity;
+                const carVelocity = new THREE.Vector3(velocity.x, velocity.y, velocity.z);
+
+                // Scale the velocity for the particle effect
+                const velocityScale = 2.0; // Adjust this value to control the particle spread
+                const particleVelocity = carVelocity.multiplyScalar(-velocityScale); // Negative to emit backwards
+
+                // Add some upward velocity to make it more visually interesting
+                particleVelocity.y += 2;
+
+                // Update emitter positions and velocities
+                const updateEmitter = (fireEffect, localOffset) => {
+                    const worldOffset = localOffset.clone().applyQuaternion(carWorldQuaternion);
+                    fireEffect.emitter.position.copy(carWorldPosition).add(worldOffset);
+                    fireEffect.setVelocity(particleVelocity);
+                };
+
+                updateEmitter(fireEffect1, new THREE.Vector3(2, 0, 0.5));
+                updateEmitter(fireEffect2, new THREE.Vector3(2, 0, -0.5));
+
+                // Update fire effects
+                fireEffect1.update(deltaTime);
+                fireEffect2.update(deltaTime);
+
+            }
+            wallLoader.update(deltaTime);
+            // Update crates
+            crateLoader.update(deltaTime);
+
+
+            const headlightPositions = [
+                new THREE.Vector3().setFromMatrixPosition(carObject.children[0].matrixWorld),
+                new THREE.Vector3().setFromMatrixPosition(carObject.children[1].matrixWorld)
+            ];
+
+            // Update building shaders with headlight positions
+            // In your animate function, when updating building shaders:
+            scene.traverse((object) => {
+                if (object.isMesh && object.material.type === 'ShaderMaterial' && object.material.uniforms) {
+                    // Update directional light
+                    if (object.material.uniforms.lightDirection) {
+                        object.material.uniforms.lightDirection.value.copy(directionalLight.position).normalize();
+                    }
+                    if (object.material.uniforms.lightColor) {
+                        object.material.uniforms.lightColor.value.copy(directionalLight.color);
+                    }
+
+                    // Update headlight positions
+                    if (object.material.uniforms.pointLightPositions) {
+                        object.material.uniforms.pointLightPositions.value = headlightPositions;
+                    }
+                    if (object.material.uniforms.pointLightColors) {
+                        object.material.uniforms.pointLightColors.value = [
+                            new THREE.Color(0xffff00),
+                            new THREE.Color(0xffff00)
+                        ];
+                    }
+                }
+            });
+        }
 
         // Update skybox
         updateSkybox(skybox, time * 0.001);
 
-            // Update Cannon debugger
-            //cannonDebugger.update();
+        // Update Cannon debugger
+        //cannonDebugger.update();
 
-            // Update orbit controls only in free camera mode
-            if (cameraManager.cameraMode === 2) {
-                orbitControls.update();
-            }
+        // Update orbit controls only in free camera mode
+        if (cameraManager.cameraMode === 2) {
+            orbitControls.update();
+        }
 
-            renderer.render(scene, camera);
+        renderer.render(scene, camera);
 
     }
 
