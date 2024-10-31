@@ -198,15 +198,15 @@ if (WebGL.isWebGL2Available()) {
         let centered = Math.abs(angleY) / 1.6;
 
         groundBody.position.set(
-            trackEnd.x + (trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
-            trackEnd.y + (trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
-            trackEnd.z + (trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
+            trackEnd.x + (trackDir.x * trackSegSize.x) - (trackMergeDir.x * trackSegSize.z * centered),
+            trackEnd.y + (trackDir.y * trackSegSize.x) - (trackMergeDir.y * trackSegSize.z * centered),
+            trackEnd.z + (trackDir.z * trackSegSize.x) - (trackMergeDir.z * trackSegSize.z * centered)
         );
 
         trackEnd.set(
-            trackEnd.x + (2 * trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
-            trackEnd.y + (2 * trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
-            trackEnd.z + (2 * trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
+            trackEnd.x + (2 * trackDir.x * trackSegSize.x) - (trackMergeDir.x * trackSegSize.z * centered),
+            trackEnd.y + (2 * trackDir.y * trackSegSize.x) - (trackMergeDir.y * trackSegSize.z * centered),
+            trackEnd.z + (2 * trackDir.z * trackSegSize.x) - (trackMergeDir.z * trackSegSize.z * centered)
         );
 
         floor.position.copy(groundBody.position);
@@ -217,6 +217,34 @@ if (WebGL.isWebGL2Available()) {
         trackPrevDir[2] += angleZ;
 
         trackMergeDir.copy(trackDir);
+    }
+
+    function addBlock(x, y, z, ax, ay, az, size) {
+        // Create ground
+        const groundShape = new CANNON.Box(size);
+        const groundBody = new CANNON.Body({
+            mass: 0,
+            shape: groundShape,
+            material: groundMaterial
+        });
+        groundBody.quaternion.setFromEuler(ax, ay, az);
+        groundBody.position.set(x, y, z);
+        world.addBody(groundBody);
+
+        const floorGeometry = new THREE.BoxGeometry(size.x * 2, size.y * 2, size.z * 2);
+        const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            //color: 0xfcfcfc
+            map: concreteATexture,
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        scene.add(floor);
+
+        const trackDir = new CANNON.Vec3(-1, 0, 0);
+        groundBody.quaternion.vmult(trackDir, trackDir);
+
+        floor.position.copy(groundBody.position);
+        floor.quaternion.copy(groundBody.quaternion);
     }
 
     const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
@@ -276,7 +304,8 @@ if (WebGL.isWebGL2Available()) {
         }
     }
 
-    // creating map
+    function addAllBuildings(){
+        // creating map
     addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
     addScenery(-40, 0, 40, 0.01, 0);
@@ -313,12 +342,31 @@ if (WebGL.isWebGL2Available()) {
     addScenery(270, 0, 40, 0, 2);
     addScenery(320, 0, 40, 0, 0);
 
-    addScenery(380, 0, 0, 0, 0);
+    addScenery(380, 0, 0, 0, 3);
     addScenery(380, 0, -40, 0, 0);
     addScenery(380, 0, -80, 0, 0);
     addScenery(380, 0, -120, 0, 0);
-    addScenery(380, 0, -160, 0, 0);
+    addScenery(380, 0, -160, 0, 1);
     addScenery(380, 0, -200, 0, 0);
+
+    addScenery(380, 0, -240, 0, 0);
+    addScenery(340, 0, -240, 0, 0);
+    addScenery(300, 0, -240, 0, 2);
+    addScenery(260, 0, -240, 0, 0);
+    addScenery(220, 0, -250, 0, 2);
+    addScenery(180, 0, -250, 0, 3);
+    addScenery(140, 0, -230, 0, 0);
+    addScenery(100, 0, -250, 0, 0);
+
+    addScenery(280, 0, -170, 0, 0);
+    addScenery(240, 0, -170, 0, 0);
+    addScenery(200, 0, -160, -0.1, 2);
+    addScenery(80, 0, -160, 0, 0);
+    addScenery(140, 0, -115, -0.4, 2);
+    };
+
+    addAllBuildings();
+    
 
 
     // After loading buildings, update their shader uniforms
@@ -333,20 +381,7 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
-    addScenery(380, 0, -240, 0, 0);
-    addScenery(340, 0, -240, 0, 0);
-    addScenery(300, 0, -240, 0, 0);
-    addScenery(260, 0, -240, 0, 0);
-    addScenery(220, 0, -250, 0, 2);
-    addScenery(180, 0, -250, 0, 3);
-    addScenery(140, 0, -250, 0, 0);
-    addScenery(100, 0, -250, 0, 0);
-
-    addScenery(280, 0, -170, 0, 0);
-    addScenery(240, 0, -170, 0, 0);
-    addScenery(200, 0, -160, -0.1, 2);
-    addScenery(80, 0, -160, 0, 0);
-    addScenery(140, 0, -115, -0.4, 2);
+    
 
     // trackEnd.set(120, -0.5, 80);
     // trackSegSize.set(20, 0.05, 20);
@@ -367,16 +402,48 @@ if (WebGL.isWebGL2Available()) {
     // trackPrevDir = [0, 3.14, 0];
     // addRoadSeg(0, 0, -0.31);
 
-    // trackPrevDir = [0, 0, 0];
-    // trackEnd.set(220, 0, -120);
+    const blockA = new CANNON.Vec3(20, 5, 25);
+    const blockB = new CANNON.Vec3(20, 5, 45);
+
+    addBlock(140, -3, 85, 0, 0, 0.15, blockA);
+    addBlock(170, 3, 85, 0, 0, 0.25, blockA);
+    addBlock(208.15, 7.79, 85, 0, 0, 0, blockA);
+
+    addBlock(255, -3.6, 85, 0, 0, -0.5, blockA);
+    addBlock(265, -4.2, 85, 0, 0, -0.3, blockA);
+    addBlock(275, -4.4, 85, 0, 0, -0.1, blockA);
+
+    addBlock(362, -4.4, 50, 0, 0, 0.3, blockB);
+    
+
+    trackPrevDir = [0, 0, 0];
+    trackEnd.set(220, -2, -120);
+    trackSegSize.set(10, 2, 20);
     // addRoadSeg(0, -0.3, -0.1);
-    // addRoadSeg(-0.04, -0.3, -0.1);
-    // addRoadSeg(-0.09, -0.3, -0.1);
-    // addRoadSeg(0.1, 0.3, 0.2);
-    // addRoadSeg(0, 0.2, 0.1);
-    // addRoadSeg(0, 0.3, 0.1);
-    // addRoadSeg(0, 0.3, 0.1);
-    // addRoadSeg(0, 0.3, 0.1);
+    // addRoadSeg(-0.02, -0.15, -0.05);
+    // addRoadSeg(-0.02, -0.15, -0.05);
+    // addRoadSeg(-0.045, -0.15, -0.05);
+    // addRoadSeg(-0.045, -0.15, -0.05);
+    // addRoadSeg(0.05, 0.15, 0.1);
+    // addRoadSeg(0.05, 0.15, 0.1);
+    // addRoadSeg(0, 0.1, 0.05);
+    // addRoadSeg(0, 0.1, 0.05);
+    // addRoadSeg(0, 0.15, 0.05);
+    // addRoadSeg(0, 0.15, 0.05);
+    // addRoadSeg(0, 0.15, 0.05);
+    // addRoadSeg(0, 0.15, 0.05);
+    // addRoadSeg(0, 0.15, 0.05);
+    // addRoadSeg(0, 0.15, 0.05);
+
+    addRoadSeg(0, -0.3, -0.1);
+    addRoadSeg(0, 0, -0.1);
+    addRoadSeg(0, 0, -0.1);
+    addRoadSeg(0, 0, 0.3);
+    addRoadSeg(0, -0.6, 0);
+    addRoadSeg(0, 0, 0.1);
+    addRoadSeg(0, 0, 0.1);
+    addRoadSeg(0, 0, 0.1);
+    addRoadSeg(0, 0, 0);
 
     //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
@@ -567,6 +634,7 @@ if (WebGL.isWebGL2Available()) {
         new THREE.Vector3(220, 2, -120),
         new THREE.Vector3(220, 2, -200),
         new THREE.Vector3(290, 2, -200),
+        new THREE.Vector3(300, 2, -60),
     ];
     boostLoader.loadBoost(boostModel, boostPositions).then(() => {
         console.log('Boost objects loaded');
@@ -582,6 +650,13 @@ if (WebGL.isWebGL2Available()) {
         new THREE.Vector3(260, 2, -100),
         new THREE.Vector3(280, 2, -130),
         new THREE.Vector3(260, 2, -140),
+        new THREE.Vector3(235, 2, 85),
+        new THREE.Vector3(235, 2, 80),
+        new THREE.Vector3(235, 2, 90),
+        new THREE.Vector3(235, 2, 75),
+        new THREE.Vector3(235, 2, 95),
+        new THREE.Vector3(235, 2, 70),
+        new THREE.Vector3(235, 2, 100),
     ];
 
     // Load the crates

@@ -22,9 +22,9 @@ export class Controls {
         this.currentSteerValue = 0;
         this.steerSpeed = 0.1;         // Base steering speed
         this.returnSteerSpeed = 0.5;  // Speed for returning to center
-        this.maxSteerVal = Math.PI / 3;
+        this.maxSteerVal = Math.PI / 6;
 
-        this.maxForce = 10;
+        this.maxForce = 20;
 
         this.boost = false;
         this.boostTimer = null;

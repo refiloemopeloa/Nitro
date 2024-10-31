@@ -71,9 +71,9 @@ export class RubbleLoader {
 
     addInteractiveRubble(position, rotation = { x: 0, y: 0, z: 0 }) {
         const size = {
-            x: 0.3 + Math.random() * 0.2,
-            y: 0.2 + Math.random() * 0.15,
-            z: 0.25 + Math.random() * 0.2
+            x: 0.3 + Math.random() * 1.2,
+            y: 0.2 + Math.random() * 1.15,
+            z: 0.25 + Math.random() * 1.2
         };
 
         // Create visual mesh
@@ -87,7 +87,7 @@ export class RubbleLoader {
 
         // Create physics body
         const shape = this.createPhysicsShape(size);
-        const mass = 50; // Light enough to be moved easily
+        const mass = 0.5; // Light enough to be moved easily
         const rubbleBody = new CANNON.Body({
             mass,
             shape,
