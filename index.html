@@ -151,6 +151,12 @@
             <button id="main-menu-button">Main Menu</button>
         </div>
     </div>
+
+    <div id="debug-info" style="position: fixed; bottom: 20px; left: 20px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; font-family: monospace;">
+        <div>Current Steer Value: <span id="debug-steer-value">0</span></div>
+        <div>Current Steer Speed: <span id="debug-steer-speed">0</span></div>
+        <div>Vehicle Speed: <span id="debug-vehicle-speed">0</span> m/s</div>
+    </div>
     
 <script src="./src/main.js" type="module"></script>
 <script>document.getElementById('main-menu-button').addEventListener('click', () => {

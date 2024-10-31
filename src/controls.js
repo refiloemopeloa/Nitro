@@ -97,7 +97,7 @@ export class Controls {
         const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
         
         // Adjust steering speed based on velocity (slower turning at higher speeds)
-        const speedFactor = Math.max(0.3, 1 - speed / 30);
+        const speedFactor = Math.max(0.5, 1 - speed / 50);
         const currentSteerSpeed = this.steerSpeed * speedFactor;
 
         // Determine target steering value
@@ -185,6 +185,26 @@ export class Controls {
 
         if (BackWheels) {
             BackWheels.rotation.x = this.wheelRollRotation;
+        }
+    }
+
+    updateDebugInfo(speed) {
+        const debugSteerValue = document.getElementById('debug-steer-value');
+        const debugSteerSpeed = document.getElementById('debug-steer-speed');
+        const debugVehicleSpeed = document.getElementById('debug-vehicle-speed');
+    
+        if (debugSteerValue) {
+            debugSteerValue.textContent = this.currentSteerValue.toFixed(3);
+        }
+        if (debugSteerSpeed) {
+            const velocity = this.vehicle.chassisBody.velocity;
+            const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+            const speedFactor = Math.max(0.5, 1 - speed / 50);
+            const currentSteerSpeed = this.steerSpeed * speedFactor;
+            debugSteerSpeed.textContent = currentSteerSpeed.toFixed(3);
+        }
+        if (debugVehicleSpeed) {
+            debugVehicleSpeed.textContent = speed.toFixed(2);
         }
     }
 }
