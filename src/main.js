@@ -5,7 +5,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
 import { CarLoader } from './loadCar.js';
+import { BlockLoader } from './block.js';  // Add this import
 import carModel from './models/armor_truck.glb';
+import TriggerSystem from './triggerSystem.js'; 
+import blockModel from './models/road_block_a.glb';   // Add your block model path
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 
@@ -197,9 +200,91 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
+
+     // Initialize BlockLoader and TriggerSystem
+    const blockLoader = new BlockLoader(scene, world, groundMaterial);
+    const triggerSystem = new TriggerSystem(scene, blockLoader);
+
+    //example trigger zones
+    const triggers = [
+        { x: 0, z: -10 },
+        { x: 0, z: 20 },
+        { x: -40, z: 10 },
+        { x: -15, z: -15 }
+    ];
+
+    triggers.forEach(pos => {
+        triggerSystem.addTrigger(
+            { x: pos.x, z: pos.z },
+            5, // radius of trigger zone
+            {
+                model: blockModel,
+                size: { x: 2, y: 2, z: 2 },
+                scale: 1
+            }
+        );
+    });
+
+    // Add key handler for resetting triggers
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'r') {
+            triggerSystem.reset();
+            blockLoader.clearBlocks();
+        }
+    });
+
+     // Add key handler for dropping blocks
+     document.addEventListener('keydown', (event) => {
+         if (event.key === 'b') {
+             // Drop a single block at a random position near the car
+             if (carObject) {
+                 const randomOffset = {
+                     x: ( - 1) * 20, // Random position within 20 units
+                     z: (1 - 0.5) * 20
+                 };
+                 
+                 const dropPosition = {
+                     x: carObject.position.x + randomOffset.x,
+                     z: carObject.position.z + randomOffset.z
+                 };
+                 
+                 blockLoader.loadBlock(blockModel, dropPosition, { x: 2, y: 2, z: 2 }, 1);
+             }
+         } else if (event.key === 'n') {
+             // Drop a pattern of blocks
+             if (carObject) {
+                 const pattern = [
+                     [1, 1, 1],
+                     [1, 0, 1],
+                     [1, 1, 1]
+                 ];
+                 
+                 const centerPosition = {
+                     x: carObject.position.x,
+                     z: carObject.position.z
+                 };
+                 
+                 blockLoader.dropBlockPattern(blockModel, centerPosition, pattern, 4);
+             }
+         } else if (event.key === 'm') {
+             // Clear all blocks
+             blockLoader.clearBlocks();
+         }
+     });
+ 
+     b
+
     function animate(time) {
         time *= 0.001; // Convert time to seconds
         world.step(1 / 60);
+
+        // Update blocks
+        blockLoader.update();
+
+        // Check triggers if car exists
+        if (carObject) {
+            triggerSystem.checkTriggers(carObject.position);
+        }
 
         if (carObject && vehicle) {
             // Define the visual offset for the car model
