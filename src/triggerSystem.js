@@ -77,7 +77,7 @@ class TriggerSystem {
                         this.blockLoader.loadBlock(
                             trigger.blockConfig.model,
                             pos,
-                            trigger.blockConfig.size || { x: 2, y: 2, z: 2 },
+                            trigger.blockConfig.size || { x: 1, y: 1, z: 1 },
                             trigger.blockConfig.scale || 1
                         );
                     });

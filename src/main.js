@@ -9,6 +9,7 @@ import { BlockLoader } from './block.js';  // Add this import
 import carModel from './models/armor_truck.glb';
 import TriggerSystem from './triggerSystem.js'; 
 import blockModel from './models/road_block_a.glb';   // Add your block model path
+import { WaterPuddles } from './waterPuddles.js'; 
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 
@@ -210,15 +211,15 @@ if (WebGL.isWebGL2Available()) {
         {
             position: { x: -10, z: 44 },
             dropPositions: [
-                { x: -5, z: 44 },
-                { x: -2, z: 48 },
-                { x: -2, z: 41 }
+                { x: 4, z: 44 },
+                { x: -1, z: 48 },
+                { x: -1, z: 41 }
             ]
         },
         {
-            position: { x: -34, z: 20 },
+            position: { x: -36, z: 20 },
             dropPositions: [
-                { x: -35, z: 25 },
+                // { x: -35, z: 25 },
                 { x: -28, z: 30 },
                 { x: -15, z: 40 }
             ]
@@ -227,8 +228,8 @@ if (WebGL.isWebGL2Available()) {
             position: { x: 0, z: -10 },
             dropPositions: [
                 { x: -5, z: -7.5 },
-                { x: -25, z: 0 },
-                { x: -35, z: 15 }
+                // { x: -25, z: 0 },
+                { x: -32, z: 15 }
             ]
         }
     ];
@@ -236,7 +237,7 @@ if (WebGL.isWebGL2Available()) {
     triggers.forEach(trigger => {
         triggerSystem.addTrigger(
             trigger.position,
-            5, // radius of trigger zone
+            2, // radius of trigger zone
             {
                 model: blockModel,
                 size: { x: 2, y: 2, z: 2 },
@@ -293,7 +294,12 @@ if (WebGL.isWebGL2Available()) {
          }
      });
  
-     b
+     // Add this after scene and renderer setup
+    const waterPuddles = new WaterPuddles(scene, renderer);
+
+    // Create random puddles
+    waterPuddles.createRandomPuddles(5, 50); // 5 puddles within 50 units
+    
 
     function animate(time) {
         time *= 0.001; // Convert time to seconds
@@ -306,6 +312,19 @@ if (WebGL.isWebGL2Available()) {
         if (carObject) {
             triggerSystem.checkTriggers(carObject.position);
         }
+
+        waterPuddles.update();
+
+
+    
+    //Add ripple effect when car drives through puddles
+    if (carObject && vehicle) {
+        const carPosition = new THREE.Vector3();
+        carObject.getWorldPosition(carPosition);
+        waterPuddles.addRipple(carPosition, 0.5);
+    }
+
+
 
         if (carObject && vehicle) {
             // Define the visual offset for the car model
