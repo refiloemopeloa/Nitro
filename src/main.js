@@ -207,21 +207,42 @@ if (WebGL.isWebGL2Available()) {
 
     //example trigger zones
     const triggers = [
-        { x: 0, z: -10 },
-        { x: 0, z: 20 },
-        { x: -40, z: 10 },
-        { x: -15, z: -15 }
+        {
+            position: { x: -10, z: 44 },
+            dropPositions: [
+                { x: -5, z: 44 },
+                { x: -2, z: 48 },
+                { x: -2, z: 41 }
+            ]
+        },
+        {
+            position: { x: -34, z: 20 },
+            dropPositions: [
+                { x: -35, z: 25 },
+                { x: -28, z: 30 },
+                { x: -15, z: 40 }
+            ]
+        },
+        {
+            position: { x: 0, z: -10 },
+            dropPositions: [
+                { x: -5, z: -7.5 },
+                { x: -25, z: 0 },
+                { x: -35, z: 15 }
+            ]
+        }
     ];
 
-    triggers.forEach(pos => {
+    triggers.forEach(trigger => {
         triggerSystem.addTrigger(
-            { x: pos.x, z: pos.z },
+            trigger.position,
             5, // radius of trigger zone
             {
                 model: blockModel,
                 size: { x: 2, y: 2, z: 2 },
                 scale: 1
-            }
+            },
+            trigger.dropPositions
         );
     });
 

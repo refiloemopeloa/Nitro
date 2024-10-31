@@ -11,13 +11,13 @@ export class BlockLoader {
         this.groundMaterial = groundMaterial;
         this.blockMaterial = new CANNON.Material('block');
         
-        // Contact material for block-ground interaction
+        // Contact material for block-ground interaction - reduced bounce and increased friction
         const blockGroundContact = new CANNON.ContactMaterial(
             groundMaterial,
             this.blockMaterial,
             {
-                friction: 0.4,
-                restitution: 0.3
+                friction: 1.8,     // Increased friction
+                restitution: 0.0   // No bounce
             }
         );
         this.world.addContactMaterial(blockGroundContact);
@@ -31,8 +31,8 @@ export class BlockLoader {
             // Scale the model
             blockObject.scale.set(scale, scale, scale);
             
-            // Position high in the sky
-            const dropHeight = 50; // Height to drop from
+            // Position at drop point
+            const dropHeight = 40; // Height to drop from
             blockObject.position.set(
                 dropPosition.x,
                 dropHeight,
@@ -45,26 +45,19 @@ export class BlockLoader {
             // Create physics body
             const blockShape = new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z));
             const blockBody = new CANNON.Body({
-                mass: 1,
+                mass: 20,  // Increased mass for faster falling
                 position: new CANNON.Vec3(dropPosition.x, dropHeight, dropPosition.z),
                 shape: blockShape,
-                material: this.blockMaterial
+                material: this.blockMaterial,
+                linearDamping: 0.1,  // Reduced air resistance
+                angularDamping: 0.1  // Reduced rotation damping
             });
 
-            // Add random initial rotation
-            blockBody.quaternion.setFromEuler(
-                Math.random() * Math.PI,
-                Math.random() * Math.PI,
-                Math.random() * Math.PI
-            );
+            // Add high initial downward velocity
+            blockBody.velocity.set(0, -90, 0);  // Increased downward velocity
 
-            // Add some random initial velocity
-            const velocity = 3;
-            blockBody.velocity.set(
-                (2) * velocity,
-                0,
-                (2) * velocity
-            );
+            // Lock rotation to keep blocks falling straight
+            blockBody.fixedRotation = true;
 
             // Add to physics world
             this.world.addBody(blockBody);
@@ -80,23 +73,6 @@ export class BlockLoader {
             console.error('Error loading block model:', error);
             throw error;
         }
-    }
-
-    // Drop multiple blocks in a pattern
-    async dropBlockPattern(modelPath, centerPosition, pattern, spacing = 5) {
-        const drops = [];
-        for (let z = 0; z < pattern.length; z++) {
-            for (let x = 0; x < pattern[z].length; x++) {
-                if (pattern[z][x] === 1) {
-                    const dropPos = {
-                        x: centerPosition.x + (x - pattern[z].length/2) * spacing,
-                        z: centerPosition.z + (z - pattern.length/2) * spacing
-                    };
-                    drops.push(this.loadBlock(modelPath, dropPos));
-                }
-            }
-        }
-        return Promise.all(drops);
     }
 
     // Update all blocks' positions
