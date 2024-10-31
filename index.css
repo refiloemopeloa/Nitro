@@ -86,3 +86,80 @@
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
 }
+
+.controls-list {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    max-width: 300px;
+    margin: 20px auto;
+}
+
+.controls-list h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #fff;
+    font-size: 1.5em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.control-item {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.control-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.control-item .key {
+    background: #fff;
+    color: #000;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1.2em;
+    min-width: 40px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+}
+
+.control-item .description {
+    margin-left: 15px;
+    font-size: 1.1em;
+    color: #fff;
+    flex-grow: 1;
+}
+
+/* Specific styles for start page */
+#content .controls-list {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Specific styles for menu overlay */
+#modal .controls-list {
+    margin-top: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Animation for key press visual feedback */
+@keyframes keyPress {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.control-item .key:active {
+    animation: keyPress 0.2s ease;
+}

@@ -23,6 +23,7 @@ body, html {
 img {
     max-width: 100%;
     height: auto;
+    margin-top: 60px;
 }
 h1 {
     font-size: 2em;
@@ -40,4 +41,156 @@ button, input[type="text"], input[type="submit"] {
 #message {
     margin-top: 10px;
     font-weight: bold;
+}
+
+/* Base Controls List Styling */
+.controls-list {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 15px;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin-top: -200px;
+}
+
+.controls-list h3 {
+    text-align: center;
+    margin-bottom: 12px;
+    color: #fff;
+    font-size: 1.2em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Container for the two columns */
+.controls-container {
+    display: flex;
+    gap: 15px;
+    justify-content: space-between;
+}
+
+/* Column styling */
+.controls-column {
+    flex: 1;
+    min-width: 140px;
+}
+
+/* Add a subtle separator between columns */
+.controls-column:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding-right: 15px;
+}
+
+/* Control item styling */
+.control-item {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.control-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.control-item .key {
+    background: #fff;
+    color: #000;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+    min-width: 25px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+}
+
+.control-item .description {
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: #fff;
+    flex-grow: 1;
+    white-space: nowrap;
+}
+
+/* Side Controls positioning */
+.side-controls {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 380px; /* Increased to accommodate two columns */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+}
+
+/* Animation for key press */
+@keyframes keyPress {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.control-item .key:active {
+    animation: keyPress 0.2s ease;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    .side-controls {
+        left: 10px;
+        max-width: 340px;
+        padding: 12px;
+    }
+
+    .controls-container {
+        gap: 10px;
+    }
+
+    .controls-column {
+        min-width: 120px;
+    }
+
+    .controls-column:first-child {
+        padding-right: 10px;
+    }
+
+    .control-item {
+        padding: 4px;
+    }
+
+    .control-item .key {
+        padding: 3px 6px;
+        font-size: 0.8em;
+    }
+
+    .control-item .description {
+        font-size: 0.8em;
+        margin-left: 8px;
+    }
+
+    .controls-list h3 {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+    }
+}
+
+/* Media query for very small screens */
+@media (max-width: 480px) {
+    .side-controls {
+        max-width: 300px;
+        padding: 10px;
+    }
+
+    .controls-column {
+        min-width: 110px;
+    }
+
+    .control-item .description {
+        font-size: 0.75em;
+    }
 }

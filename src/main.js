@@ -25,6 +25,7 @@ import { WallLoader } from './loadWall.js';
 import { CrateLoader } from './loadCrate.js';
 import crateModel from './models/Crate.glb';
 import { RubbleLoader } from './RubbleLoader.js';
+import { CarAudioManager } from './carAudioManager.js';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -33,6 +34,10 @@ if (WebGL.isWebGL2Available()) {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
+    // Car revving sounds
+    const carAudioManager = new CarAudioManager();
+    carAudioManager.init();
 
     // Orbit controls
     const orbitControls = new OrbitControls(camera, renderer.domElement);
@@ -638,10 +643,16 @@ document.addEventListener('keydown', (event) => {
         }
     }
 
+    carAudioManager.handleKeyDown(event.key.toLowerCase());
+
     // Start game on WASD press
     if (['w', 'a', 's', 'd'].includes(event.key.toLowerCase()) && !isGameStarted) {
         startGame();
     }
+});
+
+document.addEventListener('keyup', (event) => {
+    carAudioManager.handleKeyUp(event.key.toLowerCase());
 });
 
     function animate(time) {
