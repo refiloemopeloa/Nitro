@@ -9,13 +9,23 @@ export class Controls {
         this.vehicle = null;
         this.carParts = null;
         this.carLoader = null; // Add reference to carLoader
+
+        //visual
         this.frontWheelSteerRotation = 0;
         this.maxFrontWheelSteerRotation = Math.PI / 4.5;
         this.frontWheelSteerRotationSpeed = 0.05;
         this.wheelRollRotation = 1;
         this.wheelRollRotationSpeed = 1.55;
+        
+
+        // Steering properties
+        this.currentSteerValue = 0;
+        this.steerSpeed = 0.1;         // Base steering speed
+        this.returnSteerSpeed = 0.15;  // Speed for returning to center
         this.maxSteerVal = Math.PI / 3;
-        this.maxForce = 10;
+
+        this.maxForce = 20;
+
         this.boost = false;
         this.boostTimer = null;
 
@@ -67,7 +77,7 @@ export class Controls {
     update() {
         if (!this.vehicle) return;
 
-        const currentMaxForce = this.boost ? 35 : 10;
+        const currentMaxForce = this.boost ? 35 : 20;
 
         if (this.pressed['w'] || this.pressed['ArrowUp']) {
             this.vehicle.setWheelForce(currentMaxForce, 2);
@@ -82,23 +92,76 @@ export class Controls {
             this.vehicle.setWheelForce(0, 3);
         }
 
+        // Calculate vehicle speed for non-linear steering
+        const velocity = this.vehicle.chassisBody.velocity;
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+        
+        // Adjust steering speed based on velocity (slower turning at higher speeds)
+        const speedFactor = Math.max(0.3, 1 - speed / 30);
+        const currentSteerSpeed = this.steerSpeed * speedFactor;
+
+        // Determine target steering value
+        let targetSteerValue = 0;
+
         if (this.pressed['a'] || this.pressed['ArrowLeft']) {
-            this.vehicle.setSteeringValue(this.maxSteerVal, 0);
-            this.vehicle.setSteeringValue(this.maxSteerVal, 1);
-            this.frontWheelSteerRotation = Math.min(this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed, this.maxFrontWheelSteerRotation);
+            targetSteerValue = this.maxSteerVal;
+            this.frontWheelSteerRotation = Math.min(
+                this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed,
+                this.maxFrontWheelSteerRotation
+            );
         } else if (this.pressed['d'] || this.pressed['ArrowRight']) {
-            this.vehicle.setSteeringValue(-this.maxSteerVal, 0);
-            this.vehicle.setSteeringValue(-this.maxSteerVal, 1);
-            this.frontWheelSteerRotation = Math.max(this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed, -this.maxFrontWheelSteerRotation);
+            targetSteerValue = -this.maxSteerVal;
+            this.frontWheelSteerRotation = Math.max(
+                this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed,
+                -this.maxFrontWheelSteerRotation
+            );
         } else {
-            this.vehicle.setSteeringValue(0, 0);
-            this.vehicle.setSteeringValue(0, 1);
+            targetSteerValue = 0;
             if (this.frontWheelSteerRotation > 0) {
-                this.frontWheelSteerRotation = Math.max(this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed / 2, 0);
+                this.frontWheelSteerRotation = Math.max(
+                    this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed / 2,
+                    0
+                );
             } else if (this.frontWheelSteerRotation < 0) {
-                this.frontWheelSteerRotation = Math.min(this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed / 2, 0);
+                this.frontWheelSteerRotation = Math.min(
+                    this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed / 2,
+                    0
+                );
             }
         }
+
+        // Apply gradual steering with different speeds for turning and returning to center
+        if (targetSteerValue === 0) {
+            // Return to center more quickly
+            if (this.currentSteerValue < targetSteerValue) {
+                this.currentSteerValue = Math.min(
+                    this.currentSteerValue + this.returnSteerSpeed,
+                    targetSteerValue
+                );
+            } else if (this.currentSteerValue > targetSteerValue) {
+                this.currentSteerValue = Math.max(
+                    this.currentSteerValue - this.returnSteerSpeed,
+                    targetSteerValue
+                );
+            }
+        } else {
+            // Normal turning with speed-based adjustment
+            if (this.currentSteerValue < targetSteerValue) {
+                this.currentSteerValue = Math.min(
+                    this.currentSteerValue + currentSteerSpeed,
+                    targetSteerValue
+                );
+            } else if (this.currentSteerValue > targetSteerValue) {
+                this.currentSteerValue = Math.max(
+                    this.currentSteerValue - currentSteerSpeed,
+                    targetSteerValue
+                );
+            }
+        }
+
+        // Apply the gradual steering value
+        this.vehicle.setSteeringValue(this.currentSteerValue, 0);
+        this.vehicle.setSteeringValue(this.currentSteerValue, 1);
     }
 
     applyWheelTransformations() {
