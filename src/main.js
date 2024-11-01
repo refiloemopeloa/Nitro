@@ -623,6 +623,10 @@ if (WebGL.isWebGL2Available()) {
         location.reload(); // This will reload the entire page
     });
 
+    document.getElementById('restart-button2').addEventListener('click', () => {
+        location.reload(); // This will reload the entire page
+    });
+
     document.getElementById('main-menu-button').addEventListener('click', () => {
         // Implement main menu logic here
         console.log('Main menu button clicked');
