@@ -29,7 +29,7 @@ import { CarAudioManager } from './carAudioManager.js';
 import { CheckpointLoader } from './loadCheckpoint.js';
 import { BlockLoader } from './block.js';  // Add this import block class
 import TriggerSystem from './triggerSystem.js'; 
-import blockModel from './models/obstacle.glb';   // Add your block model path
+import blockModel from './models/road_block_a.glb';   // Add your block model path
 
 
 if (WebGL.isWebGL2Available()) {
