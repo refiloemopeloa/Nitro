@@ -342,7 +342,7 @@ if (WebGL.isWebGL2Available()) {
     addScenery(270, 0, 40, 0, 2);
     addScenery(320, 0, 40, 0, 0);
 
-    addScenery(380, 0, 0, 0, 3);
+    addScenery(380, 0, 0, 0, 2);
     addScenery(380, 0, -40, 0, 0);
     addScenery(380, 0, -80, 0, 0);
     addScenery(380, 0, -120, 0, 0);
@@ -410,15 +410,15 @@ if (WebGL.isWebGL2Available()) {
     addBlock(208.15, 7.79, 85, 0, 0, 0, blockA);
 
     addBlock(255, -3.6, 85, 0, 0, -0.5, blockA);
-    addBlock(265, -4.2, 85, 0, 0, -0.3, blockA);
-    addBlock(275, -4.4, 85, 0, 0, -0.1, blockA);
+    addBlock(265, -4.4, 85, 0, 0, -0.3, blockA);
+    addBlock(275, -4.5, 85, 0, 0, -0.1, blockA);
 
     addBlock(362, -4.4, 50, 0, 0, 0.3, blockB);
     
 
-    trackPrevDir = [0, 0, 0];
-    trackEnd.set(220, -2, -120);
-    trackSegSize.set(10, 2, 20);
+    // trackPrevDir = [0, 0, 0];
+    // trackEnd.set(220, -2, -120);
+    // trackSegSize.set(10, 2, 20);
     // addRoadSeg(0, -0.3, -0.1);
     // addRoadSeg(-0.02, -0.15, -0.05);
     // addRoadSeg(-0.02, -0.15, -0.05);
@@ -435,19 +435,19 @@ if (WebGL.isWebGL2Available()) {
     // addRoadSeg(0, 0.15, 0.05);
     // addRoadSeg(0, 0.15, 0.05);
 
-    addRoadSeg(0, -0.3, -0.1);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(0, 0, 0.3);
-    addRoadSeg(0, -0.6, 0);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0);
+    // addRoadSeg(0, -0.3, -0.1);
+    // addRoadSeg(0, 0, -0.1);
+    // addRoadSeg(0, 0, -0.1);
+    // addRoadSeg(0, 0, 0.3);
+    // addRoadSeg(0, -0.6, 0);
+    // addRoadSeg(0, 0, 0.1);
+    // addRoadSeg(0, 0, 0.1);
+    // addRoadSeg(0, 0, 0.1);
+    // addRoadSeg(0, 0, 0);
 
     //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(250, 12, 80), 8, 12);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(260, 0, 80), 8, 12);
     rubbleLoader.addRubbleCluster(new THREE.Vector3(368, 0, 40), 8, 10);
     rubbleLoader.addRubbleCluster(new THREE.Vector3(220, 0, -120), 8, 20);
 
@@ -634,7 +634,8 @@ if (WebGL.isWebGL2Available()) {
         new THREE.Vector3(220, 2, -120),
         new THREE.Vector3(220, 2, -200),
         new THREE.Vector3(290, 2, -200),
-        new THREE.Vector3(300, 2, -60),
+        new THREE.Vector3(300, 2, -80),
+        new THREE.Vector3(320, 2, -70),
     ];
     boostLoader.loadBoost(boostModel, boostPositions).then(() => {
         console.log('Boost objects loaded');
@@ -647,16 +648,10 @@ if (WebGL.isWebGL2Available()) {
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
         new THREE.Vector3(280, 2, -90),
-        new THREE.Vector3(260, 2, -100),
-        new THREE.Vector3(280, 2, -130),
-        new THREE.Vector3(260, 2, -140),
-        new THREE.Vector3(235, 2, 85),
-        new THREE.Vector3(235, 2, 80),
-        new THREE.Vector3(235, 2, 90),
-        new THREE.Vector3(235, 2, 75),
-        new THREE.Vector3(235, 2, 95),
-        new THREE.Vector3(235, 2, 70),
-        new THREE.Vector3(235, 2, 100),
+        new THREE.Vector3(260, 2, -80),
+        new THREE.Vector3(280, 2, -100),
+        new THREE.Vector3(260, 2, -110),
+        new THREE.Vector3(280, 2, -85),
     ];
 
     // Load the crates
@@ -675,7 +670,7 @@ if (WebGL.isWebGL2Available()) {
     // Win Condition: contact wall
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
-        { x: -100, y: 2, z: -150 }, // Position - finish line
+        { x: 40, y: 2, z: -220 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
     );
 
@@ -911,6 +906,8 @@ document.addEventListener('keyup', (event) => {
 
     }
 
+        
+
     function createGridTexture(groundSize) {
         const gridSize = 1;
         const gridTexture = new THREE.TextureLoader().load(
@@ -922,12 +919,15 @@ document.addEventListener('keyup', (event) => {
         );
         return gridTexture;
     }
-
     function createFloor(groundSize, gridTexture, groundBody) {
         const floorGeometry = new THREE.PlaneGeometry(groundSize.width, groundSize.length);
+        const concreteBTexture = new THREE.TextureLoader().load('./src/assets/textures/zombie texture.png');
+        concreteBTexture.wrapS = THREE.RepeatWrapping;
+        concreteBTexture.wrapT = THREE.RepeatWrapping;
+        concreteBTexture.repeat.set(10, 10);
         const floorMaterial = new THREE.MeshStandardMaterial({
-            map: gridTexture,
-            color: 0xffffff,
+            map: concreteBTexture,
+            //color: 0xffffff,
             metalness: 0.1,
             roughness: 0.8
         });

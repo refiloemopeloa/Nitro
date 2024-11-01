@@ -116,11 +116,11 @@ export class CarLoader {
 
                     // Create the vehicle
                     const carBody = new CANNON.Body({
-                        mass: 8,
+                        mass: 10,
                         //position: new CANNON.Vec3(0, 2, -10),
                         //position: new CANNON.Vec3(360, 10, 40),
-                        //position : new CANNON.Vec3(230, 2, -120),
-                        position: new CANNON.Vec3(200, 40, 80),
+                        position : new CANNON.Vec3(230, 2, -120),
+                        //position: new CANNON.Vec3(200, 40, 80),
                         shape: new CANNON.Box(new CANNON.Vec3(2.6, 0.5, 1.1)),
                         material: this.carMaterial
                     });
@@ -128,9 +128,6 @@ export class CarLoader {
                     const vehicle = new CANNON.RigidVehicle({
                         chassisBody: carBody,
                     });
-                    // const vehicle = new CANNON.RaycastVehicle({
-                    //     chassisBody: carBody,
-                    // });
 
                     // Wheel setup
                     const mass = 0.5;

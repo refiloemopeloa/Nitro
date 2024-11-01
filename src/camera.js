@@ -51,6 +51,8 @@ export class CameraManager {
         const rotatedOffset = this.cameraOffset.clone().add(lateralOffsetVector).applyQuaternion(carQuaternion);
         this.camera.position.copy(carPosition).add(rotatedOffset);
 
+        this.camera.position.y = carPosition.y + 3;
+
         const rotatedLookAhead = this.cameraLookAhead.clone().applyQuaternion(carQuaternion);
         const lookAtPoint = new THREE.Vector3().copy(carPosition).add(rotatedLookAhead);
         this.camera.lookAt(lookAtPoint);
