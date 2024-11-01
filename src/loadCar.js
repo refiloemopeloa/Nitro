@@ -119,8 +119,8 @@ export class CarLoader {
                         mass: 8,
                         //position: new CANNON.Vec3(0, 2, -10),
                         //position: new CANNON.Vec3(360, 10, 40),
-                        //position : new CANNON.Vec3(230, 2, -120),
-                        position: new CANNON.Vec3(200, 40, 80),
+                        position : new CANNON.Vec3(230, 2, -120),
+                        //position: new CANNON.Vec3(200, 50, 80),
                         shape: new CANNON.Box(new CANNON.Vec3(2.6, 0.5, 1.1)),
                         material: this.carMaterial
                     });
