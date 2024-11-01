@@ -137,19 +137,6 @@ if (WebGL.isWebGL2Available()) {
     let lastTime = 0;
     let accumulatedTime = 0;
 
-    let isUpsideDown = false;
-let upsideDownStartTime = 0;
-const RESPAWN_DELAY = 2000; // 2 seconds in milliseconds
-const UPSIDE_DOWN_THRESHOLD = -0.5; // Threshold for considering the car upside down
-const TRACK_BOUNDS = {
-    minX: -100,
-    maxX: 400,
-    minZ: -250,
-    maxZ: 150,
-    minY: -10, // If car falls below this Y value, consider it off-track
-};
-const START_POSITION = { x: 0, y: 2, z: 0 };
-
     // Menu functionality
     const menuButton = document.getElementById('menuButton');
     const modal = document.getElementById('modal');
@@ -214,15 +201,15 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         let centered = Math.abs(angleY) / 1.6;
 
         groundBody.position.set(
-            trackEnd.x + (trackDir.x * trackSegSize.x) - (trackMergeDir.x * trackSegSize.z * centered),
-            trackEnd.y + (trackDir.y * trackSegSize.x) - (trackMergeDir.y * trackSegSize.z * centered),
-            trackEnd.z + (trackDir.z * trackSegSize.x) - (trackMergeDir.z * trackSegSize.z * centered)
+            trackEnd.x + (trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
+            trackEnd.y + (trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
+            trackEnd.z + (trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
         );
 
         trackEnd.set(
-            trackEnd.x + (2 * trackDir.x * trackSegSize.x) - (trackMergeDir.x * trackSegSize.z * centered),
-            trackEnd.y + (2 * trackDir.y * trackSegSize.x) - (trackMergeDir.y * trackSegSize.z * centered),
-            trackEnd.z + (2 * trackDir.z * trackSegSize.x) - (trackMergeDir.z * trackSegSize.z * centered)
+            trackEnd.x + (2 * trackDir.x * trackSegSize.z) - (trackMergeDir.x * trackSegSize.z * centered),
+            trackEnd.y + (2 * trackDir.y * trackSegSize.z) - (trackMergeDir.y * trackSegSize.z * centered),
+            trackEnd.z + (2 * trackDir.z * trackSegSize.z) - (trackMergeDir.z * trackSegSize.z * centered)
         );
 
         floor.position.copy(groundBody.position);
@@ -233,34 +220,6 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         trackPrevDir[2] += angleZ;
 
         trackMergeDir.copy(trackDir);
-    }
-
-    function addBlock(x, y, z, ax, ay, az, size) {
-        // Create ground
-        const groundShape = new CANNON.Box(size);
-        const groundBody = new CANNON.Body({
-            mass: 0,
-            shape: groundShape,
-            material: groundMaterial
-        });
-        groundBody.quaternion.setFromEuler(ax, ay, az);
-        groundBody.position.set(x, y, z);
-        world.addBody(groundBody);
-
-        const floorGeometry = new THREE.BoxGeometry(size.x * 2, size.y * 2, size.z * 2);
-        const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
-        const floorMaterial = new THREE.MeshStandardMaterial({
-            //color: 0xfcfcfc
-            map: concreteATexture,
-        });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        scene.add(floor);
-
-        const trackDir = new CANNON.Vec3(-1, 0, 0);
-        groundBody.quaternion.vmult(trackDir, trackDir);
-
-        floor.position.copy(groundBody.position);
-        floor.quaternion.copy(groundBody.quaternion);
     }
 
     const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
@@ -320,85 +279,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         }
     }
 
-    function isWithinTrackBounds(position) {
-        return position.x >= TRACK_BOUNDS.minX &&
-               position.x <= TRACK_BOUNDS.maxX &&
-               position.z >= TRACK_BOUNDS.minZ &&
-               position.z <= TRACK_BOUNDS.maxZ &&
-               position.y >= TRACK_BOUNDS.minY;
-    }
-    
-    // Function to respawn the car
-    function respawnCar(forceStartPosition = false) {
-        if (!vehicle || !vehicle.chassisBody) return;
-    
-        let respawnPosition;
-        
-        if (forceStartPosition) {
-            // Respawn at start position if off track
-            respawnPosition = START_POSITION;
-        } else {
-            // Local respawn - keep current X and Z, just lift the Y position
-            const currentPos = vehicle.chassisBody.position;
-            respawnPosition = {
-                x: currentPos.x,
-                y: 2, // Lift slightly above ground
-                z: currentPos.z
-            };
-        }
-    
-        // Reset physics
-        vehicle.chassisBody.velocity.set(0, 0, 0);
-        vehicle.chassisBody.angularVelocity.set(0, 0, 0);
-        vehicle.chassisBody.position.set(respawnPosition.x, respawnPosition.y, respawnPosition.z);
-        
-        // Reset rotation to upright position
-        vehicle.chassisBody.quaternion.set(0, 0, 0, 1);
-        
-        // Reset controls if they exist
-        if (controls && typeof controls.reset === 'function') {
-            controls.reset();
-        }
-        
-        // Reset upside down tracking
-        isUpsideDown = false;
-        upsideDownStartTime = 0;
-    }
-    
-    // Check for upside down state and off-track position
-    function checkVehicleState() {
-        if (!vehicle || !vehicle.chassisBody) return;
-        
-        // Check if car is off track
-        if (!isWithinTrackBounds(vehicle.chassisBody.position)) {
-            console.log("Car is off track - respawning at start");
-            respawnCar(true); // Force respawn at start position
-            return;
-        }
-        
-        // Check if car is upside down
-        const chassisUp = new CANNON.Vec3(0, 1, 0);
-        vehicle.chassisBody.quaternion.vmult(chassisUp, chassisUp);
-        const worldUp = new CANNON.Vec3(0, 1, 0);
-        const dotProduct = worldUp.dot(chassisUp);
-        
-        if (dotProduct < UPSIDE_DOWN_THRESHOLD) {
-            if (!isUpsideDown) {
-                isUpsideDown = true;
-                upsideDownStartTime = Date.now();
-                console.log("Car detected upside down");
-            } else if (Date.now() - upsideDownStartTime >= RESPAWN_DELAY) {
-                console.log("Respawning car in place");
-                respawnCar(false); // Local respawn
-            }
-        } else {
-            isUpsideDown = false;
-            upsideDownStartTime = 0;
-        }
-    }
-
-    function addAllBuildings(){
-        // creating map
+    // creating map
     addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
     addScenery(-40, 0, 40, 0.01, 0);
@@ -435,31 +316,12 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     addScenery(270, 0, 40, 0, 2);
     addScenery(320, 0, 40, 0, 0);
 
-    addScenery(380, 0, 0, 0, 3);
+    addScenery(380, 0, 0, 0, 0);
     addScenery(380, 0, -40, 0, 0);
     addScenery(380, 0, -80, 0, 0);
     addScenery(380, 0, -120, 0, 0);
-    addScenery(380, 0, -160, 0, 1);
+    addScenery(380, 0, -160, 0, 0);
     addScenery(380, 0, -200, 0, 0);
-
-    addScenery(380, 0, -240, 0, 0);
-    addScenery(340, 0, -240, 0, 0);
-    addScenery(300, 0, -240, 0, 2);
-    addScenery(260, 0, -240, 0, 0);
-    addScenery(220, 0, -250, 0, 2);
-    addScenery(180, 0, -250, 0, 3);
-    addScenery(140, 0, -230, 0, 0);
-    addScenery(100, 0, -250, 0, 0);
-
-    addScenery(280, 0, -170, 0, 0);
-    addScenery(240, 0, -170, 0, 0);
-    addScenery(200, 0, -160, -0.1, 2);
-    addScenery(80, 0, -160, 0, 0);
-    addScenery(140, 0, -115, -0.4, 2);
-    };
-
-    addAllBuildings();
-    
 
 
     // After loading buildings, update their shader uniforms
@@ -474,7 +336,20 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         }
     });
 
-    
+    addScenery(380, 0, -240, 0, 0);
+    addScenery(340, 0, -240, 0, 0);
+    addScenery(300, 0, -240, 0, 0);
+    addScenery(260, 0, -240, 0, 0);
+    addScenery(220, 0, -250, 0, 2);
+    addScenery(180, 0, -250, 0, 3);
+    addScenery(140, 0, -250, 0, 0);
+    addScenery(100, 0, -250, 0, 0);
+
+    addScenery(280, 0, -170, 0, 0);
+    addScenery(240, 0, -170, 0, 0);
+    addScenery(200, 0, -160, -0.1, 2);
+    addScenery(80, 0, -160, 0, 0);
+    addScenery(140, 0, -115, -0.4, 2);
 
     trackEnd.set(120, -0.5, 80);
     trackSegSize.set(20, 0.05, 20);
@@ -495,48 +370,16 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     trackPrevDir = [0, 3.14, 0];
     addRoadSeg(0, 0, -0.31);
 
-    const blockA = new CANNON.Vec3(20, 5, 25);
-    const blockB = new CANNON.Vec3(20, 5, 45);
-
-    addBlock(140, -3, 85, 0, 0, 0.15, blockA);
-    addBlock(170, 3, 85, 0, 0, 0.25, blockA);
-    addBlock(208.15, 7.79, 85, 0, 0, 0, blockA);
-
-    addBlock(255, -3.6, 85, 0, 0, -0.5, blockA);
-    addBlock(265, -4.2, 85, 0, 0, -0.3, blockA);
-    addBlock(275, -4.4, 85, 0, 0, -0.1, blockA);
-
-    addBlock(362, -4.4, 50, 0, 0, 0.3, blockB);
-    
-
     trackPrevDir = [0, 0, 0];
-    trackEnd.set(220, -2, -120);
-    trackSegSize.set(10, 2, 20);
-    // addRoadSeg(0, -0.3, -0.1);
-    // addRoadSeg(-0.02, -0.15, -0.05);
-    // addRoadSeg(-0.02, -0.15, -0.05);
-    // addRoadSeg(-0.045, -0.15, -0.05);
-    // addRoadSeg(-0.045, -0.15, -0.05);
-    // addRoadSeg(0.05, 0.15, 0.1);
-    // addRoadSeg(0.05, 0.15, 0.1);
-    // addRoadSeg(0, 0.1, 0.05);
-    // addRoadSeg(0, 0.1, 0.05);
-    // addRoadSeg(0, 0.15, 0.05);
-    // addRoadSeg(0, 0.15, 0.05);
-    // addRoadSeg(0, 0.15, 0.05);
-    // addRoadSeg(0, 0.15, 0.05);
-    // addRoadSeg(0, 0.15, 0.05);
-    // addRoadSeg(0, 0.15, 0.05);
-
+    trackEnd.set(220, 0, -120);
     addRoadSeg(0, -0.3, -0.1);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(0, 0, 0.3);
-    addRoadSeg(0, -0.6, 0);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0);
+    addRoadSeg(-0.04, -0.3, -0.1);
+    addRoadSeg(-0.09, -0.3, -0.1);
+    addRoadSeg(0.1, 0.3, 0.2);
+    addRoadSeg(0, 0.2, 0.1);
+    addRoadSeg(0, 0.3, 0.1);
+    addRoadSeg(0, 0.3, 0.1);
+    addRoadSeg(0, 0.3, 0.1);
 
     //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
@@ -870,7 +713,6 @@ let invulnerabilityEndTime = 0;
         new THREE.Vector3(220, 2, -120),
         new THREE.Vector3(220, 2, -200),
         new THREE.Vector3(290, 2, -200),
-        new THREE.Vector3(300, 2, -60),
     ];
     boostLoader.loadBoost(boostModel, boostPositions).then(() => {
         console.log('Boost objects loaded');
@@ -886,13 +728,6 @@ let invulnerabilityEndTime = 0;
         new THREE.Vector3(260, 2, -100),
         new THREE.Vector3(280, 2, -130),
         new THREE.Vector3(260, 2, -140),
-        new THREE.Vector3(235, 2, 85),
-        new THREE.Vector3(235, 2, 80),
-        new THREE.Vector3(235, 2, 90),
-        new THREE.Vector3(235, 2, 75),
-        new THREE.Vector3(235, 2, 95),
-        new THREE.Vector3(235, 2, 70),
-        new THREE.Vector3(235, 2, 100),
     ];
 
     // Load the crates
@@ -1056,7 +891,6 @@ let invulnerabilityEndTime = 0;
 
             // Apply controls
             controls.update();
-            checkVehicleState();
 
             regenerateHealth(Date.now());
 
