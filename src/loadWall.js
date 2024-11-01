@@ -235,6 +235,8 @@ export class WallLoader {
         }
 
         winPopup.style.display = 'block';
+        isPaused = true;
+    controls.disable(); // Disable car controls
     }
 
     formatTime(seconds) {
