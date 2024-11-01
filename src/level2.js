@@ -91,39 +91,6 @@ if (WebGL.isWebGL2Available()) {
     );
     world.addContactMaterial(wheelGroundContactMaterial);
 
-    // Add two cubes with fire effects
-    // const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    // const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-
-    // const cube1 = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    // cube1.position.set(368, 2, 40);
-    // scene.add(cube1);
-
-    // const cube2 = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    // cube2.position.set(360, 2, 45);
-    // scene.add(cube2);
-
-    // Create invisible emitters
-    // const emitter1 = new THREE.Object3D();
-    // const emitter2 = new THREE.Object3D();
-
-    // Add fire effects to invisible emitters
-    // const fireEffect1 = getParticleSystem({
-    //     camera,
-    //     emitter: emitter1,
-    //     parent: scene,
-    //     rate: 50.0,
-    //     texture: img,
-    // });
-
-    // const fireEffect2 = getParticleSystem({
-    //     camera,
-    //     emitter: emitter2,
-    //     parent: scene,
-    //     rate: 50.0,
-    //     texture: img,
-    // });
-
     const checkpointLoader = new CheckpointLoader(scene, world);
 
 
@@ -351,35 +318,35 @@ if (WebGL.isWebGL2Available()) {
     addScenery(80, 0, -160, 0, 0);
     addScenery(140, 0, -115, -0.4, 2);
 
-    trackEnd.set(120, -0.5, 80);
-    trackSegSize.set(20, 0.05, 20);
-    addRoadSeg(0, 3.14, -0.12);
-    addRoadSeg(0, 0, -0.12);
-    addRoadSeg(0, 0, 0.24);
-    addRoadSeg(0, 0, 1.65);
-    addRoadSeg(0, 0, -2.8)
+    // trackEnd.set(120, -0.5, 80);
+    // trackSegSize.set(20, 0.05, 20);
+    // addRoadSeg(0, 3.14, -0.12);
+    // addRoadSeg(0, 0, -0.12);
+    // addRoadSeg(0, 0, 0.24);
+    // addRoadSeg(0, 0, 1.65);
+    // addRoadSeg(0, 0, -2.8)
 
-    trackPrevDir = [0, 3.14, 0];
-    trackEnd.set(250, 12, 80);
-    addRoadSeg(-0.08, 0, 0.3);
-    addRoadSeg(0, 0, -0.3);
-    addRoadSeg(0, 0.2, 0);
-    addRoadSeg(0, 0, -0.3);
+    // trackPrevDir = [0, 3.14, 0];
+    // trackEnd.set(250, 12, 80);
+    // addRoadSeg(-0.08, 0, 0.3);
+    // addRoadSeg(0, 0, -0.3);
+    // addRoadSeg(0, 0.2, 0);
+    // addRoadSeg(0, 0, -0.3);
 
-    trackEnd.set(368, 0, 40);
-    trackPrevDir = [0, 3.14, 0];
-    addRoadSeg(0, 0, -0.31);
+    // trackEnd.set(368, 0, 40);
+    // trackPrevDir = [0, 3.14, 0];
+    // addRoadSeg(0, 0, -0.31);
 
-    trackPrevDir = [0, 0, 0];
-    trackEnd.set(220, 0, -120);
-    addRoadSeg(0, -0.3, -0.1);
-    addRoadSeg(-0.04, -0.3, -0.1);
-    addRoadSeg(-0.09, -0.3, -0.1);
-    addRoadSeg(0.1, 0.3, 0.2);
-    addRoadSeg(0, 0.2, 0.1);
-    addRoadSeg(0, 0.3, 0.1);
-    addRoadSeg(0, 0.3, 0.1);
-    addRoadSeg(0, 0.3, 0.1);
+    // trackPrevDir = [0, 0, 0];
+    // trackEnd.set(220, 0, -120);
+    // addRoadSeg(0, -0.3, -0.1);
+    // addRoadSeg(-0.04, -0.3, -0.1);
+    // addRoadSeg(-0.09, -0.3, -0.1);
+    // addRoadSeg(0.1, 0.3, 0.2);
+    // addRoadSeg(0, 0.2, 0.1);
+    // addRoadSeg(0, 0.3, 0.1);
+    // addRoadSeg(0, 0.3, 0.1);
+    // addRoadSeg(0, 0.3, 0.1);
 
     //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
@@ -746,7 +713,7 @@ let invulnerabilityEndTime = 0;
     // Win Condition: contact wall
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
-        { x: -100, y: 2, z: -150 }, // Position - finish line
+        { x: 40, y: 2, z: -220 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
     );
 
