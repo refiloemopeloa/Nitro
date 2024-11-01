@@ -3,76 +3,104 @@ import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class BlockLoader {
-    constructor(scene, world, blockModelPath, carObject) {
+    constructor(scene, world, groundMaterial) {
         this.scene = scene;
         this.world = world;
         this.loader = new GLTFLoader();
-        this.blockModelPath = blockModelPath;
-        this.blockObject = null;
-        this.blockBody = null;
-        this.isDropped = false;
-        this.carObject = carObject;
-        this.dropDistance = 3; // Distance in front of the car to drop the block
+        this.blocks = [];
+        this.groundMaterial = groundMaterial;
+        this.blockMaterial = new CANNON.Material('block');
+        
+        // Contact material for block-ground interaction - reduced bounce and increased friction
+        const blockGroundContact = new CANNON.ContactMaterial(
+            groundMaterial,
+            this.blockMaterial,
+            {
+                friction: 1.8,     // Increased friction
+                restitution: 0.0   // No bounce
+            }
+        );
+        this.world.addContactMaterial(blockGroundContact);
     }
 
-    // Load the block model
-    loadBlock() {
-        return new Promise((resolve, reject) => {
-            this.loader.load(
-                this.blockModelPath,
-                (gltf) => {
-                    this.blockObject = gltf.scene;
-                    this.blockObject.scale.set(0.5, 0.5, 0.5);
-                    this.blockObject.visible = false;
-                    this.scene.add(this.blockObject);
-                    resolve(this.blockObject);
-                },
-                undefined,
-                (error) => {
-                    console.error('Error loading block model', error);
-                    reject(error);
-                }
+    async loadBlock(modelPath, dropPosition, size = { x: 1, y: 1, z: 1 }, scale = 1) {
+        try {
+            const gltf = await this.loader.loadAsync(modelPath);
+            const blockObject = gltf.scene;
+            
+            // Scale the model
+            blockObject.scale.set(scale, scale, scale);
+            
+            // Position at drop point
+            const dropHeight = 40; // Height to drop from
+            blockObject.position.set(
+                dropPosition.x,
+                dropHeight,
+                dropPosition.z
             );
-        });
-    }
+            
+            // Add to scene
+            this.scene.add(blockObject);
 
-    // Check if the car is in the right position to trigger the block drop
-    checkCarPosition() {
-        const carPosition = this.carObject.position;
-        // Adjust the threshold as needed for when the block should drop
-        if (carPosition.z >= this.dropDistance && !this.isDropped) {
-            this.dropBlock({
-                x: carPosition.x,
-                y: carPosition.y,
-                z: carPosition.z - this.dropDistance // A few cm in front of the car
+            // Create physics body
+            const blockShape = new CANNON.Box(new CANNON.Vec3(size.x/2, size.y/2, size.z));
+            const blockBody = new CANNON.Body({
+                mass: 20,  // Increased mass for faster falling
+                position: new CANNON.Vec3(dropPosition.x, dropHeight, dropPosition.z),
+                shape: blockShape,
+                material: this.blockMaterial,
+                linearDamping: 0.1,  // Reduced air resistance
+                angularDamping: 0.1  // Reduced rotation damping
             });
+
+            // Add high initial downward velocity
+            blockBody.velocity.set(0, -90, 0);  // Increased downward velocity
+
+            // Lock rotation to keep blocks falling straight
+            blockBody.fixedRotation = true;
+
+            // Add to physics world
+            this.world.addBody(blockBody);
+
+            // Store block data
+            this.blocks.push({
+                object: blockObject,
+                body: blockBody
+            });
+
+            return { object: blockObject, body: blockBody };
+        } catch (error) {
+            console.error('Error loading block model:', error);
+            throw error;
         }
     }
 
-    // Drop the block at the specified position
-    dropBlock(dropPosition) {
-        if (this.isDropped) return; // Block has already dropped
-        this.isDropped = true;
-
-        // Set the initial position of the block above the ground
-        this.blockObject.position.set(dropPosition.x, dropPosition.y + 5, dropPosition.z); // Drop from height
-        this.blockObject.visible = true;
-
-        // Create Cannon.js body for block physics
-        this.blockBody = new CANNON.Body({
-            mass: 1,
-            position: new CANNON.Vec3(dropPosition.x, dropPosition.y + 5, dropPosition.z),
-            shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)) // Adjust size as needed
-        });
-
-        this.world.addBody(this.blockBody);
+    // Update all blocks' positions
+    update() {
+        for (const block of this.blocks) {
+            if (block.object && block.body) {
+                block.object.position.copy(block.body.position);
+                block.object.quaternion.copy(block.body.quaternion);
+            }
+        }
     }
 
-    // Update the block position based on physics
-    updateBlockPosition() {
-        if (this.blockBody && this.blockObject) {
-            this.blockObject.position.copy(this.blockBody.position);
-            this.blockObject.quaternion.copy(this.blockBody.quaternion);
+    // Remove a block from the scene and physics world
+    removeBlock(index) {
+        if (index >= 0 && index < this.blocks.length) {
+            const block = this.blocks[index];
+            this.scene.remove(block.object);
+            this.world.removeBody(block.body);
+            this.blocks.splice(index, 1);
         }
+    }
+
+    // Clear all blocks
+    clearBlocks() {
+        for (const block of this.blocks) {
+            this.scene.remove(block.object);
+            this.world.removeBody(block.body);
+        }
+        this.blocks = [];
     }
 }
