@@ -273,9 +273,14 @@ if (WebGL.isWebGL2Available()) {
         }
     }
 
-    const blockA = new CANNON.Vec3(10, 5, 15);
+    const blockA = new CANNON.Vec3(10, 5, 14);
     const blockB = new CANNON.Vec3(20, 5, 45);
     const landscape = new CANNON.Vec3(40, 8, 15);
+
+    const plank = new CANNON.Vec3(2, 0.1, 10);
+    const plankB = new CANNON.Vec3(10, 0.1, 2);
+
+    const pole = new CANNON.Vec3(1, 10, 1);
 
     const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
     const wood = new THREE.TextureLoader().load('./src/assets/textures/wood texture.png');
@@ -291,10 +296,25 @@ if (WebGL.isWebGL2Available()) {
         addScenery(-80, -15.2, 40, 0, 2);
 
         addBlock(-20, 8, 30, 0, 0, 0, landscape, concreteATexture);
-        addBlock(-80, 0, 0, 0, 0, 0, blockB, concreteATexture);
-        addBlock(-90, 4.5, 15.5, -0.5, 0, 0, blockA, concreteATexture);
-        addBlock(-42, -5.5, 0, 0, 0, -0.3, blockB, concreteATexture);
+        addBlock(-80, 3, 0, 0, 0, 0, blockB, concreteATexture);
+        addBlock(-90, 7.5, 15.5, -0.3, 0, 0, blockA, concreteATexture);
+        addBlock(-42, -2.5, 0, 0, 0, -0.3, blockB, concreteATexture);
 
+        addBlock(-10, 13, 30, 0, 0, 0.3, blockA, concreteATexture);
+        addBlock(8, 21, 30, 0, 0, 0.55, blockA, concreteATexture);
+
+        addBlock(37, 31.5, -10, 0, 0, 0, plank, wood);
+        addBlock(31, 31.5, -10, 0, 0.12, 0, plank, wood);
+
+        addBlock(0, 18, -30, -0.4, 0, 0.1, pole, wood);
+        addBlock(0, 18, -28, 0, 0, 0.1, pole, wood);
+
+        addBlock(11, 30, -28, 0, 0, 0.15, plankB, wood);
+        addBlock(11, 29.5, -32, 0, 0, 0.2, plankB, wood);
+        addBlock(-5, 28.5, -28, 0, Math.PI/2, 0, plank, wood);
+        addBlock(-5, 27.5, -32, 0, Math.PI/2, 0, plank, wood);
+        addBlock(-13, 30.5, -28, 0, 0, -0.2, plankB, wood);
+        addBlock(-13, 30, -32, 0, 0.05, -0.25, plankB, wood);
         
     };
 
@@ -315,7 +335,10 @@ if (WebGL.isWebGL2Available()) {
     
 
     //Rubble placement for the road
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(-70, 8, 13), 5, 20);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(-75, 8, 15), 5, 20);
+
+    
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
@@ -637,7 +660,11 @@ let invulnerabilityEndTime = 0;
     }
         const boostPositions = [
         // add boost items here
-        new THREE.Vector3(20, 2, 10),
+        new THREE.Vector3(-10, 2, -5),
+        new THREE.Vector3(-86, 13, 10),
+        new THREE.Vector3(-92, 13, 10),
+
+        new THREE.Vector3(-60, 18, 32),
         ];
     const boostLoader = new BoostLoader(scene, world);
     
@@ -651,6 +678,9 @@ let invulnerabilityEndTime = 0;
     const cratePositions = [
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
+        new THREE.Vector3(-90, 9, -15),
+        new THREE.Vector3(-30, 30, 20),
+        new THREE.Vector3(-30, 30, 40),
     ];
 
     // Load the crates
@@ -669,7 +699,7 @@ let invulnerabilityEndTime = 0;
     // Win Condition: contact wall
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
-        { x: 40, y: 2, z: -220 }, // Position - finish line
+        { x: -90, y: 33, z: -30 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
     );
 
@@ -940,7 +970,7 @@ let invulnerabilityEndTime = 0;
         updateSkybox(skybox, time * 0.001);
 
         // Update Cannon debugger
-        cannonDebugger.update();
+        //cannonDebugger.update();
 
         // Update orbit controls only in free camera mode
         if (cameraManager.cameraMode === 2) {
