@@ -26,7 +26,7 @@ export class WallLoader {
         // Create visual representation of the wall
         const wallGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
         const wallMaterial = new THREE.MeshPhongMaterial({
-            color: 0x0088ff,
+            color: 0xFFC000,
             transparent: true,
             opacity: 0.3,
             emissive: 0x0044aa,
@@ -43,7 +43,7 @@ export class WallLoader {
             size.z + 0.4
         );
         const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0x0088ff,
+            color: 0xFFC000,
             transparent: true,
             opacity: 0.2,
             side: THREE.BackSide
