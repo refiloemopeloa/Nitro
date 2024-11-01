@@ -30,6 +30,8 @@ import { CheckpointLoader } from './loadCheckpoint.js';
 import { BlockLoader } from './block.js';  // Add this import block class
 import TriggerSystem from './triggerSystem.js'; 
 import blockModel from './models/road_block_a.glb';   // Add your block model path
+import { ArrowLoader } from './loadArrowSign.js';
+import arrowModel from './models/GreenArrowIcon.glb';
 
 
 if (WebGL.isWebGL2Available()) {
@@ -158,13 +160,13 @@ if (WebGL.isWebGL2Available()) {
     const menuButton = document.getElementById('menuButton');
     const modal = document.getElementById('modal');
     const modalOverlay = document.getElementById('modalOverlay');
-    const settingsButton = document.getElementById('settingsButton');
+    //const settingsButton = document.getElementById('settingsButton');
     const quitButton = document.getElementById('quitButton');
     const resumeButton = document.getElementById('resumeButton');
 
     menuButton.addEventListener('click', openModal);
     modalOverlay.addEventListener('click', closeModal);
-    settingsButton.addEventListener('click', openSettings);
+    //settingsButton.addEventListener('click', openSettings);
     quitButton.addEventListener('click', quitGame);
     resumeButton.addEventListener('click', closeModal);
 
@@ -172,14 +174,14 @@ if (WebGL.isWebGL2Available()) {
         modal.style.display = 'block';
         modalOverlay.style.display = 'block';
         isPaused = true;
-        controls.disable(); // Disable car controls
+        //controls.disable(); // Disable car controls
     }
 
     function closeModal() {
         modal.style.display = 'none';
         modalOverlay.style.display = 'none';
         isPaused = false;
-        controls.enable(); // Re-enable car controls
+        //controls.enable(); // Re-enable car controls
     }
 
     function openSettings() {
@@ -546,6 +548,12 @@ if (WebGL.isWebGL2Available()) {
     rubbleLoader.addRubbleCluster(new THREE.Vector3(260, 0, 80), 8, 12);
     rubbleLoader.addRubbleCluster(new THREE.Vector3(368, 0, 40), 8, 10);
     rubbleLoader.addRubbleCluster(new THREE.Vector3(220, 0, -120), 8, 20);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 1, -192), 8, 20);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(131, 1, -156), 8, 30);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(222, 1, -97), 8, 30);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(48, 1, -3), 8, 30);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(330, 1, -86), 8, 30);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(345, 1, 84), 8, 30);
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
@@ -577,7 +585,7 @@ if (WebGL.isWebGL2Available()) {
 
     function startGame() {
         gameOver = false;
-        gameTimer = 1200;
+        gameTimer = 80;
         frameCounter = 0;
         carHealth = MAX_HEALTH; // Reset health
         lastCollisionTime = 0;
@@ -586,7 +594,7 @@ if (WebGL.isWebGL2Available()) {
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
-            gameTimer = 1200; // in seconds
+            gameTimer = 80; // in seconds
             frameCounter = 0;
             updateTimerDisplay();
             console.log('Game started!');
@@ -622,7 +630,8 @@ if (WebGL.isWebGL2Available()) {
 
     
     // Load the car
-    const initialCarPosition = new CANNON.Vec3(0, 2, -10);
+    const initialCarPosition = new CANNON.Vec3(-20, 1, -3);
+    //const initialCarPosition = new CANNON.Vec3(341, 1, -36);
 const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
 let carObject, vehicle, fireEffect1, fireEffect2;
 
@@ -894,6 +903,16 @@ let invulnerabilityEndTime = 0;
         new THREE.Vector3(280, 2, -100),
         new THREE.Vector3(260, 2, -110),
         new THREE.Vector3(280, 2, -85),
+        new THREE.Vector3(102, 2, -211),
+        new THREE.Vector3(80, 2, -192),
+        new THREE.Vector3(198, 2, -109),
+        new THREE.Vector3(96, 2, 20),
+        new THREE.Vector3(200, 13, 92),
+        new THREE.Vector3(285, 2, 94),
+        new THREE.Vector3(359, 2, 45),
+        new THREE.Vector3(356, 2, -9),
+        new THREE.Vector3(322, 2, -56),
+        new THREE.Vector3(150, 1, -190),
     ];
 
     // Load the crates
@@ -914,15 +933,47 @@ let invulnerabilityEndTime = 0;
     // Win Condition: contact wall
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
-        { x: 40, y: 2, z: -220 }, // Position - finish line
-        { x: 5, y: 4, z: 10 }    // Size
+        { x: 70, y: 2, z: -200 }, // Position - finish line
+        { x: 2, y: 50, z: 80 }    // Size
     );
 
     // Create checkpoints at various positions
     checkpointLoader.createCheckpoint(
-        { x: 100, y: 2, z: 0 }, // position
-        { x: 10, y: 2, z: -10 }   // size
+        { x: 122, y: 2, z: 74 }, // position
+        { x: 2, y: 20, z: 40 }   // size
     );
+    checkpointLoader.createCheckpoint(
+        { x: 336, y: 2, z: -53 }, // position
+        { x: 40, y: 20, z: 2 }   // size
+    );
+
+    // add arrors
+    const arrowLoader = new ArrowLoader(scene);
+
+    // Multiple arrows at once
+const arrowConfigs = [
+    {
+        position: { x: 78, y: 7, z: 0 },
+        rotation: { x: 0, y: Math.PI/2, z: 0 },
+        scale: 20.0
+    },
+    {
+        position: { x: 360, y: 8, z:80 },
+        rotation: { x: 0, y: -Math.PI/2, z: 0 },
+        scale: 20.0
+    },
+    {
+        position: { x: 336, y: 8, z:-140 },
+        rotation: { x: 0, y: Math.PI*2, z: 0 },
+        scale: 20.0
+    },
+    {
+        position: { x: 150, y: 8, z:-130 },
+        rotation: { x: 0, y: -Math.PI/3, z: 0 },
+        scale: 20.0
+    }
+];
+arrowLoader.loadMultipleArrows(arrowModel, arrowConfigs);
 
     // To get current checkpoint position:
     const currentCheckpoint = checkpointLoader.getCurrentCheckpoint();
@@ -1277,10 +1328,10 @@ document.addEventListener('keydown', (event) => {
                 restoreCarAppearance();
             }
 
-            const position = vehicle.chassisBody.position;
-            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
-            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
-            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+            // const position = vehicle.chassisBody.position;
+            // document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            // document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            // document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
 
         }
 
