@@ -77,7 +77,7 @@ export class Controls {
     update() {
         if (!this.vehicle) return;
 
-        const currentMaxForce = this.boost ? 35 : 10;
+        const currentMaxForce = this.boost ? 15 : 10;
 
         if (this.pressed['w'] || this.pressed['ArrowUp']) {
             this.vehicle.setWheelForce(currentMaxForce, 2);

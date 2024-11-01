@@ -17,11 +17,11 @@
               <div class="controls-column">
                   <div class="control-item">
                       <span class="key">W</span>
-                      <span class="description">Forward</span>
+                      <span class="description">Accelerate</span>
                   </div>
                   <div class="control-item">
                       <span class="key">S</span>
-                      <span class="description">Backward</span>
+                      <span class="description">Reverse</span>
                   </div>
                   <div class="control-item">
                       <span class="key">A</span>
@@ -46,6 +46,7 @@
           </div>
       </div>
         <button id="start-btn">Start</button>
+        <button id="tut-btn">Tutorial</button>
         <button id="level2-btn">Lvl 2</button>
         <button id="leaderboard-btn">Leaderboard</button>
         
@@ -105,6 +106,12 @@
             window.location.href = 'level2.html';
             // Add your start game logic here
         });
+
+        document.getElementById('tut-btn').addEventListener('click', () => {
+            console.log('tut button clicked');
+            window.location.href = 'tutorial.html';
+            // Add your start game logic here
+        })
 
         document.getElementById('leaderboard-btn').addEventListener('click', () => {
             window.location.href = 'leaderBoard.html';
