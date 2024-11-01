@@ -455,7 +455,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     addScenery(140, 0, -115, -0.4, 2);
     };
 
-    //addAllBuildingsLvl1();
+    addAllBuildingsLvl1();
 
 
 
