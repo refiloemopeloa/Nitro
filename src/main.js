@@ -622,7 +622,7 @@ if (WebGL.isWebGL2Available()) {
 
     
     // Load the car
-    const initialCarPosition = new CANNON.Vec3(230, 2, -120);
+    const initialCarPosition = new CANNON.Vec3(0, 2, -10);
 const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
 let carObject, vehicle, fireEffect1, fireEffect2;
 

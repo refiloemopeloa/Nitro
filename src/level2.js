@@ -189,6 +189,33 @@ if (WebGL.isWebGL2Available()) {
         trackMergeDir.copy(trackDir);
     }
 
+    function addBlock(x, y, z, ax, ay, az, size, texture) {
+        // Create ground
+        const groundShape = new CANNON.Box(size);
+        const groundBody = new CANNON.Body({
+            mass: 0,
+            shape: groundShape,
+            material: groundMaterial
+        });
+        groundBody.quaternion.setFromEuler(ax, ay, az);
+        groundBody.position.set(x, y, z);
+        world.addBody(groundBody);
+
+        const floorGeometry = new THREE.BoxGeometry(size.x * 2, size.y * 2, size.z * 2);
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            //color: 0xfcfcfc
+            map: texture,
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        scene.add(floor);
+
+        const trackDir = new CANNON.Vec3(-1, 0, 0);
+        groundBody.quaternion.vmult(trackDir, trackDir);
+
+        floor.position.copy(groundBody.position);
+        floor.quaternion.copy(groundBody.quaternion);
+    }
+
     const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
     const graffitiWallLoader = new GraffitiWallLoader(scene, world, groundMaterial);
     const militaryBaseLoader = new MilitaryBaseLoader(scene, world, groundMaterial);
@@ -217,7 +244,7 @@ if (WebGL.isWebGL2Available()) {
                 });
                 break;
             case 2: // New case for military base
-                const baseSize = new CANNON.Vec3(20, 20, 13); // Adjust size as needed
+                const baseSize = new CANNON.Vec3(20, 21, 13); // Adjust size as needed
                 militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
                     console.log('Base loaded successfully');
                 }).catch(error => {
@@ -246,50 +273,32 @@ if (WebGL.isWebGL2Available()) {
         }
     }
 
-    // creating map
-    addScenery(-40, 0, 0, 0, 1);
-    addScenery(-40, 0, -40, -0.01, 0);
-    addScenery(-40, 0, 40, 0.01, 0);
-    addScenery(0, 0, -40, 0, 3);
-    addScenery(0, 0, 40, 0, 0);
-    addScenery(40, 0, -40, 0, 0);
-    addScenery(40, 0, 40, 0, 0);
+    const blockA = new CANNON.Vec3(10, 5, 15);
+    const blockB = new CANNON.Vec3(20, 5, 45);
+    const landscape = new CANNON.Vec3(40, 8, 15);
 
-    addScenery(80, 0, -50, 0.1, 3);
-    addScenery(100, 0, -80, 0, 0);
-    addScenery(140, 0, -60, 0, 2);
-    addScenery(150, 0, -10, 0.5, 0);
-    addScenery(180, 0, -80, 0, 0);
-    addScenery(220, 0, -60, -0.4, 0);
-    addScenery(260, 0, -45, -0.4, 0);
-    addScenery(300, 0, -30, 0.5, 0);
-    addScenery(320, 0, 0, 0.1, 0);
+    const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
+    const wood = new THREE.TextureLoader().load('./src/assets/textures/wood texture.png');
 
-    addScenery(150, 0, 40, 0, 0);
-    addScenery(190, 0, 10, 0, 2);
+    function addAllBuildingsLvl2(){
+        addScenery(40, 0, 0, 0, 2);
+        addScenery(40, 0, 30, 0, 0);
+        addScenery(40, 0, -30, 0.2, 2);
+        addScenery(0, 0, -30, 0, 3);
+        addScenery(-42, 0, -30, 0, 0);
+        addScenery(-80, 0, -30, 0, 2);
+        addScenery(-100, 5, 0, 0, 1);
+        addScenery(-80, -15.2, 40, 0, 2);
 
-    addScenery(80, 0, 80, 0, 0);
-    addScenery(120, 0, 120, 0, 2);
-    addScenery(160, 0, 120, 0, 2);
-    addScenery(200, 0, 120, 0, 0);
-    addScenery(240, 0, 120, 0, 0);
-    addScenery(280, 0, 120, 0, 2);
-    addScenery(320, 0, 120, 0, 0);
-    addScenery(360, 0, 110, 0.3, 0);
-    addScenery(390, 0, 90, 1.4, 0);
-    addScenery(400, 0, 40, 0, 0);
+        addBlock(-20, 8, 30, 0, 0, 0, landscape, concreteATexture);
+        addBlock(-80, 0, 0, 0, 0, 0, blockB, concreteATexture);
+        addBlock(-90, 4.5, 15.5, -0.5, 0, 0, blockA, concreteATexture);
+        addBlock(-42, -5.5, 0, 0, 0, -0.3, blockB, concreteATexture);
 
-    addScenery(230, 0, 40, 0, 3);
-    addScenery(270, 0, 40, 0, 2);
-    addScenery(320, 0, 40, 0, 0);
+        
+    };
 
-    addScenery(380, 0, 0, 0, 0);
-    addScenery(380, 0, -40, 0, 0);
-    addScenery(380, 0, -80, 0, 0);
-    addScenery(380, 0, -120, 0, 0);
-    addScenery(380, 0, -160, 0, 0);
-    addScenery(380, 0, -200, 0, 0);
-
+    addAllBuildingsLvl2();
 
     // After loading buildings, update their shader uniforms
     scene.traverse((object) => {
@@ -303,56 +312,10 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
-    addScenery(380, 0, -240, 0, 0);
-    addScenery(340, 0, -240, 0, 0);
-    addScenery(300, 0, -240, 0, 0);
-    addScenery(260, 0, -240, 0, 0);
-    addScenery(220, 0, -250, 0, 2);
-    addScenery(180, 0, -250, 0, 3);
-    addScenery(140, 0, -250, 0, 0);
-    addScenery(100, 0, -250, 0, 0);
-
-    addScenery(280, 0, -170, 0, 0);
-    addScenery(240, 0, -170, 0, 0);
-    addScenery(200, 0, -160, -0.1, 2);
-    addScenery(80, 0, -160, 0, 0);
-    addScenery(140, 0, -115, -0.4, 2);
-
-    // trackEnd.set(120, -0.5, 80);
-    // trackSegSize.set(20, 0.05, 20);
-    // addRoadSeg(0, 3.14, -0.12);
-    // addRoadSeg(0, 0, -0.12);
-    // addRoadSeg(0, 0, 0.24);
-    // addRoadSeg(0, 0, 1.65);
-    // addRoadSeg(0, 0, -2.8)
-
-    // trackPrevDir = [0, 3.14, 0];
-    // trackEnd.set(250, 12, 80);
-    // addRoadSeg(-0.08, 0, 0.3);
-    // addRoadSeg(0, 0, -0.3);
-    // addRoadSeg(0, 0.2, 0);
-    // addRoadSeg(0, 0, -0.3);
-
-    // trackEnd.set(368, 0, 40);
-    // trackPrevDir = [0, 3.14, 0];
-    // addRoadSeg(0, 0, -0.31);
-
-    // trackPrevDir = [0, 0, 0];
-    // trackEnd.set(220, 0, -120);
-    // addRoadSeg(0, -0.3, -0.1);
-    // addRoadSeg(-0.04, -0.3, -0.1);
-    // addRoadSeg(-0.09, -0.3, -0.1);
-    // addRoadSeg(0.1, 0.3, 0.2);
-    // addRoadSeg(0, 0.2, 0.1);
-    // addRoadSeg(0, 0.3, 0.1);
-    // addRoadSeg(0, 0.3, 0.1);
-    // addRoadSeg(0, 0.3, 0.1);
+    
 
     //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(250, 12, 80), 8, 12);
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(368, 0, 40), 8, 10);
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(220, 0, -120), 8, 20);
 
     // Create ground
     const groundSize = { width: 800, length: 800 };
@@ -427,10 +390,11 @@ if (WebGL.isWebGL2Available()) {
         console.log('Main menu button clicked');
     });
     // Load the car
+    const initialCarPosition = new CANNON.Vec3(0, 2, -10);
     const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
     let carObject, vehicle, fireEffect1, fireEffect2;
 
-    carLoader.loadCar(carModel).then(({
+    carLoader.loadCar(carModel, initialCarPosition).then(({
         carObject: loadedCarObject,
         vehicle: loadedVehicle,
         FrontWheel_L,
@@ -671,16 +635,12 @@ let invulnerabilityEndTime = 0;
             updateHealthBar();
         }
     }
-
-    const boostLoader = new BoostLoader(scene, world);
-    const boostPositions = [
+        const boostPositions = [
         // add boost items here
         new THREE.Vector3(20, 2, 10),
-        new THREE.Vector3(210, 15, 80),
-        new THREE.Vector3(220, 2, -120),
-        new THREE.Vector3(220, 2, -200),
-        new THREE.Vector3(290, 2, -200),
-    ];
+        ];
+    const boostLoader = new BoostLoader(scene, world);
+    
     boostLoader.loadBoost(boostModel, boostPositions).then(() => {
         console.log('Boost objects loaded');
     }).catch(error => {
@@ -691,10 +651,6 @@ let invulnerabilityEndTime = 0;
     const cratePositions = [
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
-        new THREE.Vector3(280, 2, -90),
-        new THREE.Vector3(260, 2, -100),
-        new THREE.Vector3(280, 2, -130),
-        new THREE.Vector3(260, 2, -140),
     ];
 
     // Load the crates
@@ -984,7 +940,7 @@ let invulnerabilityEndTime = 0;
         updateSkybox(skybox, time * 0.001);
 
         // Update Cannon debugger
-        //wwcannonDebugger.update();
+        cannonDebugger.update();
 
         // Update orbit controls only in free camera mode
         if (cameraManager.cameraMode === 2) {
@@ -1009,9 +965,13 @@ let invulnerabilityEndTime = 0;
 
     function createFloor(groundSize, gridTexture, groundBody) {
         const floorGeometry = new THREE.PlaneGeometry(groundSize.width, groundSize.length);
+        const concreteBTexture = new THREE.TextureLoader().load('./src/assets/textures/zombie texture.png');
+        concreteBTexture.wrapS = THREE.RepeatWrapping;
+        concreteBTexture.wrapT = THREE.RepeatWrapping;
+        concreteBTexture.repeat.set(10, 10);
         const floorMaterial = new THREE.MeshStandardMaterial({
-            map: gridTexture,
-            color: 0xffffff,
+            map: concreteBTexture,
+            //color: 0xffffff,
             metalness: 0.1,
             roughness: 0.8
         });
