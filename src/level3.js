@@ -511,7 +511,7 @@ if (WebGL.isWebGL2Available()) {
 
     
     // Load the car
-    const initialCarPosition = new CANNON.Vec3(70, 2, -200);
+    const initialCarPosition = new CANNON.Vec3(10, 2, -200);
     //const initialCarPosition = new CANNON.Vec3(341, 1, -36);
 const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
 let carObject, vehicle, fireEffect1, fireEffect2;
@@ -814,7 +814,7 @@ let invulnerabilityEndTime = 0;
     // Win Condition: contact wall
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
-        { x: 0, y: 0, z: 0 }, // Position - finish line
+        { x: 10, y: 0, z: 0 }, // Position - finish line
         { x: 2, y: 50, z: 80 }    // Size
     );
 
