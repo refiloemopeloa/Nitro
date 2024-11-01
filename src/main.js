@@ -619,18 +619,21 @@ if (WebGL.isWebGL2Available()) {
         // Implement main menu logic here
         console.log('Main menu button clicked');
     });
-    // Load the car
-    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
-    let carObject, vehicle, fireEffect1, fireEffect2;
 
-    carLoader.loadCar(carModel).then(({
-        carObject: loadedCarObject,
-        vehicle: loadedVehicle,
-        FrontWheel_L,
-        FrontWheel_R,
-        BackWheels,
-        emitter1,
-        emitter2
+    
+    // Load the car
+    const initialCarPosition = new CANNON.Vec3(230, 2, -120);
+const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
+let carObject, vehicle, fireEffect1, fireEffect2;
+
+carLoader.loadCar(carModel, initialCarPosition).then(({
+    carObject: loadedCarObject,
+    vehicle: loadedVehicle,
+    FrontWheel_L,
+    FrontWheel_R,
+    BackWheels,
+    emitter1,
+    emitter2
     }) => {
         carObject = loadedCarObject;
         vehicle = loadedVehicle;
