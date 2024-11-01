@@ -394,7 +394,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         }
     }
 
-    function addAllBuildings(){
+    function addAllBuildingsLvl1(){
         // creating map
     addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
@@ -455,8 +455,9 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     addScenery(140, 0, -115, -0.4, 2);
     };
 
-    addAllBuildings();
-    
+    //addAllBuildingsLvl1();
+
+
 
 
     // After loading buildings, update their shader uniforms
@@ -470,8 +471,6 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
             }
         }
     });
-
-    
 
     // trackEnd.set(120, -0.5, 80);
     // trackSegSize.set(20, 0.05, 20);
@@ -715,11 +714,11 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
             updateHealthBar();
         }
     }
-
+    
     const boostLoader = new BoostLoader(scene, world);
     const boostPositions = [
         // add boost items here
-        new THREE.Vector3(20, 2, 10),
+        //new THREE.Vector3(20, 2, 10),
         new THREE.Vector3(210, 15, 80),
         new THREE.Vector3(220, 2, -120),
         new THREE.Vector3(220, 2, -200),
@@ -750,6 +749,8 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     }).catch(error => {
         console.error('Failed to load crate model:', error);
     });
+
+    boostPositions.push(new THREE.Vector3(20, 2, 10));
 
 
     //event listener for crate damage
