@@ -24,11 +24,9 @@ import img from './img/smoke.png'
 import { WallLoader } from './loadWall.js';
 import { CrateLoader } from './loadCrate.js';
 import crateModel from './models/Crate.glb';
-import { RubbleLoader } from './RubbleLoader.js';
+import { RubbleLoader } from './rubbleLoader.js';
 import { CarAudioManager } from './carAudioManager.js';
-import { BlockLoader } from './block.js';  // Add this import block class
-import TriggerSystem from './triggerSystem.js'; 
-import blockModel from './models/road_block_a.glb';   // Add your block model path
+import { CheckpointLoader } from './loadCheckpoint.js';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -41,7 +39,6 @@ if (WebGL.isWebGL2Available()) {
     // Car revving sounds
     const carAudioManager = new CarAudioManager();
     carAudioManager.init();
-
     // Orbit controls
     const orbitControls = new OrbitControls(camera, renderer.domElement);
     orbitControls.enabled = false; // Disable by default
@@ -127,6 +124,9 @@ if (WebGL.isWebGL2Available()) {
     //     texture: img,
     // });
 
+    const checkpointLoader = new CheckpointLoader(scene, world);
+
+
     // Variables for track creation
     let trackEnd = new THREE.Vector3(0, 0, 0);
     let trackMergeDir = new THREE.Quaternion(0, 0, 0);
@@ -137,18 +137,18 @@ if (WebGL.isWebGL2Available()) {
     let lastTime = 0;
     let accumulatedTime = 0;
 
-    let isUpsideDown = false;
-let upsideDownStartTime = 0;
-const RESPAWN_DELAY = 2000; // 2 seconds in milliseconds
-const UPSIDE_DOWN_THRESHOLD = -0.5; // Threshold for considering the car upside down
-const TRACK_BOUNDS = {
-    minX: -100,
-    maxX: 400,
-    minZ: -250,
-    maxZ: 150,
-    minY: -10, // If car falls below this Y value, consider it off-track
-};
-const START_POSITION = { x: 0, y: 2, z: 0 };
+//     let isUpsideDown = false;
+// let upsideDownStartTime = 0;
+// const RESPAWN_DELAY = 2000; // 2 seconds in milliseconds
+// const UPSIDE_DOWN_THRESHOLD = -0.5; // Threshold for considering the car upside down
+// const TRACK_BOUNDS = {
+//     minX: -100,
+//     maxX: 400,
+//     minZ: -250,
+//     maxZ: 150,
+//     minY: -10, // If car falls below this Y value, consider it off-track
+// };
+// const START_POSITION = { x: 0, y: 2, z: 0 };
 
     // Menu functionality
     const menuButton = document.getElementById('menuButton');
@@ -320,84 +320,84 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         }
     }
 
-    function isWithinTrackBounds(position) {
-        return position.x >= TRACK_BOUNDS.minX &&
-               position.x <= TRACK_BOUNDS.maxX &&
-               position.z >= TRACK_BOUNDS.minZ &&
-               position.z <= TRACK_BOUNDS.maxZ &&
-               position.y >= TRACK_BOUNDS.minY;
-    }
+    // function isWithinTrackBounds(position) {
+    //     return position.x >= TRACK_BOUNDS.minX &&
+    //            position.x <= TRACK_BOUNDS.maxX &&
+    //            position.z >= TRACK_BOUNDS.minZ &&
+    //            position.z <= TRACK_BOUNDS.maxZ &&
+    //            position.y >= TRACK_BOUNDS.minY;
+    // }
     
-    // Function to respawn the car
-    function respawnCar(forceStartPosition = false) {
-        if (!vehicle || !vehicle.chassisBody) return;
+    // // Function to respawn the car
+    // function respawnCar(forceStartPosition = false) {
+    //     if (!vehicle || !vehicle.chassisBody) return;
     
-        let respawnPosition;
+    //     let respawnPosition;
         
-        if (forceStartPosition) {
-            // Respawn at start position if off track
-            respawnPosition = START_POSITION;
-        } else {
-            // Local respawn - keep current X and Z, just lift the Y position
-            const currentPos = vehicle.chassisBody.position;
-            respawnPosition = {
-                x: currentPos.x,
-                y: 2, // Lift slightly above ground
-                z: currentPos.z
-            };
-        }
+    //     if (forceStartPosition) {
+    //         // Respawn at start position if off track
+    //         respawnPosition = START_POSITION;
+    //     } else {
+    //         // Local respawn - keep current X and Z, just lift the Y position
+    //         const currentPos = vehicle.chassisBody.position;
+    //         respawnPosition = {
+    //             x: currentPos.x,
+    //             y: 2, // Lift slightly above ground
+    //             z: currentPos.z
+    //         };
+    //     }
     
-        // Reset physics
-        vehicle.chassisBody.velocity.set(0, 0, 0);
-        vehicle.chassisBody.angularVelocity.set(0, 0, 0);
-        vehicle.chassisBody.position.set(respawnPosition.x, respawnPosition.y, respawnPosition.z);
+    //     // Reset physics
+    //     vehicle.chassisBody.velocity.set(0, 0, 0);
+    //     vehicle.chassisBody.angularVelocity.set(0, 0, 0);
+    //     vehicle.chassisBody.position.set(respawnPosition.x, respawnPosition.y, respawnPosition.z);
         
-        // Reset rotation to upright position
-        vehicle.chassisBody.quaternion.set(0, 0, 0, 1);
+    //     // Reset rotation to upright position
+    //     vehicle.chassisBody.quaternion.set(0, 0, 0, 1);
         
-        // Reset controls if they exist
-        if (controls && typeof controls.reset === 'function') {
-            controls.reset();
-        }
+    //     // Reset controls if they exist
+    //     if (controls && typeof controls.reset === 'function') {
+    //         controls.reset();
+    //     }
         
-        // Reset upside down tracking
-        isUpsideDown = false;
-        upsideDownStartTime = 0;
-    }
+    //     // Reset upside down tracking
+    //     isUpsideDown = false;
+    //     upsideDownStartTime = 0;
+    // }
     
-    // Check for upside down state and off-track position
-    function checkVehicleState() {
-        if (!vehicle || !vehicle.chassisBody) return;
+    // // Check for upside down state and off-track position
+    // function checkVehicleState() {
+    //     if (!vehicle || !vehicle.chassisBody) return;
         
-        // Check if car is off track
-        if (!isWithinTrackBounds(vehicle.chassisBody.position)) {
-            console.log("Car is off track - respawning at start");
-            respawnCar(true); // Force respawn at start position
-            return;
-        }
+    //     // Check if car is off track
+    //     if (!isWithinTrackBounds(vehicle.chassisBody.position)) {
+    //         console.log("Car is off track - respawning at start");
+    //         respawnCar(true); // Force respawn at start position
+    //         return;
+    //     }
         
-        // Check if car is upside down
-        const chassisUp = new CANNON.Vec3(0, 1, 0);
-        vehicle.chassisBody.quaternion.vmult(chassisUp, chassisUp);
-        const worldUp = new CANNON.Vec3(0, 1, 0);
-        const dotProduct = worldUp.dot(chassisUp);
+    //     // Check if car is upside down
+    //     const chassisUp = new CANNON.Vec3(0, 1, 0);
+    //     vehicle.chassisBody.quaternion.vmult(chassisUp, chassisUp);
+    //     const worldUp = new CANNON.Vec3(0, 1, 0);
+    //     const dotProduct = worldUp.dot(chassisUp);
         
-        if (dotProduct < UPSIDE_DOWN_THRESHOLD) {
-            if (!isUpsideDown) {
-                isUpsideDown = true;
-                upsideDownStartTime = Date.now();
-                console.log("Car detected upside down");
-            } else if (Date.now() - upsideDownStartTime >= RESPAWN_DELAY) {
-                console.log("Respawning car in place");
-                respawnCar(false); // Local respawn
-            }
-        } else {
-            isUpsideDown = false;
-            upsideDownStartTime = 0;
-        }
-    }
+    //     if (dotProduct < UPSIDE_DOWN_THRESHOLD) {
+    //         if (!isUpsideDown) {
+    //             isUpsideDown = true;
+    //             upsideDownStartTime = Date.now();
+    //             console.log("Car detected upside down");
+    //         } else if (Date.now() - upsideDownStartTime >= RESPAWN_DELAY) {
+    //             console.log("Respawning car in place");
+    //             respawnCar(false); // Local respawn
+    //         }
+    //     } else {
+    //         isUpsideDown = false;
+    //         upsideDownStartTime = 0;
+    //     }
+    // }
 
-    function addAllBuildings(){
+    function addAllBuildingsLvl1(){
         // creating map
     addScenery(-40, 0, 0, 0, 1);
     addScenery(-40, 0, -40, -0.01, 0);
@@ -435,7 +435,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     addScenery(270, 0, 40, 0, 2);
     addScenery(320, 0, 40, 0, 0);
 
-    addScenery(380, 0, 0, 0, 3);
+    addScenery(380, 0, 0, 0, 2);
     addScenery(380, 0, -40, 0, 0);
     addScenery(380, 0, -80, 0, 0);
     addScenery(380, 0, -120, 0, 0);
@@ -458,8 +458,9 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     addScenery(140, 0, -115, -0.4, 2);
     };
 
-    addAllBuildings();
-    
+    addAllBuildingsLvl1();
+
+
 
 
     // After loading buildings, update their shader uniforms
@@ -474,8 +475,6 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         }
     });
 
-    
-
     // trackEnd.set(120, -0.5, 80);
     // trackSegSize.set(20, 0.05, 20);
     // addRoadSeg(0, 3.14, -0.12);
@@ -484,16 +483,16 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     // addRoadSeg(0, 0, 1.65);
     // addRoadSeg(0, 0, -2.8)
 
-    // trackPrevDir = [0, 3.14, 0];
-    // trackEnd.set(250, 12, 80);
-    // addRoadSeg(-0.08, 0, 0.3);
-    // addRoadSeg(0, 0, -0.3);
-    // addRoadSeg(0, 0.2, 0);
-    // addRoadSeg(0, 0, -0.3);
+    trackPrevDir = [0, 3.14, 0];
+    trackEnd.set(250, 12, 80);
+    addRoadSeg(-0.08, 0, 0.3);
+    addRoadSeg(0, 0, -0.3);
+    addRoadSeg(0, 0.2, 0);
+    addRoadSeg(0, 0, -0.3);
 
-    // trackEnd.set(368, 0, 40);
-    // trackPrevDir = [0, 3.14, 0];
-    // addRoadSeg(0, 0, -0.31);
+    trackEnd.set(368, 0, 40);
+    trackPrevDir = [0, 3.14, 0];
+    addRoadSeg(0, 0, -0.31);
 
     const blockA = new CANNON.Vec3(20, 5, 25);
     const blockB = new CANNON.Vec3(20, 5, 45);
@@ -503,15 +502,15 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     addBlock(208.15, 7.79, 85, 0, 0, 0, blockA);
 
     addBlock(255, -3.6, 85, 0, 0, -0.5, blockA);
-    addBlock(265, -4.2, 85, 0, 0, -0.3, blockA);
-    addBlock(275, -4.4, 85, 0, 0, -0.1, blockA);
+    addBlock(265, -4.4, 85, 0, 0, -0.3, blockA);
+    addBlock(275, -4.5, 85, 0, 0, -0.1, blockA);
 
     addBlock(362, -4.4, 50, 0, 0, 0.3, blockB);
     
 
-    trackPrevDir = [0, 0, 0];
-    trackEnd.set(220, -2, -120);
-    trackSegSize.set(10, 2, 20);
+    // trackPrevDir = [0, 0, 0];
+    // trackEnd.set(220, -2, -120);
+    // trackSegSize.set(10, 2, 20);
     // addRoadSeg(0, -0.3, -0.1);
     // addRoadSeg(-0.02, -0.15, -0.05);
     // addRoadSeg(-0.02, -0.15, -0.05);
@@ -528,19 +527,19 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     // addRoadSeg(0, 0.15, 0.05);
     // addRoadSeg(0, 0.15, 0.05);
 
-    addRoadSeg(0, -0.3, -0.1);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(0, 0, -0.1);
-    addRoadSeg(0, 0, 0.3);
-    addRoadSeg(0, -0.6, 0);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0.1);
-    addRoadSeg(0, 0, 0);
+    // addRoadSeg(0, -0.3, -0.1);
+    // addRoadSeg(0, 0, -0.1);
+    // addRoadSeg(0, 0, -0.1);
+    // addRoadSeg(0, 0, 0.3);
+    // addRoadSeg(0, -0.6, 0);
+    // addRoadSeg(0, 0, 0.1);
+    // addRoadSeg(0, 0, 0.1);
+    // addRoadSeg(0, 0, 0.1);
+    // addRoadSeg(0, 0, 0);
 
     //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(250, 12, 80), 8, 12);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(260, 0, 80), 8, 12);
     rubbleLoader.addRubbleCluster(new THREE.Vector3(368, 0, 40), 8, 10);
     rubbleLoader.addRubbleCluster(new THREE.Vector3(220, 0, -120), 8, 20);
 
@@ -574,7 +573,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
 
     function startGame() {
         gameOver = false;
-        gameTimer = 120;
+        gameTimer = 1200;
         frameCounter = 0;
         carHealth = MAX_HEALTH; // Reset health
         lastCollisionTime = 0;
@@ -583,7 +582,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
-            gameTimer = 120; // in seconds
+            gameTimer = 1200; // in seconds
             frameCounter = 0;
             updateTimerDisplay();
             console.log('Game started!');
@@ -632,10 +631,26 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         carObject = loadedCarObject;
         vehicle = loadedVehicle;
 
+        // Store initial wheel offsets
+    const wheelOffsets = [
+        new CANNON.Vec3(-1.9, -0.5, 0.875),  // Front left
+        new CANNON.Vec3(-1.9, -0.5, -0.875), // Front right
+        new CANNON.Vec3(1.2, -0.5, 0.875),   // Back left
+        new CANNON.Vec3(1.2, -0.5, -0.875)   // Back right
+    ];
+    vehicle.wheelOffsets = wheelOffsets;  // Store offsets on vehicle object
+
         // Add collision event listener to the chassis body
         vehicle.chassisBody.addEventListener('collide', (event) => {
+            // Check if the collision is with a checkpoint
+            const otherBody = event.contact.bi === vehicle.chassisBody ? event.contact.bj : event.contact.bi;
+            
+            // Skip damage if the other body is a checkpoint or if invulnerable
+            if (isInvulnerable || otherBody.isTrigger) {
+                return;
+            }
+        
             const relativeVelocity = event.contact.getImpactVelocityAlongNormal();
-
             // Only register significant collisions
             if (Math.abs(relativeVelocity) > 5) {
                 const damage = Math.min(COLLISION_DAMAGE, Math.abs(relativeVelocity * 2));
@@ -683,6 +698,128 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     const HEALTH_REGEN_DELAY = 3000; // 3 seconds
     let lastCollisionTime = 0;
 
+    let lastMovementTime = 0;
+    const RESPAWN_DELAY = 10000; // 10 seconds in milliseconds
+    const MOVEMENT_THRESHOLD = 0.1; // Minimum speed to be considered "moving"
+
+    const INVULNERABILITY_DURATION = 3000; // 3 seconds of invulnerability after respawn
+let isInvulnerable = false;
+let invulnerabilityEndTime = 0;
+
+    function showRespawnWarning() {
+        const warning = document.getElementById('respawn-warning');
+        warning.style.display = 'block';
+        setTimeout(() => {
+            warning.style.display = 'none';
+        }, 1000); // Show for 1 second
+    }
+
+    let collisionTimeout = null;
+
+    function respawnCar(time) {
+        showRespawnWarning();
+        
+        // Get current checkpoint
+        const checkpoint = checkpointLoader.getCurrentCheckpoint();
+        checkpoint.y += 1;
+        
+        // Set specific forward-facing orientation
+        const euler = new THREE.Euler(0, -Math.PI / 2, 0);
+        const quaternion = new THREE.Quaternion().setFromEuler(euler);
+        
+        // Reset chassis
+        vehicle.chassisBody.position.copy(checkpoint);
+        vehicle.chassisBody.quaternion.copy(quaternion);
+        vehicle.chassisBody.velocity.set(0, 0, 0);
+        vehicle.chassisBody.angularVelocity.set(0, 0, 0);
+        vehicle.chassisBody.force.set(0, 0, 0);
+        vehicle.chassisBody.torque.set(0, 0, 0);
+        vehicle.chassisBody.collisionResponse = false;
+    
+        // Reset wheels with proper orientation
+        vehicle.wheelBodies.forEach((wheel, index) => {
+            wheel.velocity.set(0, 0, 0);
+            wheel.angularVelocity.set(0, 0, 0);
+            wheel.force.set(0, 0, 0);
+            wheel.torque.set(0, 0, 0);
+            wheel.collisionResponse = false;
+            
+            // Reset wheel quaternion to match chassis orientation
+            wheel.quaternion.copy(quaternion);
+            
+            // Convert CANNON.Vec3 to THREE.Vector3, apply rotation, and convert back
+            const cannonOffset = vehicle.wheelOffsets[index];
+            const threeOffset = new THREE.Vector3(cannonOffset.x, cannonOffset.y, cannonOffset.z);
+            threeOffset.applyQuaternion(quaternion);
+            
+            // Apply rotated offset to wheel position
+            wheel.position.copy(checkpoint);
+            wheel.position.x += threeOffset.x;
+            wheel.position.y += threeOffset.y;
+            wheel.position.z += threeOffset.z;
+        });
+    
+        // Update visual position
+        carObject.position.copy(checkpoint);
+        carObject.quaternion.copy(quaternion);
+    
+        // Reset last movement time
+        lastMovementTime = time;
+    
+        // Restore full health
+        carHealth = MAX_HEALTH;
+        updateHealthBar();
+    
+        // Enable invulnerability
+        isInvulnerable = true;
+        invulnerabilityEndTime = time + INVULNERABILITY_DURATION;
+    
+        // Visual feedback
+        if (carObject) {
+            carObject.traverse((child) => {
+                if (child.isMesh) {
+                    if (!child.userData.originalMaterial) {
+                        child.userData.originalMaterial = child.material.clone();
+                    }
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: 0x00ff00,
+                        transparent: true,
+                        opacity: 0.8,
+                        emissive: 0x00ff00,
+                        emissiveIntensity: 0.5
+                    });
+                }
+            });
+        }
+    
+        // Clear any existing timeout
+        if (collisionTimeout) {
+            clearTimeout(collisionTimeout);
+        }
+    
+        // Re-enable collisions after 500ms
+        collisionTimeout = setTimeout(() => {
+            vehicle.chassisBody.collisionResponse = true;
+            vehicle.wheelBodies.forEach(wheel => {
+                wheel.collisionResponse = true;
+            });
+        }, 300);
+    
+        console.log('Car respawned at checkpoint');
+    }
+    
+    // Add this function to restore normal car appearance
+    function restoreCarAppearance() {
+        if (carObject) {
+            carObject.traverse((child) => {
+                if (child.isMesh && child.userData.originalMaterial) {
+                    child.material = child.userData.originalMaterial;
+                }
+            });
+        }
+    }
+
+
     // Add this function to update the health bar display
     function updateHealthBar() {
         const healthBar = document.getElementById('health-bar');
@@ -701,15 +838,20 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
 
     // Add this function to handle damage
     function damageVehicle(damage) {
-        carHealth = Math.max(0, carHealth - damage);
-        lastCollisionTime = Date.now();
-        updateHealthBar();
-
-        if (carHealth <= 0) {
-            gameOver = true;
-            showGameOverPopup();
-        }
+    // If invulnerable, don't take damage
+    if (isInvulnerable) {
+        return;
     }
+
+    carHealth = Math.max(0, carHealth - damage);
+    lastCollisionTime = Date.now();
+    updateHealthBar();
+
+    if (carHealth <= 0) {
+        gameOver = true;
+        showGameOverPopup();
+    }
+}
 
     // Add this function to handle health regeneration
     function regenerateHealth(currentTime) {
@@ -718,16 +860,17 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
             updateHealthBar();
         }
     }
-
+    
     const boostLoader = new BoostLoader(scene, world);
     const boostPositions = [
         // add boost items here
-        new THREE.Vector3(20, 2, 10),
+        //new THREE.Vector3(20, 2, 10),
         new THREE.Vector3(210, 15, 80),
         new THREE.Vector3(220, 2, -120),
         new THREE.Vector3(220, 2, -200),
         new THREE.Vector3(290, 2, -200),
-        new THREE.Vector3(300, 2, -60),
+        new THREE.Vector3(300, 2, -80),
+        new THREE.Vector3(320, 2, -70),
     ];
     boostLoader.loadBoost(boostModel, boostPositions).then(() => {
         console.log('Boost objects loaded');
@@ -740,16 +883,10 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
         new THREE.Vector3(280, 2, -90),
-        new THREE.Vector3(260, 2, -100),
-        new THREE.Vector3(280, 2, -130),
-        new THREE.Vector3(260, 2, -140),
-        new THREE.Vector3(235, 2, 85),
-        new THREE.Vector3(235, 2, 80),
-        new THREE.Vector3(235, 2, 90),
-        new THREE.Vector3(235, 2, 75),
-        new THREE.Vector3(235, 2, 95),
-        new THREE.Vector3(235, 2, 70),
-        new THREE.Vector3(235, 2, 100),
+        new THREE.Vector3(260, 2, -80),
+        new THREE.Vector3(280, 2, -100),
+        new THREE.Vector3(260, 2, -110),
+        new THREE.Vector3(280, 2, -85),
     ];
 
     // Load the crates
@@ -758,6 +895,8 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     }).catch(error => {
         console.error('Failed to load crate model:', error);
     });
+
+    boostPositions.push(new THREE.Vector3(20, 2, 10));
 
 
     //event listener for crate damage
@@ -768,9 +907,18 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     // Win Condition: contact wall
     const wallLoader = new WallLoader(scene, world);
     wallLoader.createWall(
-        { x: -100, y: 2, z: -150 }, // Position - finish line
+        { x: 40, y: 2, z: -220 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
     );
+
+    // Create checkpoints at various positions
+    checkpointLoader.createCheckpoint(
+        { x: 100, y: 2, z: 0 }, // position
+        { x: 10, y: 2, z: -10 }   // size
+    );
+
+    // To get current checkpoint position:
+    const currentCheckpoint = checkpointLoader.getCurrentCheckpoint();
 
     // Cannon debugger
     const cannonDebugger = new CannonDebugger(scene, world);
@@ -794,128 +942,34 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         }
     });
 
-// Modify your existing event listener for keydown
-document.addEventListener('keydown', (event) => {
-    // Existing camera switch code
-    if (event.key === 'v') {
-        cameraManager.switchCameraMode();
-        if (cameraManager.cameraMode === 2) {
-            orbitControls.enabled = true;
-            if (carObject) {
-                orbitControls.target.copy(carObject.position);
-                const offset = new THREE.Vector3(5, 3, 5);
-                camera.position.copy(carObject.position).add(offset);
+    // Modify your existing event listener for keydown
+    document.addEventListener('keydown', (event) => {
+        // Existing camera switch code
+        if (event.key === 'v') {
+            cameraManager.switchCameraMode();
+            if (cameraManager.cameraMode === 2) {
+                orbitControls.enabled = true;
+                if (carObject) {
+                    orbitControls.target.copy(carObject.position);
+                    const offset = new THREE.Vector3(5, 3, 5);
+                    camera.position.copy(carObject.position).add(offset);
+                }
+            } else {
+                orbitControls.enabled = false;
             }
-        } else {
-            orbitControls.enabled = false;
         }
-    }
 
-    carAudioManager.handleKeyDown(event.key.toLowerCase());
+        carAudioManager.handleKeyDown(event.key.toLowerCase());
 
-    // Start game on WASD press
-    if (['w', 'a', 's', 'd'].includes(event.key.toLowerCase()) && !isGameStarted) {
-        startGame();
-    }
-});
+        // Start game on WASD press
+        if (['w', 'a', 's', 'd'].includes(event.key.toLowerCase()) && !isGameStarted) {
+            startGame();
+        }
+    });
 
-document.addEventListener('keyup', (event) => {
-    carAudioManager.handleKeyUp(event.key.toLowerCase());
-});
-
-
-
-// Initialize BlockLoader and TriggerSystem
-const blockLoader = new BlockLoader(scene, world, groundMaterial);
-const triggerSystem = new TriggerSystem(scene, blockLoader);
-
-//trigger zones
-const triggers = [
-    {
-        position: { x: 110, z: 38 },
-        dropPositions: [
-            { x: 100, z: 30 },
-            { x: 90, z: 15 },
-            { x: 110, z: 20 }
-        ]
-    },
-    {
-        position: { x: 290, z: 82 },
-        dropPositions: [
-             { x: 330, z: 80 },
-            { x: 340, z: 90 },
-            { x: 350, z: 70 }
-        ]
-    },
-    {
-        position: { x: 345, z: -60 },
-        dropPositions: [
-            { x: 315, z: -90 },
-            { x: 335, z: -100 },
-            { x: 325, z: -120 }
-        ]
-    }
-];
-
-triggers.forEach(trigger => {
-    triggerSystem.addTrigger(
-        trigger.position,
-        2, // radius of trigger zone
-        {
-            model: blockModel,
-            size: { x: 2, y: 2, z: 2 },
-            scale: 1
-        },
-        trigger.dropPositions
-    );
-});
-
-// Add key handler for resetting triggers
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'r') {
-        triggerSystem.reset();
-        blockLoader.clearBlocks();
-    }
-});
-
- // Add key handler for dropping blocks
- document.addEventListener('keydown', (event) => {
-     if (event.key === 'b') {
-         // Drop a single block at a random position near the car
-         if (carObject) {
-             const randomOffset = {
-                 x: ( - 1) * 20, // Random position within 20 units
-                 z: (1 - 0.5) * 20
-             };
-             
-             const dropPosition = {
-                 x: carObject.position.x + randomOffset.x,
-                 z: carObject.position.z + randomOffset.z
-             };
-             
-             blockLoader.loadBlock(blockModel, dropPosition, { x: 2, y: 2, z: 2 }, 1);
-         }
-     } else if (event.key === 'n') {
-         // Drop a pattern of blocks
-         if (carObject) {
-             const pattern = [
-                 [1, 1, 1],
-                 [1, 0, 1],
-                 [1, 1, 1]
-             ];
-             
-             const centerPosition = {
-                 x: carObject.position.x,
-                 z: carObject.position.z
-             };
-             
-             blockLoader.dropBlockPattern(blockModel, centerPosition, pattern, 4);
-         }
-     } else if (event.key === 'm') {
-         // Clear all blocks
-         blockLoader.clearBlocks();
-     }
- });
+    document.addEventListener('keyup', (event) => {
+        carAudioManager.handleKeyUp(event.key.toLowerCase());
+    });
 
     function animate(time) {
 
@@ -1007,7 +1061,7 @@ document.addEventListener('keydown', (event) => {
 
             // Apply controls
             controls.update();
-            checkVehicleState();
+            //checkVehicleState();
 
             regenerateHealth(Date.now());
 
@@ -1060,6 +1114,7 @@ document.addEventListener('keydown', (event) => {
             wallLoader.update(deltaTime);
             // Update crates
             crateLoader.update(deltaTime);
+            checkpointLoader.update(deltaTime);
 
 
             const headlightPositions = [
@@ -1091,6 +1146,42 @@ document.addEventListener('keydown', (event) => {
                     }
                 }
             });
+
+
+            // Get the up vector of the car in world space
+            const carUp = new THREE.Vector3(0, 1, 0);
+            const carQuat = new THREE.Quaternion().copy(vehicle.chassisBody.quaternion);
+            carUp.applyQuaternion(carQuat);
+
+            // Calculate the angle between car's up vector and world up vector
+            const angleFromUp = carUp.angleTo(new THREE.Vector3(0, 1, 0));
+
+            // Check if car is moving
+            if (speed > MOVEMENT_THRESHOLD || !isGameStarted) {
+                lastMovementTime = time;
+            }
+
+            // Only check for respawn if game has started
+    if (isGameStarted && !gameOver) {
+        const timeSinceMovement = time - lastMovementTime;
+        const isUpsideDown = angleFromUp > Math.PI / 2; // More than 90 degrees from up
+
+        if (isUpsideDown || timeSinceMovement > RESPAWN_DELAY) {
+            respawnCar(time);
+        }
+    }
+            
+            // Check if invulnerability should end
+            if (isInvulnerable && time > invulnerabilityEndTime) {
+                isInvulnerable = false;
+                restoreCarAppearance();
+            }
+
+            const position = vehicle.chassisBody.position;
+            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+
         }
 
         // Update skybox
@@ -1108,6 +1199,8 @@ document.addEventListener('keydown', (event) => {
 
     }
 
+        
+
     function createGridTexture(groundSize) {
         const gridSize = 1;
         const gridTexture = new THREE.TextureLoader().load(
@@ -1119,12 +1212,15 @@ document.addEventListener('keydown', (event) => {
         );
         return gridTexture;
     }
-
     function createFloor(groundSize, gridTexture, groundBody) {
         const floorGeometry = new THREE.PlaneGeometry(groundSize.width, groundSize.length);
+        const concreteBTexture = new THREE.TextureLoader().load('./src/assets/textures/zombie texture.png');
+        concreteBTexture.wrapS = THREE.RepeatWrapping;
+        concreteBTexture.wrapT = THREE.RepeatWrapping;
+        concreteBTexture.repeat.set(10, 10);
         const floorMaterial = new THREE.MeshStandardMaterial({
-            map: gridTexture,
-            color: 0xffffff,
+            map: concreteBTexture,
+            //color: 0xffffff,
             metalness: 0.1,
             roughness: 0.8
         });

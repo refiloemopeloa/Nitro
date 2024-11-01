@@ -179,10 +179,26 @@
         </div>
     </div>
 
+    <div id="respawn-warning" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 0, 0, 0.5); padding: 20px; border-radius: 10px; color: white; font-weight: bold;">
+        Respawning...
+    </div>
+
     <div id="debug-info" style="position: fixed; bottom: 20px; left: 20px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; font-family: monospace;">
-        <div>Current Steer Value: <span id="debug-steer-value">0</span></div>
-        <div>Current Steer Speed: <span id="debug-steer-speed">0</span></div>
-        <div>Vehicle Speed: <span id="debug-vehicle-speed">0</span> m/s</div>
+        <div>
+            Current Steer Value: <span id="debug-steer-value">0</span>
+        </div>
+        <div>
+            Current Steer Speed: <span id="debug-steer-speed">0</span>
+        </div>
+        <div>
+            Vehicle Speed: <span id="debug-vehicle-speed">0</span> m/s
+        </div>
+        <div>
+            Position: 
+            X: <span id="debug-pos-x">0</span>
+            Y: <span id="debug-pos-y">0</span>
+            Z: <span id="debug-pos-z">0</span>
+        </div>
     </div>
     
 <script src="./src/main.js" type="module"></script>

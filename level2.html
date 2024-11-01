@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <script src="src/audioControls.js"></script>
+    <title>Car Game</title>
+    <style>
+        #speedometer {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            height: 200px;
+            background-color:rgba(51, 51, 51, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #speed-display {
+            position: absolute;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: white;
+            bottom: 60px;
+        }
+
+        #needle {
+            position: absolute;
+            width: 4px;
+            height: 90px;
+            background-color: red;
+            bottom: 100px;
+            left: 98px;
+            transform-origin: bottom center;
+            transform: rotate(-90deg);
+            transition: transform 0.2s ease-out;
+        }
+
+        .speed-mark {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .speed-mark::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background-color: white;
+            top: 10px;
+        }
+
+        .speed-text {
+            position: absolute;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: white;
+            top: 25px;
+        }
+    
+         /* New styles for timer and popup */
+         #timer {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        #game-over-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .popup-content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .popup-content button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="threeJs"></div>
+    <button id="menuButton">Menu</button>
+
+    <div id="modalOverlay"></div>
+    <div id="modal">
+        <h2>Game Menu</h2>
+        <button id="settingsButton">Settings</button>
+        <button id="quitButton">Quit Game</button>
+        <button id="resumeButton">Resume</button>
+        <button id="muteButton" onclick="toggleMute()">Mute</button>
+        <div class="controls-list">
+            <h3>Controls</h3>
+            <div class="control-item">
+                <span class="key">W</span>
+                <span class="description">Move Forward</span>
+            </div>
+            <div class="control-item">
+                <span class="key">S</span>
+                <span class="description">Move Backward</span>
+            </div>
+            <div class="control-item">
+                <span class="key">A</span>
+                <span class="description">Turn Left</span>
+            </div>
+            <div class="control-item">
+                <span class="key">D</span>
+                <span class="description">Turn Right</span>
+            </div>
+            <div class="control-item">
+                <span class="key">O</span>
+                <span class="description">Headlights</span>
+            </div>
+            <div class="control-item">
+                <span class="key">V</span>
+                <span class="description">Camera View</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="speedometer">
+        <div id="speed-display">0 km/h</div>
+        <div id="needle"></div>
+        <div class="speed-mark" style="transform: rotate(-135deg);"><div class="speed-text" style="transform: rotate(135deg);">0</div></div>
+        <div class="speed-mark" style="transform: rotate(-90deg);"><div class="speed-text" style="transform: rotate(90deg);">50</div></div>
+        <div class="speed-mark" style="transform: rotate(-45deg);"><div class="speed-text" style="transform: rotate(45deg);">100</div></div>
+        <div class="speed-mark" style="transform: rotate(0deg);"><div class="speed-text" style="transform: rotate(0deg);">150</div></div>
+        <div class="speed-mark" style="transform: rotate(45deg);"><div class="speed-text" style="transform: rotate(-45deg);">200</div></div>
+    </div>
+
+    <div id="health-container" style="position: fixed; top: 20px; left: 20px; width: 200px; height: 20px; background-color: #333; border: 2px solid #000;">
+        <div id="health-bar" style="width: 100%; height: 100%; background-color: #2ecc71; transition: width 0.3s ease-in-out;"></div>
+      </div>
+
+    <div id="timer">01:00</div>
+
+    <div id="game-over-popup">
+        <div class="popup-content">
+            <h2>GAME OVER</h2>
+            <button id="restart-button">Restart</button>
+            <button id="main-menu-button">Main Menu</button>
+        </div>
+    </div>
+
+    <div id="respawn-warning" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 0, 0, 0.5); padding: 20px; border-radius: 10px; color: white; font-weight: bold;">
+        Respawning...
+    </div>
+
+    <div id="debug-info" style="position: fixed; bottom: 20px; left: 20px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; font-family: monospace;">
+        <div>
+            Current Steer Value: <span id="debug-steer-value">0</span>
+        </div>
+        <div>
+            Current Steer Speed: <span id="debug-steer-speed">0</span>
+        </div>
+        <div>
+            Vehicle Speed: <span id="debug-vehicle-speed">0</span> m/s
+        </div>
+        <div>
+            Position: 
+            X: <span id="debug-pos-x">0</span>
+            Y: <span id="debug-pos-y">0</span>
+            Z: <span id="debug-pos-z">0</span>
+        </div>
+    </div>
+    
+<script src="./src/level2.js" type="module"></script>
+<script>document.getElementById('main-menu-button').addEventListener('click', () => {
+    console.log('Main menu pressed');
+    window.location.href = 'startPage.html';
+});</script>
+</body>
+</html>
