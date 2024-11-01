@@ -126,6 +126,33 @@
         <button id="quitButton">Quit Game</button>
         <button id="resumeButton">Resume</button>
         <button id="muteButton" onclick="toggleMute()">Mute</button>
+        <div class="controls-list">
+            <h3>Controls</h3>
+            <div class="control-item">
+                <span class="key">W</span>
+                <span class="description">Move Forward</span>
+            </div>
+            <div class="control-item">
+                <span class="key">S</span>
+                <span class="description">Move Backward</span>
+            </div>
+            <div class="control-item">
+                <span class="key">A</span>
+                <span class="description">Turn Left</span>
+            </div>
+            <div class="control-item">
+                <span class="key">D</span>
+                <span class="description">Turn Right</span>
+            </div>
+            <div class="control-item">
+                <span class="key">O</span>
+                <span class="description">Headlights</span>
+            </div>
+            <div class="control-item">
+                <span class="key">V</span>
+                <span class="description">Camera View</span>
+            </div>
+        </div>
     </div>
     
     <div id="speedometer">
@@ -150,6 +177,12 @@
             <button id="restart-button">Restart</button>
             <button id="main-menu-button">Main Menu</button>
         </div>
+    </div>
+
+    <div id="debug-info" style="position: fixed; bottom: 20px; left: 20px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; font-family: monospace;">
+        <div>Current Steer Value: <span id="debug-steer-value">0</span></div>
+        <div>Current Steer Speed: <span id="debug-steer-speed">0</span></div>
+        <div>Vehicle Speed: <span id="debug-vehicle-speed">0</span> m/s</div>
     </div>
     
 <script src="./src/main.js" type="module"></script>

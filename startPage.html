@@ -11,6 +11,40 @@
     <div id="content">
         <img src="./NitroLogo.png" alt="Nitro">
         <h1></h1>
+        <div class="controls-list side-controls">
+          <h3>Controls</h3>
+          <div class="controls-container">
+              <div class="controls-column">
+                  <div class="control-item">
+                      <span class="key">W</span>
+                      <span class="description">Forward</span>
+                  </div>
+                  <div class="control-item">
+                      <span class="key">S</span>
+                      <span class="description">Backward</span>
+                  </div>
+                  <div class="control-item">
+                      <span class="key">A</span>
+                      <span class="description">Left</span>
+                  </div>
+              </div>
+              <!-- Add your 4 new controls here in the right column -->
+              <div class="controls-column">
+                  <div class="control-item">
+                      <span class="key">D</span>
+                      <span class="description">Right</span>
+                  </div>
+                  <div class="control-item">
+                      <span class="key">O</span>
+                      <span class="description">Headlights</span>
+                  </div>
+                  <div class="control-item">
+                      <span class="key">V</span>
+                      <span class="description">Camera View</span>
+                  </div>
+              </div>
+          </div>
+      </div>
         <button id="start-btn">Start</button>
         <button id="leaderboard-btn">Leaderboard</button>
         
@@ -19,6 +53,7 @@
 <button onclick="changeVolume(0.1)">Volume +</button>
         
         <button id="muteButton" onclick="toggleMute()">Mute</button>
+        
     </div>
 
     <script type="module">
