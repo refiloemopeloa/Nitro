@@ -97,7 +97,7 @@ export class CarLoader {
     }
 
 
-    loadCar(carModel) {
+    loadCar(carModel, initialPosition) {
         return new Promise((resolve, reject) => {
             this.loader.load(
                 carModel,
@@ -116,11 +116,8 @@ export class CarLoader {
 
                     // Create the vehicle
                     const carBody = new CANNON.Body({
-                        mass: 10,
-                        //position: new CANNON.Vec3(0, 2, -10),
-                        //position: new CANNON.Vec3(360, 10, 40),
-                        position : new CANNON.Vec3(230, 2, -120),
-                        //position: new CANNON.Vec3(200, 40, 80),
+                        mass: 8,
+                        position: initialPosition,
                         shape: new CANNON.Box(new CANNON.Vec3(2.6, 0.5, 1.1)),
                         material: this.carMaterial
                     });

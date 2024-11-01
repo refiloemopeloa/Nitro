@@ -27,6 +27,10 @@ import crateModel from './models/Crate.glb';
 import { RubbleLoader } from './rubbleLoader.js';
 import { CarAudioManager } from './carAudioManager.js';
 import { CheckpointLoader } from './loadCheckpoint.js';
+import { BlockLoader } from './block.js';  // Add this import block class
+import TriggerSystem from './triggerSystem.js'; 
+import blockModel from './models/road_block_a.glb';   // Add your block model path
+
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -615,18 +619,21 @@ if (WebGL.isWebGL2Available()) {
         // Implement main menu logic here
         console.log('Main menu button clicked');
     });
-    // Load the car
-    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
-    let carObject, vehicle, fireEffect1, fireEffect2;
 
-    carLoader.loadCar(carModel).then(({
-        carObject: loadedCarObject,
-        vehicle: loadedVehicle,
-        FrontWheel_L,
-        FrontWheel_R,
-        BackWheels,
-        emitter1,
-        emitter2
+    
+    // Load the car
+    const initialCarPosition = new CANNON.Vec3(230, 2, -120);
+const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
+let carObject, vehicle, fireEffect1, fireEffect2;
+
+carLoader.loadCar(carModel, initialCarPosition).then(({
+    carObject: loadedCarObject,
+    vehicle: loadedVehicle,
+    FrontWheel_L,
+    FrontWheel_R,
+    BackWheels,
+    emitter1,
+    emitter2
     }) => {
         carObject = loadedCarObject;
         vehicle = loadedVehicle;
@@ -971,6 +978,99 @@ let invulnerabilityEndTime = 0;
         carAudioManager.handleKeyUp(event.key.toLowerCase());
     });
 
+
+    // Initialize BlockLoader and TriggerSystem
+const blockLoader = new BlockLoader(scene, world, groundMaterial);
+const triggerSystem = new TriggerSystem(scene, blockLoader);
+
+//trigger zones
+const triggers = [
+    {
+        position: { x: 110, z: 38 },
+        dropPositions: [
+            { x: 100, z: 30 },
+            { x: 90, z: 15 },
+            { x: 110, z: 20 }
+        ]
+    },
+    {
+        position: { x: 290, z: 82 },
+        dropPositions: [
+             { x: 330, z: 80 },
+            { x: 340, z: 90 },
+            { x: 350, z: 70 }
+        ]
+    },
+    {
+        position: { x: 345, z: -60 },
+        dropPositions: [
+            { x: 315, z: -90 },
+            { x: 335, z: -100 },
+            { x: 325, z: -120 }
+        ]
+    }
+];
+
+triggers.forEach(trigger => {
+    triggerSystem.addTrigger(
+        trigger.position,
+        2, // radius of trigger zone
+        {
+            model: blockModel,
+            size: { x: 2, y: 2, z: 2 },
+            scale: 1
+        },
+        trigger.dropPositions
+    );
+});
+
+// Add key handler for resetting triggers
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'r') {
+        triggerSystem.reset();
+        blockLoader.clearBlocks();
+    }
+});
+
+ // Add key handler for dropping blocks
+ document.addEventListener('keydown', (event) => {
+     if (event.key === 'b') {
+         // Drop a single block at a random position near the car
+         if (carObject) {
+             const randomOffset = {
+                 x: ( - 1) * 20, // Random position within 20 units
+                 z: (1 - 0.5) * 20
+             };
+             
+             const dropPosition = {
+                 x: carObject.position.x + randomOffset.x,
+                 z: carObject.position.z + randomOffset.z
+             };
+             
+             blockLoader.loadBlock(blockModel, dropPosition, { x: 2, y: 2, z: 2 }, 1);
+         }
+     } else if (event.key === 'n') {
+         // Drop a pattern of blocks
+         if (carObject) {
+             const pattern = [
+                 [1, 1, 1],
+                 [1, 0, 1],
+                 [1, 1, 1]
+             ];
+             
+             const centerPosition = {
+                 x: carObject.position.x,
+                 z: carObject.position.z
+             };
+             
+             blockLoader.dropBlockPattern(blockModel, centerPosition, pattern, 4);
+         }
+     } else if (event.key === 'm') {
+         // Clear all blocks
+         blockLoader.clearBlocks();
+     }
+ });
+
     function animate(time) {
 
 
@@ -990,6 +1090,15 @@ let invulnerabilityEndTime = 0;
         }
 
         rubbleLoader.update();
+
+        // Update blocks
+        blockLoader.update();
+
+        // Check triggers if car exists
+        if (carObject) {
+            triggerSystem.checkTriggers(carObject.position);
+        }
+
 
         if (isGameStarted && !gameOver) {
             frameCounter++;
