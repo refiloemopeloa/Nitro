@@ -487,16 +487,16 @@ if (WebGL.isWebGL2Available()) {
     // addRoadSeg(0, 0, 1.65);
     // addRoadSeg(0, 0, -2.8)
 
-    trackPrevDir = [0, 3.14, 0];
-    trackEnd.set(250, 12, 80);
-    addRoadSeg(-0.08, 0, 0.3);
-    addRoadSeg(0, 0, -0.3);
-    addRoadSeg(0, 0.2, 0);
-    addRoadSeg(0, 0, -0.3);
+    // trackPrevDir = [0, 3.14, 0];
+    // trackEnd.set(250, 12, 80);
+    // addRoadSeg(-0.08, 0, 0.3);
+    // addRoadSeg(0, 0, -0.3);
+    // addRoadSeg(0, 0.2, 0);
+    // addRoadSeg(0, 0, -0.3);
 
-    trackEnd.set(368, 0, 40);
-    trackPrevDir = [0, 3.14, 0];
-    addRoadSeg(0, 0, -0.31);
+    // trackEnd.set(368, 0, 40);
+    // trackPrevDir = [0, 3.14, 0];
+    // addRoadSeg(0, 0, -0.31);
 
     const blockA = new CANNON.Vec3(20, 5, 25);
     const blockB = new CANNON.Vec3(20, 5, 45);
@@ -622,7 +622,7 @@ if (WebGL.isWebGL2Available()) {
 
     
     // Load the car
-    const initialCarPosition = new CANNON.Vec3(230, 2, -120);
+    const initialCarPosition = new CANNON.Vec3(0, 2, -10);
 const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
 let carObject, vehicle, fireEffect1, fireEffect2;
 
@@ -1288,7 +1288,7 @@ document.addEventListener('keydown', (event) => {
         updateSkybox(skybox, time * 0.001);
 
         // Update Cannon debugger
-        cannonDebugger.update();
+        //cannonDebugger.update();
 
         // Update orbit controls only in free camera mode
         if (cameraManager.cameraMode === 2) {
