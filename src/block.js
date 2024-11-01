@@ -29,7 +29,7 @@ export class BlockLoader {
             const blockObject = gltf.scene;
             
             // Scale the model
-            blockObject.scale.set(scale, scale, scale);
+            blockObject.scale.set(scale*4, scale*4, scale*2);
             
             // Position at drop point
             const dropHeight = 40; // Height to drop from
