@@ -46,6 +46,7 @@
           </div>
       </div>
         <button id="start-btn">Start</button>
+        <button id="level2-btn">Lvl 2</button>
         <button id="leaderboard-btn">Leaderboard</button>
         
         <button onclick="changeVolume(-0.1)">Volume -</button>
@@ -96,6 +97,12 @@
         document.getElementById('start-btn').addEventListener('click', () => {
             console.log('Start button clicked');
             window.location.href = 'index.html';
+            // Add your start game logic here
+        });
+
+        document.getElementById('level2-btn').addEventListener('click', () => {
+            console.log('lvl 2 button clicked');
+            window.location.href = 'level2.html';
             // Add your start game logic here
         });
 
