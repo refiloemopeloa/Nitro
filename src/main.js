@@ -134,6 +134,19 @@ if (WebGL.isWebGL2Available()) {
     let lastTime = 0;
     let accumulatedTime = 0;
 
+    let isUpsideDown = false;
+let upsideDownStartTime = 0;
+const RESPAWN_DELAY = 2000; // 2 seconds in milliseconds
+const UPSIDE_DOWN_THRESHOLD = -0.5; // Threshold for considering the car upside down
+const TRACK_BOUNDS = {
+    minX: -100,
+    maxX: 400,
+    minZ: -250,
+    maxZ: 150,
+    minY: -10, // If car falls below this Y value, consider it off-track
+};
+const START_POSITION = { x: 0, y: 2, z: 0 };
+
     // Menu functionality
     const menuButton = document.getElementById('menuButton');
     const modal = document.getElementById('modal');
@@ -301,6 +314,83 @@ if (WebGL.isWebGL2Available()) {
 
                 buidlingA.position.copy(buildingABody.position);
                 buidlingA.quaternion.copy(buidlingA.quaternion);
+        }
+    }
+
+    function isWithinTrackBounds(position) {
+        return position.x >= TRACK_BOUNDS.minX &&
+               position.x <= TRACK_BOUNDS.maxX &&
+               position.z >= TRACK_BOUNDS.minZ &&
+               position.z <= TRACK_BOUNDS.maxZ &&
+               position.y >= TRACK_BOUNDS.minY;
+    }
+    
+    // Function to respawn the car
+    function respawnCar(forceStartPosition = false) {
+        if (!vehicle || !vehicle.chassisBody) return;
+    
+        let respawnPosition;
+        
+        if (forceStartPosition) {
+            // Respawn at start position if off track
+            respawnPosition = START_POSITION;
+        } else {
+            // Local respawn - keep current X and Z, just lift the Y position
+            const currentPos = vehicle.chassisBody.position;
+            respawnPosition = {
+                x: currentPos.x,
+                y: 2, // Lift slightly above ground
+                z: currentPos.z
+            };
+        }
+    
+        // Reset physics
+        vehicle.chassisBody.velocity.set(0, 0, 0);
+        vehicle.chassisBody.angularVelocity.set(0, 0, 0);
+        vehicle.chassisBody.position.set(respawnPosition.x, respawnPosition.y, respawnPosition.z);
+        
+        // Reset rotation to upright position
+        vehicle.chassisBody.quaternion.set(0, 0, 0, 1);
+        
+        // Reset controls if they exist
+        if (controls && typeof controls.reset === 'function') {
+            controls.reset();
+        }
+        
+        // Reset upside down tracking
+        isUpsideDown = false;
+        upsideDownStartTime = 0;
+    }
+    
+    // Check for upside down state and off-track position
+    function checkVehicleState() {
+        if (!vehicle || !vehicle.chassisBody) return;
+        
+        // Check if car is off track
+        if (!isWithinTrackBounds(vehicle.chassisBody.position)) {
+            console.log("Car is off track - respawning at start");
+            respawnCar(true); // Force respawn at start position
+            return;
+        }
+        
+        // Check if car is upside down
+        const chassisUp = new CANNON.Vec3(0, 1, 0);
+        vehicle.chassisBody.quaternion.vmult(chassisUp, chassisUp);
+        const worldUp = new CANNON.Vec3(0, 1, 0);
+        const dotProduct = worldUp.dot(chassisUp);
+        
+        if (dotProduct < UPSIDE_DOWN_THRESHOLD) {
+            if (!isUpsideDown) {
+                isUpsideDown = true;
+                upsideDownStartTime = Date.now();
+                console.log("Car detected upside down");
+            } else if (Date.now() - upsideDownStartTime >= RESPAWN_DELAY) {
+                console.log("Respawning car in place");
+                respawnCar(false); // Local respawn
+            }
+        } else {
+            isUpsideDown = false;
+            upsideDownStartTime = 0;
         }
     }
 
@@ -811,6 +901,7 @@ document.addEventListener('keyup', (event) => {
 
             // Apply controls
             controls.update();
+            checkVehicleState();
 
             regenerateHealth(Date.now());
 
