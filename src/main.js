@@ -4,7 +4,7 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
-import { CarLoader } from './loadCar.js';
+import { CarLoader } from './loadCar1.js';
 import { BuildingLoader } from './loadBuilding.js';
 import { WastelandStoreLoader } from './loadWastelandStore.js';
 import { GraffitiWallLoader } from './loadGraffitiWall.js';
@@ -620,6 +620,10 @@ if (WebGL.isWebGL2Available()) {
 
     // Modify the restart button event listener
     document.getElementById('restart-button').addEventListener('click', () => {
+        location.reload(); // This will reload the entire page
+    });
+
+    document.getElementById('restart-button2').addEventListener('click', () => {
         location.reload(); // This will reload the entire page
     });
 

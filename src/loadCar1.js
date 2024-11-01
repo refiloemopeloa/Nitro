@@ -122,6 +122,11 @@ export class CarLoader {
                         material: this.carMaterial
                     });
 
+                    // Set initial rotation to face opposite direction (rotate 180 degrees around Y axis)
+                    const rotation = new CANNON.Quaternion();
+                    rotation.setFromEuler(0, Math.PI, 0); // Rotate 180 degrees around Y axis
+                    carBody.quaternion.copy(rotation);
+
                     const vehicle = new CANNON.RigidVehicle({
                         chassisBody: carBody,
                     });
@@ -145,6 +150,7 @@ export class CarLoader {
                         const wheelBody = new CANNON.Body({ mass, material: this.wheelMaterial });
                         wheelBody.addShape(wheelShape);
                         wheelBody.angularDamping = 0.4;
+                        wheelBody.quaternion.copy(rotation);
 
                         vehicle.addWheel({
                             body: wheelBody,
