@@ -24,8 +24,9 @@ import img from './img/smoke.png'
 import { WallLoader } from './loadWall.js';
 import { CrateLoader } from './loadCrate.js';
 import crateModel from './models/Crate.glb';
-import { RubbleLoader } from './RubbleLoader.js';
+import { RubbleLoader } from './rubbleLoader.js';
 import { CarAudioManager } from './carAudioManager.js';
+import { CheckpointLoader } from './loadCheckpoint.js';
 
 if (WebGL.isWebGL2Available()) {
     // Three.js setup
@@ -38,7 +39,6 @@ if (WebGL.isWebGL2Available()) {
     // Car revving sounds
     const carAudioManager = new CarAudioManager();
     carAudioManager.init();
-
     // Orbit controls
     const orbitControls = new OrbitControls(camera, renderer.domElement);
     orbitControls.enabled = false; // Disable by default
@@ -123,6 +123,9 @@ if (WebGL.isWebGL2Available()) {
     //     rate: 50.0,
     //     texture: img,
     // });
+
+    const checkpointLoader = new CheckpointLoader(scene, world);
+
 
     // Variables for track creation
     let trackEnd = new THREE.Vector3(0, 0, 0);
@@ -473,24 +476,24 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
 
     
 
-    // trackEnd.set(120, -0.5, 80);
-    // trackSegSize.set(20, 0.05, 20);
-    // addRoadSeg(0, 3.14, -0.12);
-    // addRoadSeg(0, 0, -0.12);
-    // addRoadSeg(0, 0, 0.24);
-    // addRoadSeg(0, 0, 1.65);
-    // addRoadSeg(0, 0, -2.8)
+    trackEnd.set(120, -0.5, 80);
+    trackSegSize.set(20, 0.05, 20);
+    addRoadSeg(0, 3.14, -0.12);
+    addRoadSeg(0, 0, -0.12);
+    addRoadSeg(0, 0, 0.24);
+    addRoadSeg(0, 0, 1.65);
+    addRoadSeg(0, 0, -2.8)
 
-    // trackPrevDir = [0, 3.14, 0];
-    // trackEnd.set(250, 12, 80);
-    // addRoadSeg(-0.08, 0, 0.3);
-    // addRoadSeg(0, 0, -0.3);
-    // addRoadSeg(0, 0.2, 0);
-    // addRoadSeg(0, 0, -0.3);
+    trackPrevDir = [0, 3.14, 0];
+    trackEnd.set(250, 12, 80);
+    addRoadSeg(-0.08, 0, 0.3);
+    addRoadSeg(0, 0, -0.3);
+    addRoadSeg(0, 0.2, 0);
+    addRoadSeg(0, 0, -0.3);
 
-    // trackEnd.set(368, 0, 40);
-    // trackPrevDir = [0, 3.14, 0];
-    // addRoadSeg(0, 0, -0.31);
+    trackEnd.set(368, 0, 40);
+    trackPrevDir = [0, 3.14, 0];
+    addRoadSeg(0, 0, -0.31);
 
     const blockA = new CANNON.Vec3(20, 5, 25);
     const blockB = new CANNON.Vec3(20, 5, 45);
@@ -571,7 +574,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
 
     function startGame() {
         gameOver = false;
-        gameTimer = 120;
+        gameTimer = 1200;
         frameCounter = 0;
         carHealth = MAX_HEALTH; // Reset health
         lastCollisionTime = 0;
@@ -580,7 +583,7 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
-            gameTimer = 120; // in seconds
+            gameTimer = 1200; // in seconds
             frameCounter = 0;
             updateTimerDisplay();
             console.log('Game started!');
@@ -629,10 +632,26 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         carObject = loadedCarObject;
         vehicle = loadedVehicle;
 
+        // Store initial wheel offsets
+    const wheelOffsets = [
+        new CANNON.Vec3(-1.9, -0.5, 0.875),  // Front left
+        new CANNON.Vec3(-1.9, -0.5, -0.875), // Front right
+        new CANNON.Vec3(1.2, -0.5, 0.875),   // Back left
+        new CANNON.Vec3(1.2, -0.5, -0.875)   // Back right
+    ];
+    vehicle.wheelOffsets = wheelOffsets;  // Store offsets on vehicle object
+
         // Add collision event listener to the chassis body
         vehicle.chassisBody.addEventListener('collide', (event) => {
+            // Check if the collision is with a checkpoint
+            const otherBody = event.contact.bi === vehicle.chassisBody ? event.contact.bj : event.contact.bi;
+            
+            // Skip damage if the other body is a checkpoint or if invulnerable
+            if (isInvulnerable || otherBody.isTrigger) {
+                return;
+            }
+        
             const relativeVelocity = event.contact.getImpactVelocityAlongNormal();
-
             // Only register significant collisions
             if (Math.abs(relativeVelocity) > 5) {
                 const damage = Math.min(COLLISION_DAMAGE, Math.abs(relativeVelocity * 2));
@@ -680,6 +699,128 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
     const HEALTH_REGEN_DELAY = 3000; // 3 seconds
     let lastCollisionTime = 0;
 
+    let lastMovementTime = 0;
+    const RESPAWN_DELAY = 10000; // 10 seconds in milliseconds
+    const MOVEMENT_THRESHOLD = 0.1; // Minimum speed to be considered "moving"
+
+    const INVULNERABILITY_DURATION = 3000; // 3 seconds of invulnerability after respawn
+let isInvulnerable = false;
+let invulnerabilityEndTime = 0;
+
+    function showRespawnWarning() {
+        const warning = document.getElementById('respawn-warning');
+        warning.style.display = 'block';
+        setTimeout(() => {
+            warning.style.display = 'none';
+        }, 1000); // Show for 1 second
+    }
+
+    let collisionTimeout = null;
+
+    function respawnCar(time) {
+        showRespawnWarning();
+        
+        // Get current checkpoint
+        const checkpoint = checkpointLoader.getCurrentCheckpoint();
+        checkpoint.y += 1;
+        
+        // Set specific forward-facing orientation
+        const euler = new THREE.Euler(0, -Math.PI / 2, 0);
+        const quaternion = new THREE.Quaternion().setFromEuler(euler);
+        
+        // Reset chassis
+        vehicle.chassisBody.position.copy(checkpoint);
+        vehicle.chassisBody.quaternion.copy(quaternion);
+        vehicle.chassisBody.velocity.set(0, 0, 0);
+        vehicle.chassisBody.angularVelocity.set(0, 0, 0);
+        vehicle.chassisBody.force.set(0, 0, 0);
+        vehicle.chassisBody.torque.set(0, 0, 0);
+        vehicle.chassisBody.collisionResponse = false;
+    
+        // Reset wheels with proper orientation
+        vehicle.wheelBodies.forEach((wheel, index) => {
+            wheel.velocity.set(0, 0, 0);
+            wheel.angularVelocity.set(0, 0, 0);
+            wheel.force.set(0, 0, 0);
+            wheel.torque.set(0, 0, 0);
+            wheel.collisionResponse = false;
+            
+            // Reset wheel quaternion to match chassis orientation
+            wheel.quaternion.copy(quaternion);
+            
+            // Convert CANNON.Vec3 to THREE.Vector3, apply rotation, and convert back
+            const cannonOffset = vehicle.wheelOffsets[index];
+            const threeOffset = new THREE.Vector3(cannonOffset.x, cannonOffset.y, cannonOffset.z);
+            threeOffset.applyQuaternion(quaternion);
+            
+            // Apply rotated offset to wheel position
+            wheel.position.copy(checkpoint);
+            wheel.position.x += threeOffset.x;
+            wheel.position.y += threeOffset.y;
+            wheel.position.z += threeOffset.z;
+        });
+    
+        // Update visual position
+        carObject.position.copy(checkpoint);
+        carObject.quaternion.copy(quaternion);
+    
+        // Reset last movement time
+        lastMovementTime = time;
+    
+        // Restore full health
+        carHealth = MAX_HEALTH;
+        updateHealthBar();
+    
+        // Enable invulnerability
+        isInvulnerable = true;
+        invulnerabilityEndTime = time + INVULNERABILITY_DURATION;
+    
+        // Visual feedback
+        if (carObject) {
+            carObject.traverse((child) => {
+                if (child.isMesh) {
+                    if (!child.userData.originalMaterial) {
+                        child.userData.originalMaterial = child.material.clone();
+                    }
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: 0x00ff00,
+                        transparent: true,
+                        opacity: 0.8,
+                        emissive: 0x00ff00,
+                        emissiveIntensity: 0.5
+                    });
+                }
+            });
+        }
+    
+        // Clear any existing timeout
+        if (collisionTimeout) {
+            clearTimeout(collisionTimeout);
+        }
+    
+        // Re-enable collisions after 500ms
+        collisionTimeout = setTimeout(() => {
+            vehicle.chassisBody.collisionResponse = true;
+            vehicle.wheelBodies.forEach(wheel => {
+                wheel.collisionResponse = true;
+            });
+        }, 500);
+    
+        console.log('Car respawned at checkpoint');
+    }
+    
+    // Add this function to restore normal car appearance
+    function restoreCarAppearance() {
+        if (carObject) {
+            carObject.traverse((child) => {
+                if (child.isMesh && child.userData.originalMaterial) {
+                    child.material = child.userData.originalMaterial;
+                }
+            });
+        }
+    }
+
+
     // Add this function to update the health bar display
     function updateHealthBar() {
         const healthBar = document.getElementById('health-bar');
@@ -698,15 +839,20 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
 
     // Add this function to handle damage
     function damageVehicle(damage) {
-        carHealth = Math.max(0, carHealth - damage);
-        lastCollisionTime = Date.now();
-        updateHealthBar();
-
-        if (carHealth <= 0) {
-            gameOver = true;
-            showGameOverPopup();
-        }
+    // If invulnerable, don't take damage
+    if (isInvulnerable) {
+        return;
     }
+
+    carHealth = Math.max(0, carHealth - damage);
+    lastCollisionTime = Date.now();
+    updateHealthBar();
+
+    if (carHealth <= 0) {
+        gameOver = true;
+        showGameOverPopup();
+    }
+}
 
     // Add this function to handle health regeneration
     function regenerateHealth(currentTime) {
@@ -769,6 +915,15 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         { x: 5, y: 4, z: 10 }    // Size
     );
 
+    // Create checkpoints at various positions
+    checkpointLoader.createCheckpoint(
+        { x: 100, y: 2, z: 0 }, // position
+        { x: 10, y: 2, z: -10 }   // size
+    );
+
+    // To get current checkpoint position:
+    const currentCheckpoint = checkpointLoader.getCurrentCheckpoint();
+
     // Cannon debugger
     const cannonDebugger = new CannonDebugger(scene, world);
 
@@ -791,34 +946,34 @@ const START_POSITION = { x: 0, y: 2, z: 0 };
         }
     });
 
-// Modify your existing event listener for keydown
-document.addEventListener('keydown', (event) => {
-    // Existing camera switch code
-    if (event.key === 'v') {
-        cameraManager.switchCameraMode();
-        if (cameraManager.cameraMode === 2) {
-            orbitControls.enabled = true;
-            if (carObject) {
-                orbitControls.target.copy(carObject.position);
-                const offset = new THREE.Vector3(5, 3, 5);
-                camera.position.copy(carObject.position).add(offset);
+    // Modify your existing event listener for keydown
+    document.addEventListener('keydown', (event) => {
+        // Existing camera switch code
+        if (event.key === 'v') {
+            cameraManager.switchCameraMode();
+            if (cameraManager.cameraMode === 2) {
+                orbitControls.enabled = true;
+                if (carObject) {
+                    orbitControls.target.copy(carObject.position);
+                    const offset = new THREE.Vector3(5, 3, 5);
+                    camera.position.copy(carObject.position).add(offset);
+                }
+            } else {
+                orbitControls.enabled = false;
             }
-        } else {
-            orbitControls.enabled = false;
         }
-    }
 
-    carAudioManager.handleKeyDown(event.key.toLowerCase());
+        carAudioManager.handleKeyDown(event.key.toLowerCase());
 
-    // Start game on WASD press
-    if (['w', 'a', 's', 'd'].includes(event.key.toLowerCase()) && !isGameStarted) {
-        startGame();
-    }
-});
+        // Start game on WASD press
+        if (['w', 'a', 's', 'd'].includes(event.key.toLowerCase()) && !isGameStarted) {
+            startGame();
+        }
+    });
 
-document.addEventListener('keyup', (event) => {
-    carAudioManager.handleKeyUp(event.key.toLowerCase());
-});
+    document.addEventListener('keyup', (event) => {
+        carAudioManager.handleKeyUp(event.key.toLowerCase());
+    });
 
     function animate(time) {
 
@@ -954,6 +1109,7 @@ document.addEventListener('keyup', (event) => {
             wallLoader.update(deltaTime);
             // Update crates
             crateLoader.update(deltaTime);
+            checkpointLoader.update(deltaTime);
 
 
             const headlightPositions = [
@@ -985,13 +1141,49 @@ document.addEventListener('keyup', (event) => {
                     }
                 }
             });
+
+
+            // Get the up vector of the car in world space
+            const carUp = new THREE.Vector3(0, 1, 0);
+            const carQuat = new THREE.Quaternion().copy(vehicle.chassisBody.quaternion);
+            carUp.applyQuaternion(carQuat);
+
+            // Calculate the angle between car's up vector and world up vector
+            const angleFromUp = carUp.angleTo(new THREE.Vector3(0, 1, 0));
+
+            // Check if car is moving
+            if (speed > MOVEMENT_THRESHOLD || !isGameStarted) {
+                lastMovementTime = time;
+            }
+
+            // Only check for respawn if game has started
+    if (isGameStarted && !gameOver) {
+        const timeSinceMovement = time - lastMovementTime;
+        const isUpsideDown = angleFromUp > Math.PI / 2; // More than 90 degrees from up
+
+        if (isUpsideDown || timeSinceMovement > RESPAWN_DELAY) {
+            respawnCar(time);
+        }
+    }
+            
+            // Check if invulnerability should end
+            if (isInvulnerable && time > invulnerabilityEndTime) {
+                isInvulnerable = false;
+                restoreCarAppearance();
+            }
+
+            const position = vehicle.chassisBody.position;
+            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+
         }
 
         // Update skybox
         updateSkybox(skybox, time * 0.001);
 
         // Update Cannon debugger
-        cannonDebugger.update();
+        //wwcannonDebugger.update();
 
         // Update orbit controls only in free camera mode
         if (cameraManager.cameraMode === 2) {
