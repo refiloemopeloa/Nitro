@@ -4,7 +4,7 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
-import { CarLoader } from './loadCar.js';
+import { CarLoader } from './loadCar1.js';
 import { BuildingLoader } from './loadBuilding.js';
 import { WastelandStoreLoader } from './loadWastelandStore.js';
 import { GraffitiWallLoader } from './loadGraffitiWall.js';
@@ -504,6 +504,10 @@ if (WebGL.isWebGL2Available()) {
         location.reload(); // This will reload the entire page
     });
 
+    document.getElementById('restart-button2').addEventListener('click', () => {
+        location.reload(); // This will reload the entire page
+    });
+
     document.getElementById('main-menu-button').addEventListener('click', () => {
         // Implement main menu logic here
         console.log('Main menu button clicked');
@@ -812,7 +816,7 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world);
+    const wallLoader = new WallLoader(scene, world, 'lvl3');
     wallLoader.createWall(
         { x: 10, y: 0, z: 0 }, // Position - finish line
         { x: 2, y: 50, z: 80 }    // Size

@@ -2,7 +2,7 @@ import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
 
 export class WallLoader {
-    constructor(scene, world) {
+    constructor(scene, world, level) {
         this.scene = scene;
         this.world = world;
         this.wall = null;
@@ -11,10 +11,11 @@ export class WallLoader {
         this.wallMesh = null;
         this.wallLight = null;
         this.glowMesh = null;
+        this.level = level;
     }
 
     createWall(position, size) {
-        // Create physics body for the wall
+        // Previous wall creation code remains the same...
         const wallShape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2));
         const wallBody = new CANNON.Body({
             mass: 0,
@@ -57,7 +58,6 @@ export class WallLoader {
         this.wallLight.position.copy(position);
         this.scene.add(this.wallLight);
 
-        // Add collision event listener
         wallBody.addEventListener('collide', (event) => {
             if (!this.isGameWon) {
                 this.handleWallCollision();
@@ -68,26 +68,7 @@ export class WallLoader {
         this.wall = wallBody;
     }
 
-    update(deltaTime) {
-        if (this.wallMesh && this.glowMesh && this.wallLight) {
-            // Make the light intensity and glow opacity pulsate
-            const pulseFactor = (Math.sin(Date.now() * 0.003) + 1) / 2; // Slower pulsation than boost
-            
-            // Update wall transparency
-            this.wallMesh.material.opacity = 0.2 + 0.2 * pulseFactor;
-            
-            // Update glow effect
-            this.glowMesh.material.opacity = 0.1 + 0.1 * pulseFactor;
-            
-            // Update light intensity
-            this.wallLight.intensity = 0.8 + 0.4 * pulseFactor;
-
-            // Update wall material emissive intensity
-            this.wallMesh.material.emissiveIntensity = 0.3 + 0.3 * pulseFactor;
-        }
-    }
-
-    handleWallCollision() {
+    async handleWallCollision() {
         this.isGameWon = true;
         
         const timerDisplay = document.getElementById('timer');
@@ -95,148 +76,165 @@ export class WallLoader {
         const remainingTime = minutes * 60 + seconds;
         const completionTime = this.startTime - remainingTime;
 
-        // Check if time qualifies for leaderboard
-        const leaderboardData = JSON.parse(localStorage.getItem('leaderboardData')) || [];
-        const isTopFive = this.checkIfTopFive(completionTime, leaderboardData);
+        try {
+            // Check if time qualifies for leaderboard via API
+            const response = await fetch('https://app-rjelmm56pa-uc.a.run.app/leaderboards', {
+                method: 'GET'
+            });
+            const data = await response.json();
+            const levelData = data.leaderboards[this.level];
+            const isTopFive = this.checkIfTopFive(completionTime, levelData?.scores || []);
 
-        let winPopup = document.getElementById('win-popup');
-        if (!winPopup) {
-            winPopup = document.createElement('div');
-            winPopup.id = 'win-popup';
-            
-            const content = isTopFive ? `
-                <div class="popup-content">
-                    <h2>YOU WIN!</h2>
-                    <p>Completion Time: ${this.formatTime(completionTime)}</p>
-                    <p class="highlight">Congratulations! You made it to the Top 5!</p>
-                    <div class="name-input">
-                        <input type="text" id="player-name" maxlength="15" placeholder="Enter your name">
-                        <button id="submit-score">Submit Score</button>
+            let winPopup = document.getElementById('win-popup');
+            if (!winPopup) {
+                winPopup = document.createElement('div');
+                winPopup.id = 'win-popup';
+                
+                const content = isTopFive ? `
+                    <div class="popup-content">
+                        <h2>YOU WIN!</h2>
+                        <p>Level ${this.level.slice(3)} Complete!</p>
+                        <p>Completion Time: ${this.formatTime(completionTime)}</p>
+                        <p class="highlight">Congratulations! You made it to the Top 5!</p>
+                        <div class="name-input">
+                            <input type="text" id="player-name" maxlength="15" placeholder="Enter your name">
+                            <button id="submit-score">Submit Score</button>
+                        </div>
+                        <div class="button-container">
+                            <button id="win-restart-button">Restart</button>
+                            <button id="win-main-menu-button">Main Menu</button>
+                        </div>
                     </div>
-                    <div class="button-container">
-                        <button id="win-restart-button">Restart</button>
-                        <button id="win-main-menu-button">Main Menu</button>
+                ` : `
+                    <div class="popup-content">
+                        <h2>YOU WIN!</h2>
+                        <p>Level ${this.level.slice(3)} Complete!</p>
+                        <p>Completion Time: ${this.formatTime(completionTime)}</p>
+                        <div class="button-container">
+                            <button id="win-restart-button">Restart</button>
+                            <button id="win-main-menu-button">Main Menu</button>
+                        </div>
                     </div>
-                </div>
-            ` : `
-                <div class="popup-content">
-                    <h2>YOU WIN!</h2>
-                    <p>Completion Time: ${this.formatTime(completionTime)}</p>
-                    <div class="button-container">
-                        <button id="win-restart-button">Restart</button>
-                        <button id="win-main-menu-button">Main Menu</button>
-                    </div>
-                </div>
-            `;
-            
-            winPopup.innerHTML = content;
-            document.body.appendChild(winPopup);
+                `;
+                
+                winPopup.innerHTML = content;
+                document.body.appendChild(winPopup);
 
-            // Add event listeners
-            if (isTopFive) {
-                document.getElementById('submit-score').addEventListener('click', () => {
-                    const playerName = document.getElementById('player-name').value.trim();
-                    if (playerName) {
-                        this.saveScore(playerName, completionTime);
-                        window.location.href = 'leaderBoard.html';
-                    } else {
-                        alert('Please enter your name');
-                    }
+                // Add event listeners
+                if (isTopFive) {
+                    document.getElementById('submit-score').addEventListener('click', async () => {
+                        const playerName = document.getElementById('player-name').value.trim();
+                        if (playerName) {
+                            await this.saveScore(playerName, completionTime);
+                            window.location.href = 'leaderBoard.html';
+                        } else {
+                            alert('Please enter your name');
+                        }
+                    });
+
+                    document.getElementById('player-name').addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            document.getElementById('submit-score').click();
+                        }
+                    });
+                }
+
+                document.getElementById('win-restart-button').addEventListener('click', () => {
+                    location.reload();
                 });
 
-                // Allow submission with Enter key
-                document.getElementById('player-name').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        document.getElementById('submit-score').click();
-                    }
+                document.getElementById('win-main-menu-button').addEventListener('click', () => {
+                    window.location.href = 'startPage.html';
                 });
+
+                // Add styles...
+                this.addPopupStyles();
             }
 
-            document.getElementById('win-restart-button').addEventListener('click', () => {
-                location.reload();
-            });
+            winPopup.style.display = 'block';
+            isPaused = true;
+            controls.disable();
 
-            document.getElementById('win-main-menu-button').addEventListener('click', () => {
-                window.location.href = 'startPage.html';
-            });
-
-            const style = document.createElement('style');
-            style.textContent = `
-                #win-popup {
-                    display: none;
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background-color: rgba(0, 0, 0, 0.9);
-                    padding: 40px;
-                    border-radius: 10px;
-                    text-align: center;
-                    z-index: 1000;
-                    color: white;
-                }
-
-                .popup-content {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 20px;
-                }
-
-                .highlight {
-                    color: #ffd700;
-                    font-weight: bold;
-                }
-
-                .name-input {
-                    display: flex;
-                    gap: 10px;
-                    justify-content: center;
-                    align-items: center;
-                }
-
-                #player-name {
-                    padding: 8px;
-                    border-radius: 4px;
-                    border: 1px solid #666;
-                    background: rgba(255, 255, 255, 0.9);
-                    color: black;
-                }
-
-                .button-container {
-                    display: flex;
-                    gap: 10px;
-                    justify-content: center;
-                }
-
-                button {
-                    padding: 10px 20px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    background-color: #444;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    transition: background-color 0.3s;
-                }
-
-                button:hover {
-                    background-color: #666;
-                }
-
-                #submit-score {
-                    background-color: #4CAF50;
-                }
-
-                #submit-score:hover {
-                    background-color: #45a049;
-                }
-            `;
-            document.head.appendChild(style);
+        } catch (error) {
+            console.error('Error handling wall collision:', error);
+            // Show a basic win popup if the leaderboard check fails
+            this.showBasicWinPopup(completionTime);
         }
+    }
 
-        winPopup.style.display = 'block';
-        isPaused = true;
-    controls.disable(); // Disable car controls
+    addPopupStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            #win-popup {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: rgba(0, 0, 0, 0.9);
+                padding: 40px;
+                border-radius: 10px;
+                text-align: center;
+                z-index: 1000;
+                color: white;
+            }
+
+            .popup-content {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .highlight {
+                color: #ffd700;
+                font-weight: bold;
+            }
+
+            .name-input {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                align-items: center;
+            }
+
+            #player-name {
+                padding: 8px;
+                border-radius: 4px;
+                border: 1px solid #666;
+                background: rgba(255, 255, 255, 0.9);
+                color: black;
+            }
+
+            .button-container {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+                cursor: pointer;
+                background-color: #444;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                transition: background-color 0.3s;
+            }
+
+            button:hover {
+                background-color: #666;
+            }
+
+            #submit-score {
+                background-color: #4CAF50;
+            }
+
+            #submit-score:hover {
+                background-color: #45a049;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     formatTime(seconds) {
@@ -245,28 +243,66 @@ export class WallLoader {
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
-    checkIfTopFive(newTime, leaderboardData) {
-        if (leaderboardData.length < 5) return true;
-        return leaderboardData.some(entry => newTime < entry.time);
+    checkIfTopFive(newTime, scores) {
+        if (!scores || scores.length < 5) return true;
+        return scores.some(entry => newTime < entry.time);
     }
 
-    saveScore(playerName, completionTime) {
-        let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData')) || [];
-        
-        // Add new score
-        leaderboardData.push({
-            name: playerName,
-            time: completionTime
-        });
+    async saveScore(playerName, completionTime) {
+        try {
+            const response = await fetch(`https://app-rjelmm56pa-uc.a.run.app/leaderboards/${this.level}/scores`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    playerName,
+                    completionTime
+                })
+            });
 
-        // Sort by time (ascending)
-        leaderboardData.sort((a, b) => a.time - b.time);
+            if (!response.ok) {
+                throw new Error('Failed to save score');
+            }
 
-        // Keep only top 5
-        leaderboardData = leaderboardData.slice(0, 5);
+            const data = await response.json();
+            return data.isTopFive;
+        } catch (error) {
+            console.error('Error saving score:', error);
+            throw error;
+        }
+    }
 
-        // Save to localStorage
-        localStorage.setItem('leaderboardData', JSON.stringify(leaderboardData));
+    showBasicWinPopup(completionTime) {
+        let winPopup = document.getElementById('win-popup');
+        if (!winPopup) {
+            winPopup = document.createElement('div');
+            winPopup.id = 'win-popup';
+            winPopup.innerHTML = `
+                <div class="popup-content">
+                    <h2>YOU WIN!</h2>
+                    <p>Level ${this.level.slice(3)} Complete!</p>
+                    <p>Completion Time: ${this.formatTime(completionTime)}</p>
+                    <div class="button-container">
+                        <button id="win-restart-button">Restart</button>
+                        <button id="win-main-menu-button">Main Menu</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(winPopup);
+            this.addPopupStyles();
+        }
+        winPopup.style.display = 'block';
+    }
+
+    update(deltaTime) {
+        if (this.wallMesh && this.glowMesh && this.wallLight) {
+            const pulseFactor = (Math.sin(Date.now() * 0.003) + 1) / 2;
+            this.wallMesh.material.opacity = 0.2 + 0.2 * pulseFactor;
+            this.glowMesh.material.opacity = 0.1 + 0.1 * pulseFactor;
+            this.wallLight.intensity = 0.8 + 0.4 * pulseFactor;
+            this.wallMesh.material.emissiveIntensity = 0.3 + 0.3 * pulseFactor;
+        }
     }
 
     checkGameStatus() {

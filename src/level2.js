@@ -108,13 +108,13 @@ if (WebGL.isWebGL2Available()) {
     const menuButton = document.getElementById('menuButton');
     const modal = document.getElementById('modal');
     const modalOverlay = document.getElementById('modalOverlay');
-    const settingsButton = document.getElementById('settingsButton');
+    //const settingsButton = document.getElementById('settingsButton');
     const quitButton = document.getElementById('quitButton');
     const resumeButton = document.getElementById('resumeButton');
 
     menuButton.addEventListener('click', openModal);
     modalOverlay.addEventListener('click', closeModal);
-    settingsButton.addEventListener('click', openSettings);
+    //settingsButton.addEventListener('click', openSettings);
     quitButton.addEventListener('click', quitGame);
     resumeButton.addEventListener('click', closeModal);
 
@@ -122,14 +122,14 @@ if (WebGL.isWebGL2Available()) {
         modal.style.display = 'block';
         modalOverlay.style.display = 'block';
         isPaused = true;
-        controls.disable(); // Disable car controls
+        //controls.disable(); // Disable car controls
     }
 
     function closeModal() {
         modal.style.display = 'none';
         modalOverlay.style.display = 'none';
         isPaused = false;
-        controls.enable(); // Re-enable car controls
+        //controls.enable(); // Re-enable car controls
     }
 
     function openSettings() {
@@ -405,6 +405,10 @@ if (WebGL.isWebGL2Available()) {
 
     // Modify the restart button event listener
     document.getElementById('restart-button').addEventListener('click', () => {
+        location.reload(); // This will reload the entire page
+    });
+
+    document.getElementById('restart-button2').addEventListener('click', () => {
         location.reload(); // This will reload the entire page
     });
 
@@ -697,7 +701,7 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world);
+    const wallLoader = new WallLoader(scene, world, 'lvl2');
     wallLoader.createWall(
         { x: -90, y: 33, z: -30 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
@@ -959,10 +963,10 @@ let invulnerabilityEndTime = 0;
                 restoreCarAppearance();
             }
 
-            const position = vehicle.chassisBody.position;
-            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
-            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
-            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+            // const position = vehicle.chassisBody.position;
+            // document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            // document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            // document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
 
         }
 

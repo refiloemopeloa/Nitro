@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Race Time Leaderboard</title>
     <link rel="stylesheet" href="leaderBoard.css">
+    <style>
+        .level-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            display: flex;
+            gap: 10px;
+        }
+
+        .level-btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .level-btn.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            font-weight: bold;
+        }
+
+        .level-btn:hover {
+            background-color: rgba(24, 14, 14, 0.3);
+        }
+    </style>
     <script src="src/audioControls.js"></script>
 </head>
 <body>
@@ -12,10 +42,15 @@
 
     <button id="backButton" onclick="window.location.href='startPage.html'">Back to Start</button>
 
-    <button id="muteButton" class="mute-button">Mute</button>
+    <div class="level-selector">
+        <button class="level-btn active" data-level="lvl1">Level 1</button>
+        <button class="level-btn" data-level="lvl2">Level 2</button>
+        <button class="level-btn" data-level="lvl3">Level 3</button>
+    </div>
+
     <div id="content2">
         <div class="leaderboard">
-            <h1>Top 5 Times</h1>
+            <h1>Level 1 - Top 5 Times</h1>
             <table id="leaderboardTable">
                 <thead>
                     <tr>
@@ -70,6 +105,9 @@
         init();
 
         document.addEventListener('DOMContentLoaded', function() {
+            let currentLevel = 'lvl1';
+            const API_URL = 'https://app-rjelmm56pa-uc.a.run.app';
+
             // Function to format time from seconds to MM:SS
             function formatTime(seconds) {
                 const minutes = Math.floor(seconds / 60);
@@ -80,16 +118,19 @@
             // Function to update the leaderboard
             function updateLeaderboard(leaderboardData) {
                 const tableBody = document.getElementById('leaderboardBody');
+                const title = document.querySelector('.leaderboard h1');
                 tableBody.innerHTML = ''; // Clear existing entries
-        
-                // Sort the data by time (ascending)
-                leaderboardData.sort((a, b) => a.time - b.time);
-        
-                // Take only top 5 entries
-                const topEntries = leaderboardData.slice(0, 5);
-        
+
+                // Update title based on current level
+                title.textContent = `Level ${currentLevel.slice(3)} - Top 5 Times`;
+                
+                if (!leaderboardData || !leaderboardData.scores) {
+                    tableBody.innerHTML = '<tr><td colspan="3">No scores available</td></tr>';
+                    return;
+                }
+
                 // Add each entry to the table
-                topEntries.forEach((entry, index) => {
+                leaderboardData.scores.forEach((entry, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${index + 1}</td>
@@ -99,39 +140,46 @@
                     tableBody.appendChild(row);
                 });
             }
-        
-            // Sample data - replace this with your actual data loading mechanism
-            const sampleData = [
-                { name: "SpeedRunner", time: 85 },  // 1:25
-                { name: "QuickLap", time: 92 },     // 1:32
-                { name: "RaceMaster", time: 98 },   // 1:38
-                { name: "DriftKing", time: 105 },   // 1:45
-                { name: "FastTrack", time: 112 }    // 1:52
-            ];
-        
-            // Function to save a new time
-            function saveNewTime(name, time) {
-                // Load existing data
-                let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData')) || [];
-                
-                // Add new entry
-                leaderboardData.push({ name, time });
-                
-                // Sort and keep only top 5
-                leaderboardData.sort((a, b) => a.time - b.time);
-                leaderboardData = leaderboardData.slice(0, 5);
-                
-                // Save back to localStorage
-                localStorage.setItem('leaderboardData', JSON.stringify(leaderboardData));
-                
-                // Update display
-                updateLeaderboard(leaderboardData);
+
+            // Function to fetch leaderboard data
+            async function fetchLeaderboards() {
+                try {
+                    const response = await fetch(`${API_URL}/leaderboards`);
+                    if (!response.ok) throw new Error('Failed to fetch leaderboards');
+                    
+                    const data = await response.json();
+                    if (data.leaderboards && data.leaderboards[currentLevel]) {
+                        updateLeaderboard(data.leaderboards[currentLevel]);
+                    } else {
+                        throw new Error('No leaderboard data found');
+                    }
+                } catch (error) {
+                    console.error('Error fetching leaderboards:', error);
+                    document.getElementById('leaderboardBody').innerHTML = 
+                        '<tr><td colspan="3">Failed to load leaderboard data</td></tr>';
+                }
             }
-        
-            // Initialize the leaderboard
-            const savedData = JSON.parse(localStorage.getItem('leaderboardData'));
-            updateLeaderboard(savedData || sampleData);
-        
+
+            // Level selection handling
+            const levelButtons = document.querySelectorAll('.level-btn');
+            levelButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active button
+                    levelButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    // Update current level and fetch new data
+                    currentLevel = button.dataset.level;
+                    fetchLeaderboards();
+                });
+            });
+
+            // Initial fetch
+            fetchLeaderboards();
+
+            // Refresh data periodically (every 30 seconds)
+            setInterval(fetchLeaderboards, 30000);
+
             // Mute button functionality
             const muteButton = document.getElementById('muteButton');
             let isMuted = false;

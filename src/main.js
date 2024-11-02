@@ -935,7 +935,7 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world);
+    const wallLoader = new WallLoader(scene, world, 'lvl1');
     wallLoader.createWall(
         { x: 70, y: 2, z: -200 }, // Position - finish line
         { x: 2, y: 50, z: 80 }    // Size
