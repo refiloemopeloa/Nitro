@@ -293,6 +293,8 @@ export class WallLoader {
             this.addPopupStyles();
         }
         winPopup.style.display = 'block';
+        isPaused = true;
+            controls.disable(); //New change here
     }
 
     update(deltaTime) {
