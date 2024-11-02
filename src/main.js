@@ -32,6 +32,7 @@ import TriggerSystem from './triggerSystem.js';
 import blockModel from './models/road_block_a.glb';   // Add your block model path
 import { ArrowLoader } from './loadArrowSign.js';
 import arrowModel from './models/GreenArrowIcon.glb';
+import { BoundLoader } from './loadBound.js';
 
 
 if (WebGL.isWebGL2Available()) {
@@ -131,6 +132,11 @@ if (WebGL.isWebGL2Available()) {
     // });
 
     const checkpointLoader = new CheckpointLoader(scene, world);
+    const boundLoader = new BoundLoader(scene, world, () => {
+        if (vehicle) {  // Make sure vehicle exists
+            respawnCar(performance.now());  // Use performance.now() if time isn't available
+        }
+    });
 
 
     // Variables for track creation
@@ -943,7 +949,7 @@ let invulnerabilityEndTime = 0;
 
     // Create checkpoints at various positions
     checkpointLoader.createCheckpoint(
-        { x: -15, y: 2, z: -3 }, // position
+        { x: -10, y: 2, z: -3 }, // position
         { x: 2, y: 20, z: 40 }   // size
     );
     checkpointLoader.createCheckpoint(
@@ -953,6 +959,12 @@ let invulnerabilityEndTime = 0;
     checkpointLoader.createCheckpoint(
         { x: 336, y: 2, z: -53 }, // position
         { x: 40, y: 20, z: 2 }   // size
+    );
+
+    /// Create boundaries
+    boundLoader.createBound(
+        { x: 230, y: 2, z: 65 }, // position
+        { x: 6, y: 6, z: 10 }
     );
 
     // add arrors
@@ -1274,6 +1286,7 @@ document.addEventListener('keydown', (event) => {
             // Update crates
             crateLoader.update(deltaTime);
             checkpointLoader.update(deltaTime);
+            boundLoader.update(deltaTime);
 
 
             const headlightPositions = [
@@ -1336,10 +1349,10 @@ document.addEventListener('keydown', (event) => {
                 restoreCarAppearance();
             }
 
-            // const position = vehicle.chassisBody.position;
-            // document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
-            // document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
-            // document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+            const position = vehicle.chassisBody.position;
+            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
 
         }
 
