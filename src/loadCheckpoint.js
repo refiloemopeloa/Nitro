@@ -15,28 +15,28 @@ export class CheckpointLoader {
         // Create physics body for the checkpoint using a properly oriented box
         const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
         
-        // Create vertices for the box shape manually to ensure correct orientation
+        // Create vertices for the box shape
         const vertices = [
-            // Front face
+            // Front face vertices (z+)
             [-halfExtents.x, -halfExtents.y, halfExtents.z],  // 0
             [halfExtents.x, -halfExtents.y, halfExtents.z],   // 1
             [halfExtents.x, halfExtents.y, halfExtents.z],    // 2
             [-halfExtents.x, halfExtents.y, halfExtents.z],   // 3
-            // Back face
+            // Back face vertices (z-)
             [-halfExtents.x, -halfExtents.y, -halfExtents.z], // 4
             [halfExtents.x, -halfExtents.y, -halfExtents.z],  // 5
             [halfExtents.x, halfExtents.y, -halfExtents.z],   // 6
             [-halfExtents.x, halfExtents.y, -halfExtents.z]   // 7
         ].map(v => new CANNON.Vec3(...v));
 
-        // Define faces with correct winding order
+        // Define faces with correct CCW winding order when viewed from outside
         const faces = [
-            [3, 2, 1, 0], // Front face
-            [4, 5, 6, 7], // Back face
-            [0, 1, 5, 4], // Bottom face
-            [2, 3, 7, 6], // Top face
-            [0, 4, 7, 3], // Left face
-            [1, 2, 6, 5]  // Right face
+            [0, 1, 2, 3],    // Front face (z+)
+            [5, 4, 7, 6],    // Back face (z-)
+            [4, 5, 1, 0],    // Bottom face (y-)
+            [3, 2, 6, 7],    // Top face (y+) - Changed order to maintain CCW from above
+            [4, 0, 3, 7],    // Left face (x-)
+            [1, 5, 6, 2]     // Right face (x+)
         ];
 
         const checkpointShape = new CANNON.ConvexPolyhedron({
@@ -49,7 +49,7 @@ export class CheckpointLoader {
             shape: checkpointShape,
             position: new CANNON.Vec3(position.x, position.y, position.z),
             isTrigger: true,
-            collisionResponse: false // Ensures the checkpoint doesn't affect physics
+            collisionResponse: false
         });
 
         // Create visual representation
@@ -98,11 +98,10 @@ export class CheckpointLoader {
         this.checkpoints.push(checkpointBody);
     }
 
+    // Rest of the class implementation remains the same...
     handleCheckpointCollision(position) {
-        // Update the current checkpoint position
         this.currentCheckpoint.set(position.x, position.y, position.z);
         
-        // Visual feedback for checkpoint activation
         const checkpointIndex = this.checkpoints.findIndex(cp => 
             cp.position.x === position.x && 
             cp.position.y === position.y && 
@@ -110,7 +109,6 @@ export class CheckpointLoader {
         );
         
         if (checkpointIndex !== -1) {
-            // Flash effect for the activated checkpoint
             const mesh = this.checkpointMeshes[checkpointIndex];
             const originalOpacity = mesh.material.opacity;
             const originalEmissiveIntensity = mesh.material.emissiveIntensity;
@@ -128,21 +126,17 @@ export class CheckpointLoader {
     }
 
     update(deltaTime) {
-        // Update visual effects for all checkpoints
         this.checkpointLights.forEach(({ light, glowMesh }, index) => {
             const pulseFactor = (Math.sin(Date.now() * 0.003 + index) + 1) / 2;
             
-            // Update checkpoint transparency
             if (this.checkpointMeshes[index]) {
                 this.checkpointMeshes[index].material.opacity = 0.2 + 0.2 * pulseFactor;
             }
             
-            // Update glow effect
             if (glowMesh) {
                 glowMesh.material.opacity = 0.1 + 0.1 * pulseFactor;
             }
             
-            // Update light intensity
             light.intensity = 0.8 + 0.4 * pulseFactor;
         });
     }
