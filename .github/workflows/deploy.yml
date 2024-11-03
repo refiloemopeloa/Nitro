@@ -19,3 +19,10 @@ jobs:
           sshpass -e rsync -avz --exclude='.git/' \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./ sonsite@lamp.ms.wits.ac.za:~/public_html/
+      - name: Set permissions
+        env:
+          SSHPASS: "${{ secrets.SSH_PASSWORD }}"
+        run: |
+          sshpass -e ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            sonsite@lamp.ms.wits.ac.za \
+            "chmod -R 755 ~/public_html"
