@@ -1,8 +1,10 @@
 import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class BoundLoader {
-    constructor(scene, world, onBoundHit) {
+    constructor(scene, world, onBoundHit, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
         this.bounds = [];

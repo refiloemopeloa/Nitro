@@ -1,8 +1,10 @@
 import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class WallLoader {
-    constructor(scene, world, level) {
+    constructor(scene, world, level, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
         this.wall = null;

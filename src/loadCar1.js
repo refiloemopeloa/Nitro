@@ -77,7 +77,8 @@ class HeadLight {
 }
 
 export class CarLoader {
-    constructor(scene, world, carMaterial, wheelMaterial, camera) {
+    constructor(scene, world, carMaterial, wheelMaterial, camera, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
         this.carMaterial = carMaterial;

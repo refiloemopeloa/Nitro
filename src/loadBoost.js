@@ -3,10 +3,10 @@ import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class BoostLoader {
-    constructor(scene, world) {
+    constructor(scene, world, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
-        this.loader = new GLTFLoader();
         this.boostModels = [];
         this.boostBodies = [];
         this.boostLights = [];

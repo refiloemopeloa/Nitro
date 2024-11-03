@@ -5,7 +5,8 @@ import { getParticleSystem } from './getParticleSystem2.js';
 import img from './img/fire.png';
 
 export class CrateLoader {
-    constructor(scene, world, camera) { 
+    constructor(scene, world, camera, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager); 
         this.scene = scene;
         this.world = world;
         this.camera = camera; 

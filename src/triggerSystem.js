@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
 
 class TriggerSystem {
-    constructor(scene, blockLoader) {
+    constructor(scene, blockLoader, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager);
         this.triggers = [];
         this.blockLoader = blockLoader;
         this.scene = scene;

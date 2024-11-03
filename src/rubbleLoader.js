@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class RubbleLoader {
-    constructor(scene, world, groundMaterial) {
+    constructor(scene, world, groundMaterial, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
         this.groundMaterial = groundMaterial;

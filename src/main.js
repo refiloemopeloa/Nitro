@@ -36,6 +36,27 @@ import { BoundLoader } from './loadBound.js';
 
 
 if (WebGL.isWebGL2Available()) {
+
+    const loadingPromises = [];
+    // Loading manager setup
+    const loadingManager = new THREE.LoadingManager();
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingBar = document.querySelector('.loading-bar');
+    const loadingStatus = document.querySelector('.loading-status');
+
+    loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
+        const progress = (itemsLoaded / itemsTotal) * 100;
+        loadingBar.style.width = progress + '%';
+        loadingStatus.textContent = `Loading assets... ${Math.round(progress)}%`;
+    };
+
+
+    loadingManager.onError = function(url) {
+        console.error('Error loading:', url);
+        loadingStatus.textContent = 'Error loading game assets';
+        loadingStatus.style.color = '#ff0000';
+    };
+
     // Three.js setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -131,12 +152,15 @@ if (WebGL.isWebGL2Available()) {
     //     texture: img,
     // });
 
-    const checkpointLoader = new CheckpointLoader(scene, world);
+    const checkpointLoader = new CheckpointLoader(scene, world, loadingManager);
     const boundLoader = new BoundLoader(scene, world, () => {
         if (vehicle) {  // Make sure vehicle exists
             respawnCar(performance.now());  // Use performance.now() if time isn't available
         }
     });
+        // Initialize BlockLoader and TriggerSystem
+const blockLoader = new BlockLoader(scene, world, groundMaterial, loadingManager);
+const triggerSystem = new TriggerSystem(scene, blockLoader, loadingManager);
 
 
     // Variables for track creation
@@ -212,7 +236,7 @@ if (WebGL.isWebGL2Available()) {
         world.addBody(groundBody);
 
         const floorGeometry = new THREE.BoxGeometry(trackSegSize.x * 2, trackSegSize.y * 2, trackSegSize.z * 2);
-        const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
+        const concreteATexture = new THREE.TextureLoader(loadingManager).load('./src/assets/textures/concreteA.png');
         const floorMaterial = new THREE.MeshStandardMaterial({
             //color: 0xfcfcfc
             map: concreteATexture,
@@ -248,87 +272,68 @@ if (WebGL.isWebGL2Available()) {
     }
 
     function addBlock(x, y, z, ax, ay, az, size) {
-        // Create ground
-        const groundShape = new CANNON.Box(size);
-        const groundBody = new CANNON.Body({
-            mass: 0,
-            shape: groundShape,
-            material: groundMaterial
+        return new Promise((resolve) => {
+            // Create ground
+            const groundShape = new CANNON.Box(size);
+            const groundBody = new CANNON.Body({
+                mass: 0,
+                shape: groundShape,
+                material: groundMaterial
+            });
+            groundBody.quaternion.setFromEuler(ax, ay, az);
+            groundBody.position.set(x, y, z);
+            world.addBody(groundBody);
+    
+            const floorGeometry = new THREE.BoxGeometry(size.x * 2, size.y * 2, size.z * 2);
+            
+            // Use loading manager for texture
+            const concreteATexture = new THREE.TextureLoader(loadingManager).load(
+                './src/assets/textures/concreteA.png',
+                () => {
+                    const floorMaterial = new THREE.MeshStandardMaterial({
+                        map: concreteATexture,
+                    });
+                    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                    scene.add(floor);
+    
+                    const trackDir = new CANNON.Vec3(-1, 0, 0);
+                    groundBody.quaternion.vmult(trackDir, trackDir);
+    
+                    floor.position.copy(groundBody.position);
+                    floor.quaternion.copy(groundBody.quaternion);
+                    resolve();
+                }
+            );
         });
-        groundBody.quaternion.setFromEuler(ax, ay, az);
-        groundBody.position.set(x, y, z);
-        world.addBody(groundBody);
-
-        const floorGeometry = new THREE.BoxGeometry(size.x * 2, size.y * 2, size.z * 2);
-        const concreteATexture = new THREE.TextureLoader().load('./src/assets/textures/concreteA.png');
-        const floorMaterial = new THREE.MeshStandardMaterial({
-            //color: 0xfcfcfc
-            map: concreteATexture,
-        });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        scene.add(floor);
-
-        const trackDir = new CANNON.Vec3(-1, 0, 0);
-        groundBody.quaternion.vmult(trackDir, trackDir);
-
-        floor.position.copy(groundBody.position);
-        floor.quaternion.copy(groundBody.quaternion);
     }
 
-    const buildingLoader = new BuildingLoader(scene, world, groundMaterial);
-    const graffitiWallLoader = new GraffitiWallLoader(scene, world, groundMaterial);
-    const militaryBaseLoader = new MilitaryBaseLoader(scene, world, groundMaterial);
-    const wastelandStoreLoader = new WastelandStoreLoader(scene, world, groundMaterial);
-    const rubbleLoader = new RubbleLoader(scene, world, groundMaterial);
+    const buildingLoader = new BuildingLoader(scene, world, groundMaterial, loadingManager);
+    const graffitiWallLoader = new GraffitiWallLoader(scene, world, groundMaterial, loadingManager);
+    const militaryBaseLoader = new MilitaryBaseLoader(scene, world, groundMaterial, loadingManager);
+    const wastelandStoreLoader = new WastelandStoreLoader(scene, world, groundMaterial, loadingManager);
+    const rubbleLoader = new RubbleLoader(scene, world, groundMaterial, loadingManager);
     // add scenery
     function addScenery(x, y, z, angleY, type) {
         switch (type) {
             case 0:
                 const buildingSize = new CANNON.Vec3(20, 16, 20);
                 const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
-                buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale).then(() => {
-                    console.log('Building loaded successfully');
-                }).catch(error => {
-                    console.error('Failed to load building model:', error);
-                });
-
-                break;
-
-            case 1: // New case for graffiti wall
-                const wallSize = new CANNON.Vec3(10, 22, 40); // Adjust size as needed
-                graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize).then(() => {
-                    console.log('Graffiti wall loaded successfully');
-                }).catch(error => {
-                    console.error('Failed to load graffiti wall model:', error);
-                });
-                break;
-            case 2: // New case for military base
-                const baseSize = new CANNON.Vec3(20, 20, 13); // Adjust size as needed
-                militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize).then(() => {
-                    console.log('Base loaded successfully');
-                }).catch(error => {
-                    console.error('Failed to load base model:', error);
-                });
-                break;
-            case 3: // Wasteland store
+                return buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale);
+    
+            case 1:
+                const wallSize = new CANNON.Vec3(10, 22, 40);
+                return graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize);
+    
+            case 2:
+                const baseSize = new CANNON.Vec3(20, 20, 13);
+                return militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize);
+    
+            case 3:
                 const storeSize = new CANNON.Vec3(40, 16, 14.5);
-                wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize).then(() => {
-                    console.log('Wasteland store loaded successfully');
-                }).catch(error => {
-                    console.error('Failed to load wasteland store model:', error);
-                });
-                break;
-                //buildingABody.quaternion.setFromEuler(0, angleY, 0);
-                world.addBody(buildingABody);
-                buildingABody.position.set(x, y, z);
-
-                const buildingAGeometry = new THREE.BoxGeometry(2 * buildingASize.x, 2 * buildingASize.y, 2 * buildingASize.z);
-                const buildingAMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-                const buidlingA = new THREE.Mesh(buildingAGeometry, buildingAMaterial);
-                scene.add(buidlingA);
-
-                buidlingA.position.copy(buildingABody.position);
-                buidlingA.quaternion.copy(buidlingA.quaternion);
+                return wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize);
+    
+            default:
+                return Promise.resolve();
         }
     }
 
@@ -411,64 +416,67 @@ if (WebGL.isWebGL2Available()) {
 
     function addAllBuildingsLvl1(){
         // creating map
-    addScenery(-40, 0, 0, 0, 1);
-    addScenery(-40, 0, -40, -0.01, 0);
-    addScenery(-40, 0, 40, 0.01, 0);
-    addScenery(0, 0, -40, 0, 3);
-    addScenery(0, 0, 40, 0, 0);
-    addScenery(40, 0, -40, 0, 0);
-    addScenery(40, 0, 40, 0, 0);
+        const sceneryPromises = [
+    addScenery(-40, 0, 0, 0, 1),
+    addScenery(-40, 0, -40, -0.01, 0),
+    addScenery(-40, 0, 40, 0.01, 0),
+    addScenery(0, 0, -40, 0, 3),
+    addScenery(0, 0, 40, 0, 0),
+    addScenery(40, 0, -40, 0, 0),
+    addScenery(40, 0, 40, 0, 0),
 
-    addScenery(80, 0, -50, 0.1, 3);
-    addScenery(100, 0, -80, 0, 0);
-    addScenery(140, 0, -60, 0, 2);
-    addScenery(150, 0, -10, 0.5, 0);
-    addScenery(180, 0, -80, 0, 0);
-    addScenery(220, 0, -60, -0.4, 0);
-    addScenery(260, 0, -45, -0.4, 0);
-    addScenery(300, 0, -30, 0.5, 0);
-    addScenery(320, 0, 0, 0.1, 0);
+    addScenery(80, 0, -50, 0.1, 3),
+    addScenery(100, 0, -80, 0, 0),
+    addScenery(140, 0, -60, 0, 2),
+    addScenery(150, 0, -10, 0.5, 0),
+    addScenery(180, 0, -80, 0, 0),
+    addScenery(220, 0, -60, -0.4, 0),
+    addScenery(260, 0, -45, -0.4, 0),
+    addScenery(300, 0, -30, 0.5, 0),
+    addScenery(320, 0, 0, 0.1, 0),
 
-    addScenery(150, 0, 40, 0, 0);
-    addScenery(190, 0, 10, 0, 2);
+    addScenery(150, 0, 40, 0, 0),
+    addScenery(190, 0, 10, 0, 2),
 
-    addScenery(80, 0, 80, 0, 0);
-    addScenery(120, 0, 120, 0, 2);
-    addScenery(160, 0, 120, 0, 2);
-    addScenery(200, 0, 120, 0, 0);
-    addScenery(240, 0, 120, 0, 0);
-    addScenery(280, 0, 120, 0, 2);
-    addScenery(320, 0, 120, 0, 0);
-    addScenery(360, 0, 110, 0.3, 0);
-    addScenery(390, 0, 90, 1.4, 0);
-    addScenery(400, 0, 40, 0, 0);
+    addScenery(80, 0, 80, 0, 0),
+    addScenery(120, 0, 120, 0, 2),
+    addScenery(160, 0, 120, 0, 2),
+    addScenery(200, 0, 120, 0, 0),
+    addScenery(240, 0, 120, 0, 0),
+    addScenery(280, 0, 120, 0, 2),
+    addScenery(320, 0, 120, 0, 0),
+    addScenery(360, 0, 110, 0.3, 0),
+    addScenery(390, 0, 90, 1.4, 0),
+    addScenery(400, 0, 40, 0, 0),
 
-    addScenery(230, 0, 40, 0, 3);
-    addScenery(270, 0, 40, 0, 2);
-    addScenery(320, 0, 40, 0, 0);
+    addScenery(230, 0, 40, 0, 3),
+    addScenery(270, 0, 40, 0, 2),
+    addScenery(320, 0, 40, 0, 0),
 
-    addScenery(380, 0, 0, 0, 2);
-    addScenery(380, 0, -40, 0, 0);
-    addScenery(380, 0, -80, 0, 0);
-    addScenery(380, 0, -120, 0, 0);
-    addScenery(380, 0, -160, 0, 1);
-    addScenery(380, 0, -200, 0, 0);
+    addScenery(380, 0, 0, 0, 2),
+    addScenery(380, 0, -40, 0, 0),
+    addScenery(380, 0, -80, 0, 0),
+    addScenery(380, 0, -120, 0, 0),
+    addScenery(380, 0, -160, 0, 1),
+    addScenery(380, 0, -200, 0, 0),
 
-    addScenery(380, 0, -240, 0, 0);
-    addScenery(340, 0, -240, 0, 0);
-    addScenery(300, 0, -240, 0, 2);
-    addScenery(260, 0, -240, 0, 0);
-    addScenery(220, 0, -250, 0, 2);
-    addScenery(180, 0, -250, 0, 3);
-    addScenery(140, 0, -230, 0, 0);
-    addScenery(100, 0, -250, 0, 0);
+    addScenery(380, 0, -240, 0, 0),
+    addScenery(340, 0, -240, 0, 0),
+    addScenery(300, 0, -240, 0, 2),
+    addScenery(260, 0, -240, 0, 0),
+    addScenery(220, 0, -250, 0, 2),
+    addScenery(180, 0, -250, 0, 3),
+    addScenery(140, 0, -230, 0, 0),
+    addScenery(100, 0, -250, 0, 0),
 
-    addScenery(280, 0, -170, 0, 0);
-    addScenery(240, 0, -170, 0, 0);
-    addScenery(200, 0, -160, -0.1, 2);
-    addScenery(80, 0, -160, 0, 0);
-    addScenery(140, 0, -115, -0.4, 2);
-    };
+    addScenery(280, 0, -170, 0, 0),
+    addScenery(240, 0, -170, 0, 0),
+    addScenery(200, 0, -160, -0.1, 2),
+    addScenery(80, 0, -160, 0, 0),
+    addScenery(140, 0, -115, -0.4, 2),
+        ];
+        loadingPromises.push(...sceneryPromises);
+    }
 
     addAllBuildingsLvl1();
 
@@ -508,16 +516,20 @@ if (WebGL.isWebGL2Available()) {
 
     const blockA = new CANNON.Vec3(20, 5, 25);
     const blockB = new CANNON.Vec3(20, 5, 45);
+    
+    const blockPromises = [
 
-    addBlock(140, -3, 85, 0, 0, 0.15, blockA);
-    addBlock(170, 3, 85, 0, 0, 0.25, blockA);
-    addBlock(208.15, 7.79, 85, 0, 0, 0, blockA);
+    addBlock(140, -3, 85, 0, 0, 0.15, blockA),
+    addBlock(170, 3, 85, 0, 0, 0.25, blockA),
+    addBlock(208.15, 7.79, 85, 0, 0, 0, blockA),
 
-    addBlock(255, -3.6, 85, 0, 0, -0.5, blockA);
-    addBlock(265, -4.4, 85, 0, 0, -0.3, blockA);
-    addBlock(275, -4.5, 85, 0, 0, -0.1, blockA);
+    addBlock(255, -3.6, 85, 0, 0, -0.5, blockA),
+    addBlock(265, -4.4, 85, 0, 0, -0.3, blockA),
+    addBlock(275, -4.5, 85, 0, 0, -0.1, blockA),
 
-    addBlock(362, -4.4, 50, 0, 0, 0.3, blockB);
+    addBlock(362, -4.4, 50, 0, 0, 0.3, blockB),
+    ];
+    loadingPromises.push(...blockPromises);
     
 
     // trackPrevDir = [0, 0, 0];
@@ -607,6 +619,27 @@ if (WebGL.isWebGL2Available()) {
         }
     }
 
+    // Start the animation loop only after loading is complete
+    loadingManager.onLoad = function() {
+        loadingStatus.textContent = 'Loading additional assets...';
+        
+        // Wait for all loading promises to complete
+        Promise.all(loadingPromises)
+            .then(() => {
+                loadingStatus.textContent = 'Starting game...';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    renderer.setAnimationLoop(animate);
+                    //startGame();
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error loading assets:', error);
+                loadingStatus.textContent = 'Error loading game assets';
+                loadingStatus.style.color = '#ff0000';
+            });
+    };
+
     function updateTimerDisplay() {
         const minutes = Math.floor(gameTimer / 60);
         const seconds = gameTimer % 60;
@@ -642,7 +675,7 @@ if (WebGL.isWebGL2Available()) {
     // Load the car
     const initialCarPosition = new CANNON.Vec3(-20, 1, -3);
     //const initialCarPosition = new CANNON.Vec3(341, 1, -36);
-const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera);
+const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera, loadingManager);
 let carObject, vehicle, fireEffect1, fireEffect2;
 
 carLoader.loadCar(carModel, initialCarPosition).then(({
@@ -711,7 +744,7 @@ carLoader.loadCar(carModel, initialCarPosition).then(({
         //startGame();
 
         // Start the animation loop
-        renderer.setAnimationLoop(animate);
+        //renderer.setAnimationLoop(animate);
     }).catch(error => {
         console.error('Failed to load car model:', error);
     });
@@ -887,7 +920,7 @@ let invulnerabilityEndTime = 0;
         }
     }
     
-    const boostLoader = new BoostLoader(scene, world);
+    const boostLoader = new BoostLoader(scene, world, loadingManager);
     const boostPositions = [
         // add boost items here
         //new THREE.Vector3(20, 2, 10),
@@ -904,7 +937,7 @@ let invulnerabilityEndTime = 0;
         console.error('Failed to load boost model:', error);
     });
 
-    const crateLoader = new CrateLoader(scene, world, camera);
+    const crateLoader = new CrateLoader(scene, world, camera, loadingManager);
     const cratePositions = [
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
@@ -941,7 +974,7 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl1');
+    const wallLoader = new WallLoader(scene, world, 'lvl1', loadingManager);
     wallLoader.createWall(
         { x: 70, y: 2, z: -200 }, // Position - finish line
         { x: 2, y: 50, z: 80 }    // Size
@@ -1049,10 +1082,6 @@ arrowLoader.loadMultipleArrows(arrowModel, arrowConfigs);
         carAudioManager.handleKeyUp(event.key.toLowerCase());
     });
 
-
-    // Initialize BlockLoader and TriggerSystem
-const blockLoader = new BlockLoader(scene, world, groundMaterial);
-const triggerSystem = new TriggerSystem(scene, blockLoader);
 
 //trigger zones
 const triggers = [
@@ -1386,7 +1415,7 @@ document.addEventListener('keydown', (event) => {
     }
     function createFloor(groundSize, gridTexture, groundBody) {
         const floorGeometry = new THREE.PlaneGeometry(groundSize.width, groundSize.length);
-        const concreteBTexture = new THREE.TextureLoader().load('./src/assets/textures/zombie texture.png');
+        const concreteBTexture = new THREE.TextureLoader(loadingManager).load('./src/assets/textures/zombie texture.png');
         concreteBTexture.wrapS = THREE.RepeatWrapping;
         concreteBTexture.wrapT = THREE.RepeatWrapping;
         concreteBTexture.repeat.set(10, 10);

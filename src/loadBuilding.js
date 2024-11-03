@@ -65,7 +65,8 @@ const buildingFragmentShader = `
 `;
 
 export class BuildingLoader {
-    constructor(scene, world, groundMaterial) {
+    constructor(scene, world, groundMaterial, loadingManager) {
+        this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
         this.groundMaterial = groundMaterial;
