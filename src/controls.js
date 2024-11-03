@@ -4,7 +4,7 @@ import * as THREE from 'three';
 export class Controls {
     constructor(world) {
         this.world = world;
-        this.controls = ['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'o'];
+        this.controls = ['w', 'a', 's', 'd', 'o'];
         this.pressed = this.controls.reduce((acc, key) => ({ ...acc, [key]: false }), {});
         this.vehicle = null;
         this.carParts = null;
@@ -79,11 +79,11 @@ export class Controls {
 
         const currentMaxForce = this.boost ? 15 : 10;
 
-        if (this.pressed['w'] || this.pressed['ArrowUp']) {
+        if (this.pressed['w']) {
             this.vehicle.setWheelForce(currentMaxForce, 2);
             this.vehicle.setWheelForce(currentMaxForce, 3);
             this.wheelRollRotation -= this.wheelRollRotationSpeed;
-        } else if (this.pressed['s'] || this.pressed['ArrowDown']) {
+        } else if (this.pressed['s']) {
             this.vehicle.setWheelForce(-currentMaxForce / 1, 2);
             this.vehicle.setWheelForce(-currentMaxForce / 1, 3);
             this.wheelRollRotation += this.wheelRollRotationSpeed;
@@ -103,13 +103,13 @@ export class Controls {
         // Determine target steering value
         let targetSteerValue = 0;
 
-        if (this.pressed['a'] || this.pressed['ArrowLeft']) {
+        if (this.pressed['a']) {
             targetSteerValue = this.maxSteerVal;
             this.frontWheelSteerRotation = Math.min(
                 this.frontWheelSteerRotation + this.frontWheelSteerRotationSpeed,
                 this.maxFrontWheelSteerRotation
             );
-        } else if (this.pressed['d'] || this.pressed['ArrowRight']) {
+        } else if (this.pressed['d']) {
             targetSteerValue = -this.maxSteerVal;
             this.frontWheelSteerRotation = Math.max(
                 this.frontWheelSteerRotation - this.frontWheelSteerRotationSpeed,
