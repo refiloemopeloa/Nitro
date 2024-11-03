@@ -748,12 +748,18 @@ let invulnerabilityEndTime = 0;
 
     // Create checkpoints at various positions
     checkpointLoader.createCheckpoint(
-        { x: 100, y: 2, z: 0 }, // position
-        { x: 10, y: 2, z: -10 }   // size
+        { x: -4, y: 2, z: -5 }, // position
+        { x: 2, y: 20, z: 40 }   // size
     );
 
-    // To get current checkpoint position:
-    const currentCheckpoint = checkpointLoader.getCurrentCheckpoint();
+     /// Create boundaries
+     boundLoader.createBound(
+        { x: 48, y: 20, z: -6 }, // position
+        { x: 6, y: 6, z: 10 }
+    );
+
+    
+
 
     // Cannon debugger
     const cannonDebugger = new CannonDebugger(scene, world);
@@ -1002,10 +1008,10 @@ let invulnerabilityEndTime = 0;
                 restoreCarAppearance();
             }
 
-            // const position = vehicle.chassisBody.position;
-            // document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
-            // document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
-            // document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+            const position = vehicle.chassisBody.position;
+            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
 
         }
 
