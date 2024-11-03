@@ -615,7 +615,7 @@ if (WebGL.isWebGL2Available()) {
 
     function startGame() {
         gameOver = false;
-        gameTimer = 80;
+        gameTimer = 150;
         frameCounter = 0;
         carHealth = MAX_HEALTH;
         lastCollisionTime = 0;
@@ -987,7 +987,7 @@ if (WebGL.isWebGL2Available()) {
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl1', loadingManager, 80, (pauseState) => {
+    const wallLoader = new WallLoader(scene, world, 'lvl1', loadingManager, 150, (pauseState) => {
         isPaused = pauseState;
     });
     wallLoader.createWall(
