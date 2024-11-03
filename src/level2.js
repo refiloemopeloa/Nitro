@@ -433,6 +433,7 @@ if (WebGL.isWebGL2Available()) {
     function showGameOverPopup() {
         const popup = document.getElementById('game-over-popup');
         popup.style.display = 'block';
+        isPaused = true;
     }
 
     function hideGameOverPopup() {
@@ -738,7 +739,9 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl2', loadingManager, 60);
+    const wallLoader = new WallLoader(scene, world, 'lvl2', loadingManager, 60, (pauseState) => {
+        isPaused = pauseState;
+    });
     wallLoader.createWall(
         { x: -90, y: 33, z: -30 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
