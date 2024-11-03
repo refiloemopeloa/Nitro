@@ -1,165 +1,139 @@
-#speedometer {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 200px;
-    height: 200px;
-    background-color:rgba(51, 51, 51, 0.7);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#speed-display {
-    position: absolute;
-    font-family: Arial, sans-serif;
-    font-size: 24px;
-    color: white;
-    bottom: 60px;
-}
-
-#needle {
-    position: absolute;
-    width: 4px;
-    height: 90px;
-    background-color: red;
-    bottom: 100px;
-    left: 98px;
-    transform-origin: bottom center;
-    transform: rotate(-90deg);
-    transition: transform 0.2s ease-out;
-}
-
-.speed-mark {
-    position: absolute;
-    width: 100%;
+body, html {
+    margin: 0;
+    padding: 0;
     height: 100%;
-    display: flex;
-    justify-content: center;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #000;
 }
 
-.speed-mark::before {
-    content: '';
-    position: absolute;
-    width: 2px;
-    height: 10px;
-    background-color: white;
-    top: 10px;
-}
-
-.speed-text {
-    position: absolute;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    color: white;
-    top: 25px;
-}
-
-#menuButton {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
-#modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    z-index: 1001;
-}
-#modalOverlay {
-    display: none;
+#canvas-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: 1;
 }
 
-.controls-list {
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 10px;
-    padding: 20px;
-    margin: 20px 0;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    max-width: 300px;
-    margin: 20px auto;
-}
-
-.controls-list h3 {
+#content {
+    position: relative;
+    z-index: 2;
+    color: white;
     text-align: center;
-    margin-bottom: 20px;
-    color: #fff;
-    font-size: 1.5em;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    padding-top: 5vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
 }
 
-.control-item {
+img {
+    max-width: 950px;
+    height: auto;
+    margin-bottom: 40px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.menu-container {
+    background: rgba(0, 0, 0, 0.385);
+    padding: 30px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 90%;
+    max-width: 400px;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.main-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+button {
+    background: linear-gradient(45deg, #ff3366, #ff6b6b);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 51, 102, 0.4);
+}
+
+#start-btn, #level2-btn {
+    grid-column: span 2;
+    background: linear-gradient(45deg, #ff3366, #ff6b6b);
+}
+
+#tut-btn {
+    background: linear-gradient(45deg, #4a90e2, #67b26f);
+}
+
+#leaderboard-btn {
+    background: linear-gradient(45deg, #9d50bb, #6e48aa);
+}
+
+.volume-controls {
     display: flex;
     align-items: center;
-    margin: 15px 0;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 5px;
     padding: 10px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-    transition: background 0.3s ease;
+    border-radius: 8px;
 }
 
-.control-item:hover {
+.volume-controls button {
+    padding: 2px 2px;
+    font-size: 0.9em;
     background: rgba(255, 255, 255, 0.2);
 }
 
-.control-item .key {
-    background: #fff;
-    color: #000;
-    padding: 8px 15px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 1.2em;
-    min-width: 40px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    text-transform: uppercase;
+#volumeDisplay {
+    min-width: 100px;
+    font-weight: 500;
 }
 
-.control-item .description {
-    margin-left: 15px;
-    font-size: 1.1em;
-    color: #fff;
-    flex-grow: 1;
+#muteButton {
+    background: linear-gradient(45deg, #666, #888);
+    padding: 8px 20px;
 }
 
-/* Specific styles for start page */
-#content .controls-list {
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
+@media (max-width: 768px) {
+    img {
+        max-width: 300px;
+        margin-bottom: 30px;
+    }
 
-/* Specific styles for menu overlay */
-#modal .controls-list {
-    margin-top: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
+    .menu-container {
+        width: 85%;
+        padding: 20px;
+    }
 
-/* Animation for key press visual feedback */
-@keyframes keyPress {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.95); }
-    100% { transform: scale(1); }
-}
+    button {
+        padding: 12px 24px;
+        font-size: 1em;
+    }
 
-.control-item .key:active {
-    animation: keyPress 0.2s ease;
+    .volume-controls {
+        flex-wrap: wrap;
+    }
 }

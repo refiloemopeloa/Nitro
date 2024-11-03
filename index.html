@@ -1,382 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="index.css">
-    <script src="src/audioControls.js"></script>
-    <title>Car Game</title>
-    <style>
-        #speedometer {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 200px;
-            height: 200px;
-            background-color:rgba(51, 51, 51, 0.7);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #speed-display {
-            position: absolute;
-            font-family: Arial, sans-serif;
-            font-size: 24px;
-            color: white;
-            bottom: 60px;
-        }
-
-        #needle {
-            position: absolute;
-            width: 4px;
-            height: 90px;
-            background-color: red;
-            bottom: 100px;
-            left: 98px;
-            transform-origin: bottom center;
-            transform: rotate(-90deg);
-            transition: transform 0.2s ease-out;
-        }
-
-        .speed-mark {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
-        .speed-mark::before {
-            content: '';
-            position: absolute;
-            width: 2px;
-            height: 10px;
-            background-color: white;
-            top: 10px;
-        }
-
-        .speed-text {
-            position: absolute;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            color: white;
-            top: 25px;
-        }
-    
-         /* New styles for timer and popup */
-         #timer {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-family: Arial, sans-serif;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
-            border-radius: 5px;
-        }
-
-        #game-over-popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-        }
-
-        .popup-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgb(135, 135, 135);
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .popup-content h2 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-
-        .popup-content button {
-            font-size: 18px;
-            padding: 10px 20px;
-            margin: 0 10px;
-            cursor: pointer;
-        }
-
-        #modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(44, 44, 44, 0.9);
-  padding: 20px;
-  border-radius: 10px;
-  display: none;
-  color: white;
-  z-index: 1000;
-}
-
-#modal button {
-  display: block;
-  width: 200px;
-  margin: 10px auto;
-  padding: 10px;
-  background-color: #4a4a4a;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-#modal button:hover {
-  background-color: #666;
-}
-
-#controls-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.95);
-  padding: 20px;
-  border-radius: 10px;
-  z-index: 2000;
-  color: white;
-}
-
-.controls-popup-content {
-  max-width: 400px;
-}
-
-.controls-list {
-  margin: 20px 0;
-}
-
-.control-item {
-  display: flex;
-  align-items: center;
-  margin: 10px 0;
-}
-
-.key {
-  background-color: #4a4a4a;
-  padding: 5px 10px;
-  border-radius: 5px;
-  margin-right: 15px;
-  min-width: 30px;
-  text-align: center;
-}
-
-.description {
-  flex-grow: 1;
-}
-
-#close-controls {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background-color: #4a4a4a;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-#close-controls:hover {
-  background-color: #666;
-}
-
-#loading-screen {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: #000000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-.loading-content {
-    text-align: center;
-    color: #ffffff;
-}
-
-.loading-bar-container {
-    width: 300px;
-    height: 20px;
-    background: #1a1a1a;
-    border-radius: 10px;
-    margin: 20px auto;
-    overflow: hidden;
-}
-
-.loading-bar {
-    width: 0%;
-    height: 100%;
-    background: #4CAF50;
-    transition: width 0.3s ease-out;
-}
-
-.loading-text {
-    font-size: 24px;
-    margin-bottom: 10px;
-    font-family: Arial, sans-serif;
-}
-
-.loading-status {
-    font-size: 16px;
-    color: #888;
-    margin-top: 10px;
-    font-family: Arial, sans-serif;
-}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="index.css">
+  <script src="src/audioControls.js"></script>
+  <title>Nitro - Start Menu</title>
 </head>
-<body>
-    <div id="threeJs"></div>
-    <button id="menuButton">Menu</button>
-
-    <div id="modalOverlay"></div>
-    <div id="modal">
-        <h2>Game Menu</h2>
-        <button id="resumeButton">Resume</button>
-        <button id="controlsButton">Controls</button>
-        <button id="muteButton" onclick="toggleMute()">Mute</button>
-        <button id="restart-button2">Restart</button>
-        <button id="quitButton">Quit Game</button>
-    </div>
-
-    <!-- New Controls Popup -->
-<div id="controls-popup" style="display: none;">
-    <div class="controls-popup-content">
-      <h3>Controls</h3>
-      <div class="controls-list">
-        <div class="control-item">
-          <span class="key">W</span>
-          <span class="description">Accelerate</span>
-        </div>
-        <div class="control-item">
-          <span class="key">S</span>
-          <span class="description">Reverse</span>
-        </div>
-        <div class="control-item">
-          <span class="key">A</span>
-          <span class="description">Turn Left</span>
-        </div>
-        <div class="control-item">
-          <span class="key">D</span>
-          <span class="description">Turn Right</span>
-        </div>
-        <div class="control-item">
-          <span class="key">O</span>
-          <span class="description">Headlights</span>
-        </div>
-        <div class="control-item">
-          <span class="key">V</span>
-          <span class="description">Camera View</span>
-        </div>
+<div id="canvas-container"></div>
+<div id="content">
+  <img src="./NitroLogo.png" alt="Nitro">
+  <div class="menu-container">
+    <div class="button-group">
+      <button id="start-btn">Level 1</button>
+      <button id="level2-btn">Level 2</button>
+      <button id="level3-btn">Level 3</button>
+      <div class="main-buttons">
+        <button id="tut-btn">Tutorial</button>
+        <button id="leaderboard-btn">Leaderboard</button>
       </div>
-      <button id="close-controls">Close</button>
+    </div>
+    <div class="volume-controls">
+      <button onclick="changeVolume(-0.1)">Volume -</button>
+      <span id="volumeDisplay">Volume: 100%</span>
+      <button onclick="changeVolume(0.1)">Volume +</button>
+      <button id="muteButton" onclick="toggleMute()">Mute</button>
     </div>
   </div>
-    
-    <div id="speedometer">
-        <div id="speed-display">0 km/h</div>
-        <div id="needle"></div>
-        <div class="speed-mark" style="transform: rotate(-135deg);"><div class="speed-text" style="transform: rotate(135deg);">0</div></div>
-        <div class="speed-mark" style="transform: rotate(-90deg);"><div class="speed-text" style="transform: rotate(90deg);">50</div></div>
-        <div class="speed-mark" style="transform: rotate(-45deg);"><div class="speed-text" style="transform: rotate(45deg);">100</div></div>
-        <div class="speed-mark" style="transform: rotate(0deg);"><div class="speed-text" style="transform: rotate(0deg);">150</div></div>
-        <div class="speed-mark" style="transform: rotate(45deg);"><div class="speed-text" style="transform: rotate(-45deg);">200</div></div>
-    </div>
+</div>
 
-    <div id="health-container" style="position: fixed; top: 20px; left: 20px; width: 200px; height: 20px; background-color: #333; border: 2px solid #000;">
-        <div id="health-bar" style="width: 100%; height: 100%; background-color: #2ecc71; transition: width 0.3s ease-in-out;"></div>
-      </div>
+<script type="module">
+  import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+  import { createDynamicSkybox, updateSkybox } from './src/skybox.js';
 
-    <div id="timer">02:00</div>
+  let scene, camera, renderer, skybox;
 
-    <div id="game-over-popup">
-        <div class="popup-content">
-            <h2>GAME OVER</h2>
-            <button id="restart-button">Restart</button>
-            <button id="main-menu-button">Main Menu</button>
-        </div>
-    </div>
+  function init() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
 
-    <div id="respawn-warning" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 0, 0, 0.5); padding: 20px; border-radius: 10px; color: white; font-weight: bold;">
-        Respawning...
-    </div>
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    <!-- <div id="debug-info" style="position: fixed; bottom: 20px; left: 20px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; font-family: monospace;">
-        <div>
-            Current Steer Value: <span id="debug-steer-value">0</span>
-        </div>
-        <div>
-            Current Steer Speed: <span id="debug-steer-speed">0</span>
-        </div>
-        <div>
-            Vehicle Speed: <span id="debug-vehicle-speed">0</span> m/s
-        </div>
-        <div>
-            Position: 
-            X: <span id="debug-pos-x">0</span>
-            Y: <span id="debug-pos-y">0</span>
-            Z: <span id="debug-pos-z">0</span>
-        </div>
-    </div> -->
-    <div id="loading-screen">
-      <div class="loading-content">
-          <div class="loading-text">Loading Game...</div>
-          <div class="loading-bar-container">
-              <div class="loading-bar"></div>
-          </div>
-          <div class="loading-status">Initializing...</div>
-      </div>
-    
-<script src="./src/main.js" type="module"></script>
-<script>document.getElementById('main-menu-button').addEventListener('click', () => {
-    console.log('Main menu pressed');
-    window.location.href = 'startPage.html';
-});
+    skybox = createDynamicSkybox(scene);
 
-// Get the new elements
-const controlsButton = document.getElementById('controlsButton');
-const controlsPopup = document.getElementById('controls-popup');
-const closeControlsButton = document.getElementById('close-controls');
+    window.addEventListener('resize', onWindowResize, false);
 
-// Show controls popup when Controls button is clicked
-controlsButton.addEventListener('click', () => {
-  controlsPopup.style.display = 'block';
-});
-
-// Hide controls popup when Close button is clicked
-closeControlsButton.addEventListener('click', () => {
-  controlsPopup.style.display = 'none';
-});
-
-// Close controls popup when clicking outside
-window.addEventListener('click', (event) => {
-  if (event.target === controlsPopup) {
-    controlsPopup.style.display = 'none';
+    animate();
   }
-});
-  </script>
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    updateSkybox(skybox, performance.now() / 1000);
+    renderer.render(scene, camera);
+  }
+
+  init();
+
+  // Add button functionality
+  document.getElementById('start-btn').addEventListener('click', () => {
+    console.log('Start button clicked');
+    window.location.href = 'level1.html';
+    // Add your start game logic here
+  });
+
+  document.getElementById('level2-btn').addEventListener('click', () => {
+    console.log('lvl 2 button clicked');
+    window.location.href = 'level2.html';
+    // Add your start game logic here
+  });
+
+  document.getElementById('level3-btn').addEventListener('click', () => {
+    console.log('lvl 3 button clicked');
+    window.location.href = 'level3.html';
+    // Add your start game logic here
+  });
+
+  document.getElementById('tut-btn').addEventListener('click', () => {
+    console.log('tut button clicked');
+    window.location.href = 'tutorial.html';
+    // Add your start game logic here
+  })
+
+  document.getElementById('leaderboard-btn').addEventListener('click', () => {
+    window.location.href = 'leaderBoard.html';
+  });
+
+  async function fetchLeaderboardData() {
+    try {
+      const response = await fetch('http://localhost:5174/api/leaderBoard');
+      if (!response.ok) {
+        throw new Error('Failed to fetch leaderboard data');
+      }
+      const data = await response.json();
+      return data.message;
+    } catch (error) {
+      console.error('Error fetching leaderboard data:', error);
+      return [];
+    }
+  }
+
+  function updateLeaderboardDisplay() {
+    const leaderboardList = document.getElementById('leaderboard-list');
+    if (!leaderboardList) return; // Exit if not on leaderboard page
+
+    leaderboardList.innerHTML = '';
+
+    leaderboard.sort((a, b) => b.score - a.score);
+
+    leaderboard.forEach((player, index) => {
+      const li = document.createElement('li');
+      li.textContent = `${index + 1}. ${player.name}: ${player.score}`;
+      leaderboardList.appendChild(li);
+    });
+  }
+
+
+</script>
 </body>
+
 </html>
