@@ -25,4 +25,4 @@ jobs:
         run: |
           sshpass -e ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
             sonsite@lamp.ms.wits.ac.za \
-            "chmod -R 755 ~/public_html && sudo chown -R sonsite:www-data ~/public_html"
+            "chmod -R 755 ~/public_html"
