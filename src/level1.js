@@ -9,7 +9,7 @@ import { BuildingLoader } from './loadBuilding.js';
 import { WastelandStoreLoader } from './loadWastelandStore.js';
 import { GraffitiWallLoader } from './loadGraffitiWall.js';
 import { MilitaryBaseLoader } from './abandonedMilitaryBase.js';
-import carModel from './models/armor_truck.glb';
+const carModel = 'src/models/armor_truck.glb';
 import wastelandStoreModel from './models/wasteland_stores.glb';
 import buildingModel from './models/building.glb';
 import graffitiWallModel from './models/ghetto_hood_graffiti_detroit_building_1.glb';
