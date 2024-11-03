@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class ArrowLoader {
-    constructor(scene) {
+    constructor(scene, loadingManager) {
         this.scene = scene;
-        this.loader = new GLTFLoader();
+        this.loader = new GLTFLoader(loadingManager);
         this.arrowSigns = [];
     }
 

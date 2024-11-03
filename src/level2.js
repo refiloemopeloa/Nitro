@@ -387,18 +387,16 @@ if (WebGL.isWebGL2Available()) {
 
     function startGame() {
         gameOver = false;
-        gameTimer = 1200;
+        gameTimer = 60;
         frameCounter = 0;
-        carHealth = MAX_HEALTH; // Reset health
+        carHealth = MAX_HEALTH;
         lastCollisionTime = 0;
-        updateHealthBar(); // Initialize health bar
+        updateHealthBar();
         updateTimerDisplay();
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
-            gameTimer = 1200; // in seconds
-            frameCounter = 0;
-            updateTimerDisplay();
+            wallLoader.initializeTimer(); // Add this line
             console.log('Game started!');
         }
     }
@@ -740,7 +738,7 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl2', loadingManager);
+    const wallLoader = new WallLoader(scene, world, 'lvl2', loadingManager, 60);
     wallLoader.createWall(
         { x: -90, y: 33, z: -30 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
@@ -748,12 +746,18 @@ let invulnerabilityEndTime = 0;
 
     // Create checkpoints at various positions
     checkpointLoader.createCheckpoint(
-        { x: 100, y: 2, z: 0 }, // position
-        { x: 10, y: 2, z: -10 }   // size
+        { x: -4, y: 2, z: -5 }, // position
+        { x: 2, y: 20, z: 40 }   // size
     );
 
-    // To get current checkpoint position:
-    const currentCheckpoint = checkpointLoader.getCurrentCheckpoint();
+     /// Create boundaries
+     boundLoader.createBound(
+        { x: 48, y: 20, z: -6 }, // position
+        { x: 6, y: 6, z: 10 }
+    );
+
+    
+
 
     // Cannon debugger
     const cannonDebugger = new CannonDebugger(scene, world);

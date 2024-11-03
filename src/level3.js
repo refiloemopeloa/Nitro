@@ -28,7 +28,7 @@ import { RubbleLoader } from './rubbleLoader.js';
 import { CarAudioManager } from './carAudioManager.js';
 import { CheckpointLoader } from './loadCheckpoint.js';
 import { BlockLoader } from './block.js';  // Add this import block class
-import TriggerSystem from './triggerSystem.js'; 
+import TriggerSystem from './triggerSystem.js';
 import blockModel from './models/road_block_a.glb';   // Add your block model path
 import { ArrowLoader } from './loadArrowSign.js';
 import arrowModel from './models/GreenArrowIcon.glb';
@@ -44,14 +44,14 @@ if (WebGL.isWebGL2Available()) {
     const loadingBar = document.querySelector('.loading-bar');
     const loadingStatus = document.querySelector('.loading-status');
 
-    loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
+    loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
         const progress = (itemsLoaded / itemsTotal) * 100;
         loadingBar.style.width = progress + '%';
         loadingStatus.textContent = `Loading assets... ${Math.round(progress)}%`;
     };
 
 
-    loadingManager.onError = function(url) {
+    loadingManager.onError = function (url) {
         console.error('Error loading:', url);
         loadingStatus.textContent = 'Error loading game assets';
         loadingStatus.style.color = '#ff0000';
@@ -153,11 +153,15 @@ if (WebGL.isWebGL2Available()) {
     // });
 
     const checkpointLoader = new CheckpointLoader(scene, world, loadingManager);
-    const boundLoader = new BoundLoader(scene, world, () => {
+    const boundLoader = new BoundLoader(scene, world, loadingManager, () => {
         if (vehicle) {  // Make sure vehicle exists
             respawnCar(performance.now());  // Use performance.now() if time isn't available
         }
     });
+
+    // Initialize BlockLoader and TriggerSystem
+    const blockLoader = new BlockLoader(scene, world, groundMaterial, loadingManager);
+    const triggerSystem = new TriggerSystem(scene, blockLoader, loadingManager);
 
     // Variables for track creation
     let trackEnd = new THREE.Vector3(0, 0, 0);
@@ -169,18 +173,18 @@ if (WebGL.isWebGL2Available()) {
     let lastTime = 0;
     let accumulatedTime = 0;
 
-//     let isUpsideDown = false;
-// let upsideDownStartTime = 0;
-// const RESPAWN_DELAY = 2000; // 2 seconds in milliseconds
-// const UPSIDE_DOWN_THRESHOLD = -0.5; // Threshold for considering the car upside down
-// const TRACK_BOUNDS = {
-//     minX: -100,
-//     maxX: 400,
-//     minZ: -250,
-//     maxZ: 150,
-//     minY: -10, // If car falls below this Y value, consider it off-track
-// };
-// const START_POSITION = { x: 0, y: 2, z: 0 };
+    //     let isUpsideDown = false;
+    // let upsideDownStartTime = 0;
+    // const RESPAWN_DELAY = 2000; // 2 seconds in milliseconds
+    // const UPSIDE_DOWN_THRESHOLD = -0.5; // Threshold for considering the car upside down
+    // const TRACK_BOUNDS = {
+    //     minX: -100,
+    //     maxX: 400,
+    //     minZ: -250,
+    //     maxZ: 150,
+    //     minY: -10, // If car falls below this Y value, consider it off-track
+    // };
+    // const START_POSITION = { x: 0, y: 2, z: 0 };
 
     // Menu functionality
     const menuButton = document.getElementById('menuButton');
@@ -279,9 +283,9 @@ if (WebGL.isWebGL2Available()) {
             groundBody.quaternion.setFromEuler(ax, ay, az);
             groundBody.position.set(x, y, z);
             world.addBody(groundBody);
-    
+
             const floorGeometry = new THREE.BoxGeometry(size.x * 2, size.y * 2, size.z * 2);
-            
+
             // Use loading manager for texture
             const concreteATexture = new THREE.TextureLoader(loadingManager).load(
                 './src/assets/textures/concreteA.png',
@@ -291,10 +295,10 @@ if (WebGL.isWebGL2Available()) {
                     });
                     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
                     scene.add(floor);
-    
+
                     const trackDir = new CANNON.Vec3(-1, 0, 0);
                     groundBody.quaternion.vmult(trackDir, trackDir);
-    
+
                     floor.position.copy(groundBody.position);
                     floor.quaternion.copy(groundBody.quaternion);
                     resolve();
@@ -315,86 +319,86 @@ if (WebGL.isWebGL2Available()) {
                 const buildingSize = new CANNON.Vec3(20, 16, 20);
                 const buildingAScale = new THREE.Vector3(1.7, 2, 2.5);
                 return buildingLoader.loadBuilding(buildingModel, x, y, z, angleY, buildingSize, buildingAScale);
-    
+
             case 1:
                 const wallSize = new CANNON.Vec3(10, 22, 40);
                 return graffitiWallLoader.loadGraffitiWall(graffitiWallModel, x, y, z, angleY, wallSize);
-    
+
             case 2:
                 const baseSize = new CANNON.Vec3(20, 20, 13);
                 return militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize);
-    
+
             case 3:
                 const storeSize = new CANNON.Vec3(40, 16, 14.5);
                 return wastelandStoreLoader.loadWastelandStore(wastelandStoreModel, x, y, z, angleY, storeSize);
-    
+
             default:
                 return Promise.resolve();
         }
     }
 
-    
 
-    async function addAllBuildingsLvl1(){
+
+    async function addAllBuildingsLvl1() {
         // creating map
         const sceneryPromises = [
-    addScenery(-40, 0, 0, 0, 1),
-    addScenery(-40, 0, -40, -0.01, 0),
-    addScenery(-40, 0, 40, 0.01, 0),
-    addScenery(0, 0, -40, 0, 3),
-    addScenery(0, 0, 40, 0, 0),
-    addScenery(40, 0, -40, 0, 0),
-    addScenery(40, 0, 40, 0, 0),
+            addScenery(-40, 0, 0, 0, 1),
+            addScenery(-40, 0, -40, -0.01, 0),
+            addScenery(-40, 0, 40, 0.01, 0),
+            addScenery(0, 0, -40, 0, 3),
+            addScenery(0, 0, 40, 0, 0),
+            addScenery(40, 0, -40, 0, 0),
+            addScenery(40, 0, 40, 0, 0),
 
-    addScenery(80, 0, -50, 0.1, 3),
-    addScenery(100, 0, -80, 0, 0),
-    addScenery(140, 0, -60, 0, 2),
-    addScenery(150, 0, -10, 0.5, 0),
-    addScenery(180, 0, -80, 0, 0),
-    addScenery(220, 0, -60, -0.4, 0),
-    addScenery(260, 0, -45, -0.4, 0),
-    addScenery(300, 0, -30, 0.5, 0),
-    addScenery(320, 0, 0, 0.1, 0),
+            addScenery(80, 0, -50, 0.1, 3),
+            addScenery(100, 0, -80, 0, 0),
+            addScenery(140, 0, -60, 0, 2),
+            addScenery(150, 0, -10, 0.5, 0),
+            addScenery(180, 0, -80, 0, 0),
+            addScenery(220, 0, -60, -0.4, 0),
+            addScenery(260, 0, -45, -0.4, 0),
+            addScenery(300, 0, -30, 0.5, 0),
+            addScenery(320, 0, 0, 0.1, 0),
 
-    addScenery(150, 0, 40, 0, 0),
-    addScenery(190, 0, 10, 0, 2),
+            addScenery(150, 0, 40, 0, 0),
+            addScenery(190, 0, 10, 0, 2),
 
-    addScenery(80, 0, 80, 0, 0),
-    addScenery(120, 0, 120, 0, 2),
-    addScenery(160, 0, 120, 0, 2),
-    addScenery(200, 0, 120, 0, 0),
-    addScenery(240, 0, 120, 0, 0),
-    addScenery(280, 0, 120, 0, 2),
-    addScenery(320, 0, 120, 0, 0),
-    addScenery(360, 0, 110, 0.3, 0),
-    addScenery(390, 0, 90, 1.4, 0),
-    addScenery(400, 0, 40, 0, 0),
+            addScenery(80, 0, 80, 0, 0),
+            addScenery(120, 0, 120, 0, 2),
+            addScenery(160, 0, 120, 0, 2),
+            addScenery(200, 0, 120, 0, 0),
+            addScenery(240, 0, 120, 0, 0),
+            addScenery(280, 0, 120, 0, 2),
+            addScenery(320, 0, 120, 0, 0),
+            addScenery(360, 0, 110, 0.3, 0),
+            addScenery(390, 0, 90, 1.4, 0),
+            addScenery(400, 0, 40, 0, 0),
 
-    addScenery(230, 0, 40, 0, 3),
-    addScenery(270, 0, 40, 0, 2),
-    addScenery(320, 0, 40, 0, 0),
+            addScenery(230, 0, 40, 0, 3),
+            addScenery(270, 0, 40, 0, 2),
+            addScenery(320, 0, 40, 0, 0),
 
-    addScenery(380, 0, 0, 0, 2),
-    addScenery(380, 0, -40, 0, 0),
-    addScenery(380, 0, -80, 0, 0),
-    addScenery(380, 0, -120, 0, 0),
-    addScenery(380, 0, -160, 0, 1),
-    addScenery(380, 0, -200, 0, 0),
+            addScenery(380, 0, 0, 0, 2),
+            addScenery(380, 0, -40, 0, 0),
+            addScenery(380, 0, -80, 0, 0),
+            addScenery(380, 0, -120, 0, 0),
+            addScenery(380, 0, -160, 0, 1),
+            addScenery(380, 0, -200, 0, 0),
 
-    addScenery(380, 0, -240, 0, 0),
-    addScenery(340, 0, -240, 0, 0),
-    addScenery(300, 0, -240, 0, 2),
-    addScenery(260, 0, -240, 0, 0),
-    addScenery(220, 0, -250, 0, 2),
-    addScenery(180, 0, -250, 0, 3),
-    addScenery(140, 0, -230, 0, 0),
-    addScenery(100, 0, -250, 0, 0),
+            addScenery(380, 0, -240, 0, 0),
+            addScenery(340, 0, -240, 0, 0),
+            addScenery(300, 0, -240, 0, 2),
+            addScenery(260, 0, -240, 0, 0),
+            addScenery(220, 0, -250, 0, 2),
+            addScenery(180, 0, -250, 0, 3),
+            addScenery(140, 0, -230, 0, 0),
+            addScenery(100, 0, -250, 0, 0),
 
-    addScenery(280, 0, -170, 0, 0),
-    addScenery(240, 0, -170, 0, 0),
-    addScenery(200, 0, -160, -0.1, 2),
-    addScenery(80, 0, -160, 0, 0),
-    addScenery(140, 0, -115, -0.4, 2),
+            addScenery(280, 0, -170, 0, 0),
+            addScenery(240, 0, -170, 0, 0),
+            addScenery(200, 0, -160, -0.1, 2),
+            addScenery(80, 0, -160, 0, 0),
+            addScenery(140, 0, -115, -0.4, 2),
         ];
 
         loadingPromises.push(...sceneryPromises);
@@ -424,27 +428,27 @@ if (WebGL.isWebGL2Available()) {
         }
     });
 
-   
+
 
     const blockA = new CANNON.Vec3(20, 5, 25);
     const blockB = new CANNON.Vec3(20, 5, 45);
 
     const blockPromises = [
-    addBlock(140, -3, 85, 0, 0, 0.15, blockA),
-    addBlock(170, 3, 85, 0, 0, 0.25, blockA),
-    addBlock(208.15, 7.79, 85, 0, 0, 0, blockA),
+        addBlock(140, -3, 85, 0, 0, 0.15, blockA),
+        addBlock(170, 3, 85, 0, 0, 0.25, blockA),
+        addBlock(208.15, 7.79, 85, 0, 0, 0, blockA),
 
-    addBlock(255, -3.6, 85, 0, 0, -0.5, blockA),
-    addBlock(265, -4.4, 85, 0, 0, -0.3, blockA),
-    addBlock(275, -4.5, 85, 0, 0, -0.1, blockA),
+        addBlock(255, -3.6, 85, 0, 0, -0.5, blockA),
+        addBlock(265, -4.4, 85, 0, 0, -0.3, blockA),
+        addBlock(275, -4.5, 85, 0, 0, -0.1, blockA),
 
-    addBlock(362, -4.4, 50, 0, 0, 0.3, blockB),
+        addBlock(362, -4.4, 50, 0, 0, 0.3, blockB),
 
-];
-loadingPromises.push(...blockPromises);
-    
+    ];
+    loadingPromises.push(...blockPromises);
 
-    
+
+
 
     //Rubble placement for the road
     rubbleLoader.addRubbleCluster(new THREE.Vector3(120, 0, 80), 8, 15);
@@ -490,24 +494,22 @@ loadingPromises.push(...blockPromises);
         gameOver = false;
         gameTimer = 80;
         frameCounter = 0;
-        carHealth = MAX_HEALTH; // Reset health
+        carHealth = MAX_HEALTH;
         lastCollisionTime = 0;
-        updateHealthBar(); // Initialize health bar
+        updateHealthBar();
         updateTimerDisplay();
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
-            gameTimer = 80; // in seconds
-            frameCounter = 0;
-            updateTimerDisplay();
+            wallLoader.initializeTimer(); // Add this line
             console.log('Game started!');
         }
     }
 
     // Start the animation loop only after loading is complete
-    loadingManager.onLoad = function() {
+    loadingManager.onLoad = function () {
         loadingStatus.textContent = 'Loading additional assets...';
-        
+
         Promise.resolve() // Start a promise chain
             .then(() => addAllBuildingsLvl1()) // Add buildings first
             .then(() => Promise.all(loadingPromises)) // Then wait for all other promises
@@ -557,44 +559,44 @@ loadingPromises.push(...blockPromises);
         console.log('Main menu button clicked');
     });
 
-    
+
     // Load the car
     const initialCarPosition = new CANNON.Vec3(10, 2, -200);
     //const initialCarPosition = new CANNON.Vec3(341, 1, -36);
-const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera, loadingManager);
-let carObject, vehicle, fireEffect1, fireEffect2;
+    const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera, loadingManager);
+    let carObject, vehicle, fireEffect1, fireEffect2;
 
-carLoader.loadCar(carModel, initialCarPosition).then(({
-    carObject: loadedCarObject,
-    vehicle: loadedVehicle,
-    FrontWheel_L,
-    FrontWheel_R,
-    BackWheels,
-    emitter1,
-    emitter2
+    carLoader.loadCar(carModel, initialCarPosition).then(({
+        carObject: loadedCarObject,
+        vehicle: loadedVehicle,
+        FrontWheel_L,
+        FrontWheel_R,
+        BackWheels,
+        emitter1,
+        emitter2
     }) => {
         carObject = loadedCarObject;
         vehicle = loadedVehicle;
 
         // Store initial wheel offsets
-    const wheelOffsets = [
-        new CANNON.Vec3(-1.9, -0.5, 0.875),  // Front left
-        new CANNON.Vec3(-1.9, -0.5, -0.875), // Front right
-        new CANNON.Vec3(1.2, -0.5, 0.875),   // Back left
-        new CANNON.Vec3(1.2, -0.5, -0.875)   // Back right
-    ];
-    vehicle.wheelOffsets = wheelOffsets;  // Store offsets on vehicle object
+        const wheelOffsets = [
+            new CANNON.Vec3(-1.9, -0.5, 0.875),  // Front left
+            new CANNON.Vec3(-1.9, -0.5, -0.875), // Front right
+            new CANNON.Vec3(1.2, -0.5, 0.875),   // Back left
+            new CANNON.Vec3(1.2, -0.5, -0.875)   // Back right
+        ];
+        vehicle.wheelOffsets = wheelOffsets;  // Store offsets on vehicle object
 
         // Add collision event listener to the chassis body
         vehicle.chassisBody.addEventListener('collide', (event) => {
             // Check if the collision is with a checkpoint
             const otherBody = event.contact.bi === vehicle.chassisBody ? event.contact.bj : event.contact.bi;
-            
+
             // Skip damage if the other body is a checkpoint or if invulnerable
             if (isInvulnerable || otherBody.isTrigger) {
                 return;
             }
-        
+
             const relativeVelocity = event.contact.getImpactVelocityAlongNormal();
             // Only register significant collisions
             if (Math.abs(relativeVelocity) > 5) {
@@ -648,8 +650,8 @@ carLoader.loadCar(carModel, initialCarPosition).then(({
     const MOVEMENT_THRESHOLD = 0.1; // Minimum speed to be considered "moving"
 
     const INVULNERABILITY_DURATION = 3000; // 3 seconds of invulnerability after respawn
-let isInvulnerable = false;
-let invulnerabilityEndTime = 0;
+    let isInvulnerable = false;
+    let invulnerabilityEndTime = 0;
 
     function showRespawnWarning() {
         const warning = document.getElementById('respawn-warning');
@@ -663,15 +665,15 @@ let invulnerabilityEndTime = 0;
 
     function respawnCar(time) {
         showRespawnWarning();
-        
+
         // Get current checkpoint
         const checkpoint = checkpointLoader.getCurrentCheckpoint();
         checkpoint.y += 1;
-        
+
         // Set specific forward-facing orientation
         const euler = new THREE.Euler(0, -Math.PI / 2, 0);
         const quaternion = new THREE.Quaternion().setFromEuler(euler);
-        
+
         // Reset chassis
         vehicle.chassisBody.position.copy(checkpoint);
         vehicle.chassisBody.quaternion.copy(quaternion);
@@ -680,7 +682,7 @@ let invulnerabilityEndTime = 0;
         vehicle.chassisBody.force.set(0, 0, 0);
         vehicle.chassisBody.torque.set(0, 0, 0);
         vehicle.chassisBody.collisionResponse = false;
-    
+
         // Reset wheels with proper orientation
         vehicle.wheelBodies.forEach((wheel, index) => {
             wheel.velocity.set(0, 0, 0);
@@ -688,37 +690,37 @@ let invulnerabilityEndTime = 0;
             wheel.force.set(0, 0, 0);
             wheel.torque.set(0, 0, 0);
             wheel.collisionResponse = false;
-            
+
             // Reset wheel quaternion to match chassis orientation
             wheel.quaternion.copy(quaternion);
-            
+
             // Convert CANNON.Vec3 to THREE.Vector3, apply rotation, and convert back
             const cannonOffset = vehicle.wheelOffsets[index];
             const threeOffset = new THREE.Vector3(cannonOffset.x, cannonOffset.y, cannonOffset.z);
             threeOffset.applyQuaternion(quaternion);
-            
+
             // Apply rotated offset to wheel position
             wheel.position.copy(checkpoint);
             wheel.position.x += threeOffset.x;
             wheel.position.y += threeOffset.y;
             wheel.position.z += threeOffset.z;
         });
-    
+
         // Update visual position
         carObject.position.copy(checkpoint);
         carObject.quaternion.copy(quaternion);
-    
+
         // Reset last movement time
         lastMovementTime = time;
-    
+
         // Restore full health
         carHealth = MAX_HEALTH;
         updateHealthBar();
-    
+
         // Enable invulnerability
         isInvulnerable = true;
         invulnerabilityEndTime = time + INVULNERABILITY_DURATION;
-    
+
         // Visual feedback
         if (carObject) {
             carObject.traverse((child) => {
@@ -736,12 +738,12 @@ let invulnerabilityEndTime = 0;
                 }
             });
         }
-    
+
         // Clear any existing timeout
         if (collisionTimeout) {
             clearTimeout(collisionTimeout);
         }
-    
+
         // Re-enable collisions after 500ms
         collisionTimeout = setTimeout(() => {
             vehicle.chassisBody.collisionResponse = true;
@@ -749,10 +751,10 @@ let invulnerabilityEndTime = 0;
                 wheel.collisionResponse = true;
             });
         }, 300);
-    
+
         console.log('Car respawned at checkpoint');
     }
-    
+
     // Add this function to restore normal car appearance
     function restoreCarAppearance() {
         if (carObject) {
@@ -783,20 +785,20 @@ let invulnerabilityEndTime = 0;
 
     // Add this function to handle damage
     function damageVehicle(damage) {
-    // If invulnerable, don't take damage
-    if (isInvulnerable) {
-        return;
-    }
+        // If invulnerable, don't take damage
+        if (isInvulnerable) {
+            return;
+        }
 
-    carHealth = Math.max(0, carHealth - damage);
-    lastCollisionTime = Date.now();
-    updateHealthBar();
+        carHealth = Math.max(0, carHealth - damage);
+        lastCollisionTime = Date.now();
+        updateHealthBar();
 
-    if (carHealth <= 0) {
-        gameOver = true;
-        showGameOverPopup();
+        if (carHealth <= 0) {
+            gameOver = true;
+            showGameOverPopup();
+        }
     }
-}
 
     // Add this function to handle health regeneration
     function regenerateHealth(currentTime) {
@@ -805,8 +807,8 @@ let invulnerabilityEndTime = 0;
             updateHealthBar();
         }
     }
-    
-    const boostLoader = new BoostLoader(scene, world);
+
+    const boostLoader = new BoostLoader(scene, world, loadingManager);
     const boostPositions = [
         // add boost items here
         //new THREE.Vector3(20, 2, 10),
@@ -823,7 +825,7 @@ let invulnerabilityEndTime = 0;
         console.error('Failed to load boost model:', error);
     });
 
-    const crateLoader = new CrateLoader(scene, world, camera);
+    const crateLoader = new CrateLoader(scene, world, camera, loadingManager);
     const cratePositions = [
         // Add crate positions here
         new THREE.Vector3(0, 2, 2),
@@ -860,7 +862,7 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl3');
+    const wallLoader = new WallLoader(scene, world, 'lvl3', loadingManager, 80);
     wallLoader.createWall(
         { x: 10, y: 0, z: 0 }, // Position - finish line
         { x: 2, y: 50, z: 80 }    // Size
@@ -877,7 +879,7 @@ let invulnerabilityEndTime = 0;
     );
 
     // add arrors
-    const arrowLoader = new ArrowLoader(scene);
+    const arrowLoader = new ArrowLoader(scene, loadingManager);
 
     // Multiple arrows at once
     const flip = Math.PI;
@@ -960,97 +962,93 @@ arrowLoader.loadMultipleArrows(arrowModel, arrowConfigs);
     });
 
 
-    // Initialize BlockLoader and TriggerSystem
-const blockLoader = new BlockLoader(scene, world, groundMaterial);
-const triggerSystem = new TriggerSystem(scene, blockLoader);
-
-//trigger zones
-const triggers = [
-    {
-        position: { x: 110, z: 38 },
-        dropPositions: [
-            { x: 100, z: 30 },
-            { x: 90, z: 15 },
-            { x: 110, z: 20 }
-        ]
-    },
-    {
-        position: { x: 290, z: 82 },
-        dropPositions: [
-             { x: 330, z: 80 },
-            { x: 340, z: 90 },
-            { x: 350, z: 70 }
-        ]
-    },
-    {
-        position: { x: 345, z: -60 },
-        dropPositions: [
-            { x: 315, z: -90 },
-            { x: 335, z: -100 },
-            { x: 325, z: -120 }
-        ]
-    }
-];
-
-triggers.forEach(trigger => {
-    triggerSystem.addTrigger(
-        trigger.position,
-        2, // radius of trigger zone
+    //trigger zones
+    const triggers = [
         {
-            model: blockModel,
-            size: { x: 2, y: 2, z: 2 },
-            scale: 1
+            position: { x: 110, z: 38 },
+            dropPositions: [
+                { x: 100, z: 30 },
+                { x: 90, z: 15 },
+                { x: 110, z: 20 }
+            ]
         },
-        trigger.dropPositions
-    );
-});
+        {
+            position: { x: 290, z: 82 },
+            dropPositions: [
+                { x: 330, z: 80 },
+                { x: 340, z: 90 },
+                { x: 350, z: 70 }
+            ]
+        },
+        {
+            position: { x: 345, z: -60 },
+            dropPositions: [
+                { x: 315, z: -90 },
+                { x: 335, z: -100 },
+                { x: 325, z: -120 }
+            ]
+        }
+    ];
 
-// Add key handler for resetting triggers
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'r') {
-        triggerSystem.reset();
-        blockLoader.clearBlocks();
-    }
-});
+    triggers.forEach(trigger => {
+        triggerSystem.addTrigger(
+            trigger.position,
+            2, // radius of trigger zone
+            {
+                model: blockModel,
+                size: { x: 2, y: 2, z: 2 },
+                scale: 1
+            },
+            trigger.dropPositions
+        );
+    });
 
- // Add key handler for dropping blocks
- document.addEventListener('keydown', (event) => {
-     if (event.key === 'b') {
-         // Drop a single block at a random position near the car
-         if (carObject) {
-             const randomOffset = {
-                 x: ( - 1) * 20, // Random position within 20 units
-                 z: (1 - 0.5) * 20
-             };
-             
-             const dropPosition = {
-                 x: carObject.position.x + randomOffset.x,
-                 z: carObject.position.z + randomOffset.z
-             };
-             
-             blockLoader.loadBlock(blockModel, dropPosition, { x: 2, y: 2, z: 2 }, 1);
-         }
-     } else if (event.key === 'n') {
-         // Drop a pattern of blocks
-         if (carObject) {
-             const pattern = [
-                 [1, 1, 1],
-                 [1, 0, 1],
-                 [1, 1, 1]
-             ];
-             
-             const centerPosition = {
-                 x: carObject.position.x,
-                 z: carObject.position.z
-             };
-             
-             blockLoader.dropBlockPattern(blockModel, centerPosition, pattern, 4);
-         }
-     } else if (event.key === 'm') {
-         // Clear all blocks
-         blockLoader.clearBlocks();
-     }
- });
+    // Add key handler for resetting triggers
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'r') {
+            triggerSystem.reset();
+            blockLoader.clearBlocks();
+        }
+    });
+
+    // Add key handler for dropping blocks
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'b') {
+            // Drop a single block at a random position near the car
+            if (carObject) {
+                const randomOffset = {
+                    x: (- 1) * 20, // Random position within 20 units
+                    z: (1 - 0.5) * 20
+                };
+
+                const dropPosition = {
+                    x: carObject.position.x + randomOffset.x,
+                    z: carObject.position.z + randomOffset.z
+                };
+
+                blockLoader.loadBlock(blockModel, dropPosition, { x: 2, y: 2, z: 2 }, 1);
+            }
+        } else if (event.key === 'n') {
+            // Drop a pattern of blocks
+            if (carObject) {
+                const pattern = [
+                    [1, 1, 1],
+                    [1, 0, 1],
+                    [1, 1, 1]
+                ];
+
+                const centerPosition = {
+                    x: carObject.position.x,
+                    z: carObject.position.z
+                };
+
+                blockLoader.dropBlockPattern(blockModel, centerPosition, pattern, 4);
+            }
+        } else if (event.key === 'm') {
+            // Clear all blocks
+            blockLoader.clearBlocks();
+        }
+    });
 
     function animate(time) {
 
@@ -1243,15 +1241,15 @@ document.addEventListener('keydown', (event) => {
             }
 
             // Only check for respawn if game has started
-    if (isGameStarted && !gameOver) {
-        const timeSinceMovement = time - lastMovementTime;
-        const isUpsideDown = angleFromUp > Math.PI / 2; // More than 90 degrees from up
+            if (isGameStarted && !gameOver) {
+                const timeSinceMovement = time - lastMovementTime;
+                const isUpsideDown = angleFromUp > Math.PI / 2; // More than 90 degrees from up
 
-        if (isUpsideDown || timeSinceMovement > RESPAWN_DELAY) {
-            respawnCar(time);
-        }
-    }
-            
+                if (isUpsideDown || timeSinceMovement > RESPAWN_DELAY) {
+                    respawnCar(time);
+                }
+            }
+
             // Check if invulnerability should end
             if (isInvulnerable && time > invulnerabilityEndTime) {
                 isInvulnerable = false;
@@ -1280,7 +1278,7 @@ document.addEventListener('keydown', (event) => {
 
     }
 
-        
+
 
     function createGridTexture(groundSize) {
         const gridSize = 1;
