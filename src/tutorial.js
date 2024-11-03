@@ -964,8 +964,12 @@ let invulnerabilityEndTime = 0;
 
     // Create checkpoints at various positions
     checkpointLoader.createCheckpoint(
-        { x: 100, y: 2, z: 0 }, // position
-        { x: 10, y: 2, z: -10 }   // size
+        { x: -10, y: 2, z: -3 }, // position
+        { x: 2, y: 20, z: 40 }   // size
+    );
+    checkpointLoader.createCheckpoint(
+        { x: 122, y: 2, z: 74 }, // position
+        { x: 2, y: 20, z: 40 }   // size
     );
 
     // To get current checkpoint position:
