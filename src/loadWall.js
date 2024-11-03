@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class WallLoader {
-    constructor(scene, world, level, loadingManager, startTime = 80) {
+    constructor(scene, world, level, loadingManager, startTime = 80, onGameStateChange) {
         this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
@@ -15,6 +15,11 @@ export class WallLoader {
         this.wallLight = null;
         this.glowMesh = null;
         this.level = level;
+        this.onGameStateChange = onGameStateChange || (() => {}); // Callback for game state changes
+    }
+
+    setPauseState(isPaused) {
+        this.onGameStateChange(isPaused);
     }
 
     // Method to initialize timing when game starts
@@ -169,8 +174,7 @@ export class WallLoader {
             }
 
             winPopup.style.display = 'block';
-            isPaused = true;
-            controls.disable();
+            this.setPauseState(true);
 
         } catch (error) {
             console.error('Error handling wall collision:', error);
@@ -311,7 +315,6 @@ export class WallLoader {
         }
         winPopup.style.display = 'block';
         isPaused = true;
-            controls.disable(); //New change here
     }
 
     update(deltaTime) {
