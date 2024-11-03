@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="level.css">
     <script src="src/audioControls.js"></script>
     <script type="importmap">
         {
@@ -366,6 +366,15 @@
 
     <div id="respawn-warning" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 0, 0, 0.5); padding: 20px; border-radius: 10px; color: white; font-weight: bold;">
         Respawning...
+    </div>
+
+    <div id="loading-screen"></div>
+      <div class="loading-content">
+          <div class="loading-text">Loading Game...</div>
+          <div class="loading-bar-container">
+              <div class="loading-bar"></div>
+          </div>
+          <div class="loading-status">Initializing...</div>
     </div>
     
 <script src="./src/tutorial.js" type="module"></script>
