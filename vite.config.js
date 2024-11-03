@@ -9,6 +9,6 @@ export default defineConfig({
     assetsInlineLimit: 0,
   },
   server: {
-    open: '/startPage.html', // Specify the HTML file to open when running 'npm run dev'
+    open: '/index.html', // Specify the HTML file to open when running 'npm run dev'
   }
 })
