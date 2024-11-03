@@ -36,6 +36,13 @@
         }
     </style>
     <script src="src/audioControls.js"></script>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@v0.170.0/build/three.module.js"
+            }
+        }
+    </script>
 </head>
 <body>
     <div id="canvas-container2"></div>
@@ -69,7 +76,7 @@
     <button id="muteButton" class="mute-button">Mute</button>
 
     <script type="module">
-        import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+        import * as THREE from 'three';
         import { createDynamicSkybox, updateSkybox } from './src/skybox.js';
 
         let scene, camera, renderer, skybox;
