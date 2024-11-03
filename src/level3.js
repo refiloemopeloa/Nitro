@@ -880,25 +880,26 @@ let invulnerabilityEndTime = 0;
     const arrowLoader = new ArrowLoader(scene);
 
     // Multiple arrows at once
+    const flip = Math.PI;
 const arrowConfigs = [
     {
         position: { x: 78, y: 7, z: 0 },
-        rotation: { x: 0, y: Math.PI/2, z: 0 },
+        rotation: { x: 0, y: Math.PI/2 + flip + Math.PI/2, z: 0 },
         scale: 20.0
     },
     {
         position: { x: 360, y: 8, z:80 },
-        rotation: { x: 0, y: -Math.PI/2, z: 0 },
+        rotation: { x: 0, y: -Math.PI/2 + flip/2, z: 0 },
         scale: 20.0
     },
     {
         position: { x: 336, y: 8, z:-140 },
-        rotation: { x: 0, y: Math.PI*2, z: 0 },
+        rotation: { x: 0, y: Math.PI*2 + flip/2, z: 0 },
         scale: 20.0
     },
     {
         position: { x: 150, y: 8, z:-130 },
-        rotation: { x: 0, y: -Math.PI/3, z: 0 },
+        rotation: { x: 0, y: -Math.PI/3 + flip + Math.PI/4, z: 0 },
         scale: 20.0
     }
 ];
