@@ -46,12 +46,12 @@ void main() {
 export function createDynamicSkybox(scene) {
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        './assets/mystic/mystic_ft.jpg',
-        './assets/mystic/mystic_bk.jpg',
-        './assets/mystic/mystic_up.jpg',
-        './assets/mystic/mystic_dn.jpg',
-        './assets/mystic/mystic_rt.jpg',
-        './assets/mystic/mystic_lf.jpg'
+        'public_html/assets/mystic/mystic_ft.jpg',
+        'public_html/assets/mystic/mystic_bk.jpg',
+        'public_html/assets/mystic/mystic_up.jpg',
+        'public_html/assets/mystic/mystic_dn.jpg',
+        'public_html/assets/mystic/mystic_rt.jpg',
+        'public_html/assets/mystic/mystic_lf.jpg'
     ]);
 
     const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
