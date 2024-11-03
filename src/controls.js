@@ -67,6 +67,7 @@ export class Controls {
     }
     
     activateBoost() {
+        if (this.boost) return; // Prevent multiple activations
         this.boost = true;
         clearTimeout(this.boostTimer);
         this.boostTimer = setTimeout(() => {
