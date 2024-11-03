@@ -615,7 +615,7 @@ if (WebGL.isWebGL2Available()) {
 
     function startGame() {
         gameOver = false;
-        gameTimer = 80;
+        gameTimer = 1200;
         frameCounter = 0;
         carHealth = MAX_HEALTH;
         lastCollisionTime = 0;
@@ -685,7 +685,7 @@ if (WebGL.isWebGL2Available()) {
 
 
     // Load the car
-    const initialCarPosition = new CANNON.Vec3(-20, 1, -3);
+    const initialCarPosition = new CANNON.Vec3(345, 2, -120);
     //const initialCarPosition = new CANNON.Vec3(341, 1, -36);
     const carLoader = new CarLoader(scene, world, carMaterial, wheelMaterial, camera, loadingManager);
     let carObject, vehicle, fireEffect1, fireEffect2;
@@ -987,13 +987,13 @@ if (WebGL.isWebGL2Available()) {
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl1', loadingManager, 80, (pauseState) => {
+    const wallLoader = new WallLoader(scene, world, 'lvl1', loadingManager, 1200, (pauseState) => {
         isPaused = pauseState;
     });
-    wallLoader.createWall(
-        { x: 70, y: 2, z: -200 }, // Position - finish line
-        { x: 2, y: 50, z: 80 }    // Size
-    );
+    // wallLoader.createWall(
+    //     { x: 70, y: 2, z: -200 }, // Position - finish line
+    //     { x: 2, y: 50, z: 80 }    // Size
+    // );
 
     // Create checkpoints at various positions
     checkpointLoader.createCheckpoint(
