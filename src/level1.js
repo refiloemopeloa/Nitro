@@ -9,30 +9,34 @@ import { BuildingLoader } from './loadBuilding.js';
 import { WastelandStoreLoader } from './loadWastelandStore.js';
 import { GraffitiWallLoader } from './loadGraffitiWall.js';
 import { MilitaryBaseLoader } from './abandonedMilitaryBase.js';
-const carModel = 'src/models/armor_truck.glb';
-import wastelandStoreModel from './models/wasteland_stores.glb';
-import buildingModel from './models/building.glb';
-import graffitiWallModel from './models/ghetto_hood_graffiti_detroit_building_1.glb';
-import militaryBaseModel from './models/post_apocalyptic_building_-_lowpoly.glb';
 import { createDynamicSkybox, updateSkybox } from './skybox';
 import CannonDebugger from 'cannon-es-debugger';
 import { BoostLoader } from './loadBoost.js';
-import boostModel from './models/atom.glb';
 import { getParticleSystem } from './getParticleSystem.js';
 import getLayer from './getLayer.js';
-import img from './img/smoke.png'
 import { WallLoader } from './loadWall.js';
 import { CrateLoader } from './loadCrate.js';
-import crateModel from './models/Crate.glb';
 import { RubbleLoader } from './rubbleLoader.js';
 import { CarAudioManager } from './carAudioManager.js';
 import { CheckpointLoader } from './loadCheckpoint.js';
 import { BlockLoader } from './block.js';  // Add this import block class
 import TriggerSystem from './triggerSystem.js';
-import blockModel from './models/road_block_a.glb';   // Add your block model path
 import { ArrowLoader } from './loadArrowSign.js';
-import arrowModel from './models/GreenArrowIcon.glb';
 import { BoundLoader } from './loadBound.js';
+
+// Images
+const img = 'src/img/smoke.png'
+
+// Models
+const boostModel = 'src/models/atom.glb';
+const crateModel = 'src/models/Crate.glb';
+const blockModel = 'src/models/road_block_a.glb';   // Add your block model path
+const arrowModel = 'src/models/GreenArrowIcon.glb';
+const carModel = 'src/models/armor_truck.glb';
+const wastelandStoreModel = 'src/models/wasteland_stores.glb';
+const buildingModel = 'src/models/building.glb';
+const graffitiWallModel = 'src/models/ghetto_hood_graffiti_detroit_building_1.glb';
+const militaryBaseModel = 'src/models/post_apocalyptic_building_-_lowpoly.glb';
 
 
 if (WebGL.isWebGL2Available()) {
