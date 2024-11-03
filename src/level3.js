@@ -223,7 +223,7 @@ if (WebGL.isWebGL2Available()) {
     }
 
     function quitGame() {
-        window.location.href = 'startPage.html';
+        window.location.href = 'index.html';
     }
 
     // Function to add road segments

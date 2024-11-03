@@ -166,7 +166,7 @@ export class WallLoader {
                 });
 
                 document.getElementById('win-main-menu-button').addEventListener('click', () => {
-                    window.location.href = 'startPage.html';
+                    window.location.href = 'index.html';
                 });
 
                 // Add styles...
