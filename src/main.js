@@ -414,7 +414,7 @@ const triggerSystem = new TriggerSystem(scene, blockLoader, loadingManager);
     //     }
     // }
 
-    function addAllBuildingsLvl1(){
+    async function addAllBuildingsLvl1(){
         // creating map
         const sceneryPromises = [
     addScenery(-40, 0, 0, 0, 1),
@@ -476,9 +476,17 @@ const triggerSystem = new TriggerSystem(scene, blockLoader, loadingManager);
     addScenery(140, 0, -115, -0.4, 2),
         ];
         loadingPromises.push(...sceneryPromises);
+        try {
+            // Wait for all scenery to load
+            await Promise.all(sceneryPromises);
+            console.log('All buildings loaded successfully');
+            return Promise.resolve(); // Explicitly return a resolved promise
+        } catch (error) {
+            console.error('Error loading buildings:', error);
+            return Promise.reject(error); // Return a rejected promise if there's an error
+        }
     }
 
-    addAllBuildingsLvl1();
 
 
 
@@ -623,8 +631,9 @@ const triggerSystem = new TriggerSystem(scene, blockLoader, loadingManager);
     loadingManager.onLoad = function() {
         loadingStatus.textContent = 'Loading additional assets...';
         
-        // Wait for all loading promises to complete
-        Promise.all(loadingPromises)
+        Promise.resolve() // Start a promise chain
+            .then(() => addAllBuildingsLvl1()) // Add buildings first
+            .then(() => Promise.all(loadingPromises)) // Then wait for all other promises
             .then(() => {
                 loadingStatus.textContent = 'Starting game...';
                 setTimeout(() => {
@@ -634,7 +643,7 @@ const triggerSystem = new TriggerSystem(scene, blockLoader, loadingManager);
                 }, 1500);
             })
             .catch(error => {
-                console.error('Error loading assets:', error);
+                console.error('Error during loading:', error);
                 loadingStatus.textContent = 'Error loading game assets';
                 loadingStatus.style.color = '#ff0000';
             });
@@ -1378,10 +1387,10 @@ document.addEventListener('keydown', (event) => {
                 restoreCarAppearance();
             }
 
-            const position = vehicle.chassisBody.position;
-            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
-            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
-            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+            // const position = vehicle.chassisBody.position;
+            // document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            // document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            // document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
 
         }
 
