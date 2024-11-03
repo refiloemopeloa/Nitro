@@ -598,8 +598,9 @@ if (WebGL.isWebGL2Available()) {
             }
 
             const relativeVelocity = event.contact.getImpactVelocityAlongNormal();
+            const damageVelocity = 8
             // Only register significant collisions
-            if (Math.abs(relativeVelocity) > 5) {
+            if (Math.abs(relativeVelocity) > damageVelocity) {
                 const damage = Math.min(COLLISION_DAMAGE, Math.abs(relativeVelocity * 2));
                 damageVehicle(damage);
             }

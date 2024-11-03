@@ -266,7 +266,7 @@ if (WebGL.isWebGL2Available()) {
                 break;
     
             case 2:
-                const baseSize = new CANNON.Vec3(20, 21, 13);
+                const baseSize = new CANNON.Vec3(20, 21.07, 13);
                 promise = militaryBaseLoader.loadMilitaryBase(militaryBaseModel, x, y, z, angleY, baseSize);
                 break;
     
@@ -291,6 +291,13 @@ if (WebGL.isWebGL2Available()) {
     const pole = new CANNON.Vec3(1, 10, 1);
 
     const concreteATexture = new THREE.TextureLoader(loadingManager).load('./src/assets/textures/concreteA.png');
+    // concreteATexture.wrapS = THREE.RepeatWrapping;
+    // concreteATexture.wrapT = THREE.RepeatWrapping;
+    // concreteATexture.repeat.set(2, 2);
+    const concreteBTexture = new THREE.TextureLoader(loadingManager).load('./src/assets/textures/concreteA.png');
+    concreteBTexture.wrapS = THREE.RepeatWrapping;
+    concreteBTexture.wrapT = THREE.RepeatWrapping;
+    concreteBTexture.repeat.set(4, 1);
     const wood = new THREE.TextureLoader(loadingManager).load('./src/assets/textures/wood texture.png');
 
     async function addAllBuildingsLvl2() {
@@ -304,10 +311,10 @@ if (WebGL.isWebGL2Available()) {
         promises.push(addScenery(-42, 0, -30, 0, 0));
         promises.push(addScenery(-80, 0, -30, 0, 2));
         promises.push(addScenery(-100, 5, 0, 0, 1));
-        promises.push(addScenery(-80, -15.2, 40, 0, 2));
+        promises.push(addScenery(-80, -15.3, 40, 0, 2));
     
         // Add block promises
-        promises.push(addBlock(-20, 8, 30, 0, 0, 0, landscape, concreteATexture));
+        promises.push(addBlock(-20, 8, 30, 0, 0, 0, landscape, concreteBTexture));
         promises.push(addBlock(-80, 3, 0, 0, 0, 0, blockB, concreteATexture));
         promises.push(addBlock(-90, 7.5, 15.5, -0.3, 0, 0, blockA, concreteATexture));
         promises.push(addBlock(-42, -2.5, 0, 0, 0, -0.3, blockB, concreteATexture));
@@ -352,8 +359,8 @@ if (WebGL.isWebGL2Available()) {
     
 
     //Rubble placement for the road
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(-70, 8, 13), 5, 20);
-    rubbleLoader.addRubbleCluster(new THREE.Vector3(-75, 8, 15), 5, 20);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(-69, 8.5, 13), 5, 20);
+    rubbleLoader.addRubbleCluster(new THREE.Vector3(-74, 8.5, 15), 5, 20);
 
     
 
@@ -490,8 +497,9 @@ if (WebGL.isWebGL2Available()) {
             }
         
             const relativeVelocity = event.contact.getImpactVelocityAlongNormal();
+            const damageVelocity = 8
             // Only register significant collisions
-            if (Math.abs(relativeVelocity) > 5) {
+            if (Math.abs(relativeVelocity) > damageVelocity) {
                 const damage = Math.min(COLLISION_DAMAGE, Math.abs(relativeVelocity * 2));
                 damageVehicle(damage);
             }

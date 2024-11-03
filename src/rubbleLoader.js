@@ -58,7 +58,7 @@ export class RubbleLoader {
         geometry.computeVertexNormals();
 
         const material = new THREE.MeshStandardMaterial({
-            color: new THREE.Color().setHSL(0, 0, 0.2 + Math.random() * 0.1),
+            color: new THREE.Color().setHSL(0, 0, 0.2 + Math.random() * 1.1),
             roughness: 0.9,
             metalness: 0.1,
         });
@@ -73,9 +73,9 @@ export class RubbleLoader {
 
     addInteractiveRubble(position, rotation = { x: 0, y: 0, z: 0 }) {
         const size = {
-            x: 0.3 + Math.random() * 1.2,
-            y: 0.2 + Math.random() * 1.15,
-            z: 0.25 + Math.random() * 1.2
+            x: 0.6 + Math.random() * 1.2,
+            y: 0.5 + Math.random() * 1.15,
+            z: 0.55 + Math.random() * 1.2
         };
 
         // Create visual mesh
@@ -89,7 +89,7 @@ export class RubbleLoader {
 
         // Create physics body
         const shape = this.createPhysicsShape(size);
-        const mass = 0.5; // Light enough to be moved easily
+        const mass = 1.5; // Light enough to be moved easily
         const rubbleBody = new CANNON.Body({
             mass,
             shape,
