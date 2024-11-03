@@ -1,6 +1,6 @@
 import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/loaders/GLTFLoader.js';
 
 export class BoundLoader {
     constructor(scene, world, onBoundHit, loadingManager) {

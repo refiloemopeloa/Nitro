@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/loaders/GLTFLoader.js';
 import { getParticleSystem } from './getParticleSystem2.js';
 import img from './img/fire.png';
 
