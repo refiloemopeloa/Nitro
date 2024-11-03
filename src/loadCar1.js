@@ -86,7 +86,7 @@ export class CarLoader {
         this.camera = camera;
         this.loader = new GLTFLoader();
         this.headlights = []; // Array to store headlight references
-        this.headlightsOn = false; // Track headlight state
+        this.headlightsOn = true; // Track headlight state
     }
 
     toggleHeadlights() {
@@ -169,7 +169,7 @@ export class CarLoader {
                     leftHeadLight.setDecay(2);
                     leftHeadLight.setShadow(true);
                     leftHeadLight.setTarget(carObject, -10, 1, 0);
-                    leftHeadLight.light.visible = false;
+                    leftHeadLight.light.visible = true;
                     carObject.add(leftHeadLight.light);
                     this.headlights.push(leftHeadLight);
 
@@ -180,7 +180,7 @@ export class CarLoader {
                     rightHeadLight.setDecay(2);
                     rightHeadLight.setShadow(true);
                     rightHeadLight.setTarget(carObject, -10, 1, 0);
-                    rightHeadLight.light.visible = false;
+                    rightHeadLight.light.visible = true;
                     carObject.add(rightHeadLight.light);
                     this.headlights.push(rightHeadLight);
 
