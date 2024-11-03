@@ -387,18 +387,16 @@ if (WebGL.isWebGL2Available()) {
 
     function startGame() {
         gameOver = false;
-        gameTimer = 1200;
+        gameTimer = 60;
         frameCounter = 0;
-        carHealth = MAX_HEALTH; // Reset health
+        carHealth = MAX_HEALTH;
         lastCollisionTime = 0;
-        updateHealthBar(); // Initialize health bar
+        updateHealthBar();
         updateTimerDisplay();
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
-            gameTimer = 1200; // in seconds
-            frameCounter = 0;
-            updateTimerDisplay();
+            wallLoader.initializeTimer(); // Add this line
             console.log('Game started!');
         }
     }
@@ -740,7 +738,7 @@ let invulnerabilityEndTime = 0;
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl2', loadingManager);
+    const wallLoader = new WallLoader(scene, world, 'lvl2', loadingManager, 60);
     wallLoader.createWall(
         { x: -90, y: 33, z: -30 }, // Position - finish line
         { x: 5, y: 4, z: 10 }    // Size
@@ -1008,10 +1006,10 @@ let invulnerabilityEndTime = 0;
                 restoreCarAppearance();
             }
 
-            const position = vehicle.chassisBody.position;
-            document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
-            document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
-            document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
+            // const position = vehicle.chassisBody.position;
+            // document.getElementById('debug-pos-x').textContent = position.x.toFixed(2);
+            // document.getElementById('debug-pos-y').textContent = position.y.toFixed(2);
+            // document.getElementById('debug-pos-z').textContent = position.z.toFixed(2);
 
         }
 

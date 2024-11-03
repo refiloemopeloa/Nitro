@@ -494,16 +494,14 @@ if (WebGL.isWebGL2Available()) {
         gameOver = false;
         gameTimer = 80;
         frameCounter = 0;
-        carHealth = MAX_HEALTH; // Reset health
+        carHealth = MAX_HEALTH;
         lastCollisionTime = 0;
-        updateHealthBar(); // Initialize health bar
+        updateHealthBar();
         updateTimerDisplay();
         if (!isGameStarted) {
             isGameStarted = true;
             gameOver = false;
-            gameTimer = 80; // in seconds
-            frameCounter = 0;
-            updateTimerDisplay();
+            wallLoader.initializeTimer(); // Add this line
             console.log('Game started!');
         }
     }
@@ -864,7 +862,7 @@ if (WebGL.isWebGL2Available()) {
     });
 
     // Win Condition: contact wall
-    const wallLoader = new WallLoader(scene, world, 'lvl3', loadingManager);
+    const wallLoader = new WallLoader(scene, world, 'lvl3', loadingManager, 80);
     wallLoader.createWall(
         { x: 10, y: 0, z: 0 }, // Position - finish line
         { x: 2, y: 50, z: 80 }    // Size

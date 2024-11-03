@@ -3,17 +3,27 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class WallLoader {
-    constructor(scene, world, level, loadingManager) {
+    constructor(scene, world, level, loadingManager, startTime = 80) {
         this.loader = new GLTFLoader(loadingManager);
         this.scene = scene;
         this.world = world;
         this.wall = null;
         this.isGameWon = false;
-        this.startTime = 120;
+        this.startTime = startTime;
+        this.initialTime = null;
         this.wallMesh = null;
         this.wallLight = null;
         this.glowMesh = null;
         this.level = level;
+    }
+
+    // Method to initialize timing when game starts
+    initializeTimer(customStartTime) {
+        // Allow overriding the start time when initializing the timer
+        if (typeof customStartTime === 'number') {
+            this.startTime = customStartTime;
+        }
+        this.initialTime = this.startTime;
     }
 
     createWall(position, size) {
@@ -71,12 +81,17 @@ export class WallLoader {
     }
 
     async handleWallCollision() {
+        if (this.initialTime === null) {
+            console.error('Timer was not properly initialized');
+            return;
+        }
+
         this.isGameWon = true;
         
         const timerDisplay = document.getElementById('timer');
         const [minutes, seconds] = timerDisplay.textContent.split(':').map(Number);
         const remainingTime = minutes * 60 + seconds;
-        const completionTime = this.startTime - remainingTime;
+        const completionTime = this.initialTime - remainingTime;
 
         try {
             // Check if time qualifies for leaderboard via API
