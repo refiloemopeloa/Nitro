@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 
-// Import skybox textures
-import mysticFt from './assets/mystic/mystic_ft.jpg';
-import mysticBk from './assets/mystic/mystic_bk.jpg';
-import mysticUp from './assets/mystic/mystic_up.jpg';
-import mysticDn from './assets/mystic/mystic_dn.jpg';
-import mysticRt from './assets/mystic/mystic_rt.jpg';
-import mysticLf from './assets/mystic/mystic_lf.jpg';
+// // Import skybox textures
+// import mysticFt from './assets/mystic/mystic_ft.jpg';
+// import mysticBk from './assets/mystic/mystic_bk.jpg';
+// import mysticUp from './assets/mystic/mystic_up.jpg';
+// import mysticDn from './assets/mystic/mystic_dn.jpg';
+// import mysticRt from './assets/mystic/mystic_rt.jpg';
+// import mysticLf from './assets/mystic/mystic_lf.jpg';
 
 const vertexShader = `
 varying vec3 vWorldPosition;
@@ -46,12 +46,12 @@ void main() {
 export function createDynamicSkybox(scene) {
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        mysticFt,
-        mysticBk,
-        mysticUp,
-        mysticDn,
-        mysticRt,
-        mysticLf
+        './assets/mystic/mystic_ft.jpg',
+        './assets/mystic/mystic_bk.jpg',
+        './assets/mystic/mystic_up.jpg',
+        './assets/mystic/mystic_dn.jpg',
+        './assets/mystic/mystic_rt.jpg',
+        './assets/mystic/mystic_lf.jpg'
     ]);
 
     const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
