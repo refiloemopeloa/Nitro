@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import WebGL from 'three/addons/capabilities/WebGL.js';
+import WebGL from 'three/WebGL.js';
 import { OrbitControls } from 'three/controls/OrbitControls.js';
 import { CameraManager } from './camera.js';
 import { Controls } from './controls.js';
