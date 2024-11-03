@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/loaders/GLTFLoader.js';
 import { getParticleSystem } from './getParticleSystem2.js';
-import img from './img/fire.png';
+const img = 'src/img/fire.png';
 
 export class CrateLoader {
     constructor(scene, world, camera, loadingManager) {
