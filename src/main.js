@@ -631,7 +631,7 @@ const triggerSystem = new TriggerSystem(scene, blockLoader, loadingManager);
                     loadingScreen.style.display = 'none';
                     renderer.setAnimationLoop(animate);
                     //startGame();
-                }, 1000);
+                }, 1500);
             })
             .catch(error => {
                 console.error('Error loading assets:', error);
