@@ -1,4 +1,4 @@
-# Nitro
+# Nitro Assault
 
 Three.js game
 
@@ -43,8 +43,17 @@ Alternatively, you can run:
 ```shell
 npx vite
 ```
+## Push to lamp server
+
+When you push anything to main, it will automatically push to the lamp server.
 
 This will do the same thing as the run script above.
+
+## Accessing the game
+
+You can access the game by going to the following URL:
+
+[https://lamp.ms.wits.ac.za/~sonsite/](https://lamp.ms.wits.ac.za/~sonsite/)
 
 ## Learn More
 
